@@ -1,0 +1,30 @@
+﻿{
+  "name": "com.Battlemech.Data-Management-for-Unity",
+  "displayName": "Data Management",
+  "version": "2023.0.0",
+  "unity": "2023.3.0",
+  "description": "A high level of abstraction library allowing you to easily synchronise data among multiple clients while also allowing to save data persistently.",
+  "keywords": [
+    "unity",
+    "upm",
+    "Battlemech",
+    "utility",
+    "persistence",
+    "networking",
+    "multiplayer",
+    "coop"
+  ],
+  "homepage": "https://github.com/Battlemech/Data-Management-for-Unity.git",
+  "bugs": {
+    "url": "https://github.com/Battlemech/Data-Management-for-Unity/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Battlemech/Data-Management-for-Unity.git"
+  },
+  "license": "MIT",
+  "author": "Erik Fischer",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
