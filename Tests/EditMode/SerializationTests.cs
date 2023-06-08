@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using Data_Management_for_Unity.Runtime.Serializer;
 using NUnit.Framework;
 using UnityEngine;
@@ -12,7 +13,7 @@ public class NewTestScript
     [Test]
     public void TestString()
     {
-        string test = "My mother told me, one day I would buy, a galley with good ors, sail to distant shores!";
+        string test = "My mother told me, one day I would buy, a galley with good oars, sail to distant shores!";
         
         Assert.AreEqual(test, Copy(test));
         Assert.AreEqual(null, Copy<string>(null));
@@ -25,6 +26,19 @@ public class NewTestScript
         
         Assert.AreEqual(test, Copy(test));
         Assert.AreEqual((float)default, Copy<float>(default));
+    }
+
+    [Test]
+    public void TestMessage()
+    {
+        //object to pack
+        string expected = "123456789,10,11, and so on";
+        
+        //message
+        Message message = Message.Create(expected);
+
+        Assert.AreEqual(expected, message.Deserialize(out Type type));
+        Assert.AreEqual(expected.GetType(), type);
     }
     
     /// <summary>
