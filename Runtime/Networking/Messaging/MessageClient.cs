@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging
@@ -19,6 +20,18 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging
 
         public MessageClient(IPEndPoint endpoint) : base(endpoint)
         {
+        }
+
+        public T Send<T>(T data)
+        {
+            //todo: Network Serializer
+            throw new NotImplementedException();
+        }
+
+        protected override void OnReceived(byte[] buffer, long offset, long size)
+        {
+            //todo: Network Serializer
+            throw new NotImplementedException();
         }
     }
 }
