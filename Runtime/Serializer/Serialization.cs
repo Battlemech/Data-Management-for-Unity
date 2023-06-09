@@ -1,18 +1,20 @@
 ﻿using System;
 using DMP.Utility;
 using GroBuf;
+
 namespace Data_Management_for_Unity.Runtime.Serializer
 {
     public static class Serialization
     {
-        private static readonly GroBuf.Serializer Serializer = new GroBuf.Serializer(new AttributeAwareExtractor(), options : GroBufOptions.WriteEmptyObjects);
+        private static readonly GroBuf.Serializer Serializer = new(new AttributeAwareExtractor(),
+            options: GroBufOptions.WriteEmptyObjects);
 
         /// <summary>
-        /// Serializes the object
+        ///     Serializes the object
         /// </summary>
         /// <remarks>
-        /// Make sure that the object is given to the function with its original type,
-        /// or serialization will return a byte array representing null!
+        ///     Make sure that the object is given to the function with its original type,
+        ///     or serialization will return a byte array representing null!
         /// </remarks>
         public static byte[] Serialize<T>(T o)
         {

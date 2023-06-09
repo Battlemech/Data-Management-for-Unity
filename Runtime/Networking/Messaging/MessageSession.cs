@@ -6,7 +6,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging
     {
         public MessageSession(MessageServer server) : base(server)
         {
-            
         }
     }
 }
