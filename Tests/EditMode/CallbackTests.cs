@@ -46,7 +46,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             Assert.AreEqual(1, callbackHandler.GetCallbackCount(0));
 
             //invoke callbacks
-            Assert.AreEqual(1, callbackHandler.InvokeCallbacks(0, toInvoke));
+            Assert.AreEqual(1, callbackHandler.Invoke(0, toInvoke));
             Assert.AreEqual(toInvoke, invoked);
         }
 
@@ -60,7 +60,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             Assert.AreEqual(1, callbackHandler.GetCallbackCount('a'));
             
             //invoke it
-            Assert.AreEqual(1, callbackHandler.InvokeCallbacks('a', 'b'));
+            Assert.AreEqual(1, callbackHandler.Invoke('a', 'b'));
             
             //make sure its removed
             Assert.AreEqual(0, callbackHandler.GetCallbackCount('a'));
@@ -74,7 +74,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
 
             try
             {
-                callbackHandler.InvokeCallbacks('a', 'b');
+                callbackHandler.Invoke('a', 'b');
                 Assert.Fail("Didn't catch expected exception");
             }
             catch (NotImplementedException)
@@ -94,7 +94,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             //invoke callback with int
             try
             {
-                callbackHandler.InvokeCallbacks(typeof(Callback), 42);
+                callbackHandler.Invoke(typeof(Callback), 42);
                 Assert.Fail("Didn't catch expected exception");
             }
             catch (ArgumentException)

@@ -93,7 +93,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
         /// <param name="value">Value of objects to invoke callbacks with</param>
         /// <param name="name">Required name of callbacks to be invoked, if any</param>
         /// <returns>Number of invoked callbacks</returns>
-        public int InvokeCallbacks(TKey key, object value, string name=null)
+        public int Invoke(TKey key, object value, string name=null)
         {
             lock (_callbacks)
             {

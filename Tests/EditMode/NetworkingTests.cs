@@ -1,4 +1,6 @@
 ﻿using System.Threading;
+using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
+using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
 using NUnit.Framework;
 
@@ -14,32 +16,31 @@ namespace Data_Management_for_Unity.Tests.EditMode
         }
 
         [Test]
-        public static void TestNetCoreSync()
+        public static void TestSendString()
         {
-            //bytes to receive
-            byte[] expected = { 1, 2, 3, 4 };
-            var port = GetFreePort();
-
+            string expected = "123456789";
+            string received = null;
+            
             //start networking
-            var server = new TcpServer("127.0.0.1", port);
+            MessageServer server = new MessageServer("127.0.0.1", GetFreePort());
             server.Start();
 
-            var client = new TcpClient("127.0.0.1", port);
-            client.Connect();
-
+            MessageClient client = new MessageClient("127.0.0.1", server.Port);
+            client.ConnectAsync();
+            
             //give client time to connect
+            Assert.IsTrue(client.WaitForConnect());
+
+            //Add callback, waiting for clients message
+            server.AddCallback<string>((s => received = s));
+            
+            //client sends message
+            client.Send(expected);
+            
+            //Wait for message to arrive
             Thread.Sleep(1000);
-            Assert.AreEqual(1, server.ConnectedSessions);
-
-            //send data
-            server.Multicast(expected);
-
-            //receive data
-            var receiveBuffer = new byte[expected.Length];
-            var received = client.Receive(receiveBuffer, 0, expected.Length);
-
-            Assert.AreEqual(expected.Length, received);
-            Assert.AreEqual(expected, receiveBuffer);
+            
+            Assert.AreEqual(expected, received);
         }
     }
 }

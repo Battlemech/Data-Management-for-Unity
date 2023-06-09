@@ -474,7 +474,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="buffer">Buffer to send</param>
         /// <returns>Size of sent data</returns>
-        public virtual long Send(byte[] buffer)
+        protected virtual long Send(byte[] buffer)
         {
             return Send(buffer.AsSpan());
         }
@@ -486,7 +486,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <param name="offset">Buffer offset</param>
         /// <param name="size">Buffer size</param>
         /// <returns>Size of sent data</returns>
-        public virtual long Send(byte[] buffer, long offset, long size)
+        protected virtual long Send(byte[] buffer, long offset, long size)
         {
             return Send(buffer.AsSpan((int)offset, (int)size));
         }
@@ -496,7 +496,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="buffer">Buffer to send as a span of bytes</param>
         /// <returns>Size of sent data</returns>
-        public virtual long Send(ReadOnlySpan<byte> buffer)
+        protected virtual long Send(ReadOnlySpan<byte> buffer)
         {
             if (!IsConnected)
                 return 0;
@@ -526,31 +526,11 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         }
 
         /// <summary>
-        ///     Send text to the server (synchronous)
-        /// </summary>
-        /// <param name="text">Text string to send</param>
-        /// <returns>Size of sent text</returns>
-        public virtual long Send(string text)
-        {
-            return Send(Encoding.UTF8.GetBytes(text));
-        }
-
-        /// <summary>
-        ///     Send text to the server (synchronous)
-        /// </summary>
-        /// <param name="text">Text to send as a span of characters</param>
-        /// <returns>Size of sent text</returns>
-        public virtual long Send(ReadOnlySpan<char> text)
-        {
-            return Send(Encoding.UTF8.GetBytes(text.ToArray()));
-        }
-
-        /// <summary>
         ///     Send data to the server (asynchronous)
         /// </summary>
         /// <param name="buffer">Buffer to send</param>
         /// <returns>'true' if the data was successfully sent, 'false' if the client is not connected</returns>
-        public virtual bool SendAsync(byte[] buffer)
+        protected virtual bool SendAsync(byte[] buffer)
         {
             return SendAsync(buffer.AsSpan());
         }
@@ -562,7 +542,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <param name="offset">Buffer offset</param>
         /// <param name="size">Buffer size</param>
         /// <returns>'true' if the data was successfully sent, 'false' if the client is not connected</returns>
-        public virtual bool SendAsync(byte[] buffer, long offset, long size)
+        protected virtual bool SendAsync(byte[] buffer, long offset, long size)
         {
             return SendAsync(buffer.AsSpan((int)offset, (int)size));
         }
@@ -572,7 +552,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="buffer">Buffer to send as a span of bytes</param>
         /// <returns>'true' if the data was successfully sent, 'false' if the client is not connected</returns>
-        public virtual bool SendAsync(ReadOnlySpan<byte> buffer)
+        protected virtual bool SendAsync(ReadOnlySpan<byte> buffer)
         {
             if (!IsConnected)
                 return false;
@@ -605,26 +585,6 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             }
 
             return true;
-        }
-
-        /// <summary>
-        ///     Send text to the server (asynchronous)
-        /// </summary>
-        /// <param name="text">Text string to send</param>
-        /// <returns>'true' if the text was successfully sent, 'false' if the client is not connected</returns>
-        public virtual bool SendAsync(string text)
-        {
-            return SendAsync(Encoding.UTF8.GetBytes(text));
-        }
-
-        /// <summary>
-        ///     Send text to the server (asynchronous)
-        /// </summary>
-        /// <param name="text">Text to send as a span of characters</param>
-        /// <returns>'true' if the text was successfully sent, 'false' if the client is not connected</returns>
-        public virtual bool SendAsync(ReadOnlySpan<char> text)
-        {
-            return SendAsync(Encoding.UTF8.GetBytes(text.ToArray()));
         }
 
         /// <summary>

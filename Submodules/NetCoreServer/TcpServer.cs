@@ -469,7 +469,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="buffer">Buffer to multicast</param>
         /// <returns>'true' if the data was successfully multicasted, 'false' if the data was not multicasted</returns>
-        public virtual bool Multicast(byte[] buffer)
+        protected virtual bool Multicast(byte[] buffer)
         {
             return Multicast(buffer.AsSpan());
         }
@@ -481,7 +481,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <param name="offset">Buffer offset</param>
         /// <param name="size">Buffer size</param>
         /// <returns>'true' if the data was successfully multicasted, 'false' if the data was not multicasted</returns>
-        public virtual bool Multicast(byte[] buffer, long offset, long size)
+        protected virtual bool Multicast(byte[] buffer, long offset, long size)
         {
             return Multicast(buffer.AsSpan((int)offset, (int)size));
         }
@@ -491,7 +491,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="buffer">Buffer to send as a span of bytes</param>
         /// <returns>'true' if the data was successfully multicasted, 'false' if the data was not multicasted</returns>
-        public virtual bool Multicast(ReadOnlySpan<byte> buffer)
+        protected virtual bool Multicast(ReadOnlySpan<byte> buffer)
         {
             if (!IsStarted)
                 return false;
@@ -504,26 +504,6 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
                 session.SendAsync(buffer);
 
             return true;
-        }
-
-        /// <summary>
-        ///     Multicast text to all connected clients
-        /// </summary>
-        /// <param name="text">Text string to multicast</param>
-        /// <returns>'true' if the text was successfully multicasted, 'false' if the text was not multicasted</returns>
-        public virtual bool Multicast(string text)
-        {
-            return Multicast(Encoding.UTF8.GetBytes(text));
-        }
-
-        /// <summary>
-        ///     Multicast text to all connected clients
-        /// </summary>
-        /// <param name="text">Text to multicast as a span of characters</param>
-        /// <returns>'true' if the text was successfully multicasted, 'false' if the text was not multicasted</returns>
-        public virtual bool Multicast(ReadOnlySpan<char> text)
-        {
-            return Multicast(Encoding.UTF8.GetBytes(text.ToArray()));
         }
 
         #endregion
