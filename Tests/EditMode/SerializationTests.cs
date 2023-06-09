@@ -38,6 +38,15 @@ public class NewTestScript
     }
 
     [Test]
+    public void TestNullMessage()
+    {
+        var message = Message.Create<string>(null);
+        
+        Assert.AreEqual(null, message.Deserialize(out var type));
+        Assert.AreEqual(null, type);
+    }
+
+    [Test]
     public void TestNetworkSerializer()
     {
         byte[] test = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };

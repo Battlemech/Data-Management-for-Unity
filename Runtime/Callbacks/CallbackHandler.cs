@@ -108,11 +108,8 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
                         : callbacks.Where((callback => callback.Name == name)).ToList();
 
                 //copy list to allow modifying origin
-                foreach (var callback in matchingCallbacks)
+                foreach (var callback in matchingCallbacks.Where(callback => !callback.Invoke(value)))
                 {
-                    //invocation was successful: Continue iteration
-                    if(callback.Invoke(value)) continue;
-                    
                     //Callback caused error and needs to be removed
                     callbacks.Remove(callback);
                 }
