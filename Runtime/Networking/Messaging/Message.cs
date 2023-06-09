@@ -16,13 +16,15 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging
 
         public object Deserialize(out Type type)
         {
-            type = _serializedType == null ? null : Type.GetType(_serializedType, true);
+            type = Type.GetType(_serializedType, true);
             return Serialization.Deserialize(_value, type);
         }
 
         public static Message Create<T>(T data)
         {
-            return new Message(data?.GetType().AssemblyQualifiedName, Serialization.Serialize(data));
+            if (data == null) throw new ArgumentNullException();
+            
+            return new Message(data.GetType().AssemblyQualifiedName, Serialization.Serialize(data));
         }
     }
 }

@@ -27,6 +27,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         {
         }
 
+        /// <summary>
+        /// Send data to the server (asynchronous)
+        /// </summary>
+        /// <returns>'true' if the data was successfully sent, 'false' if the client is not connected</returns>
         public bool Send<T>(T data)
         {
             //1) Wrap data in message
