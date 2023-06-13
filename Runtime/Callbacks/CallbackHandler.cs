@@ -23,6 +23,28 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
         public bool AddCallback<T>(TKey key, Action<T> callback, string name = "", bool unique = false,
             bool removeOnError = false)
         {
+            return AddCallback(key, new Callback<T>(callback, name, removeOnError), unique);
+        }
+
+        /// <summary>
+        /// Adds a callback.
+        /// </summary>
+        /// <param name="key">Key of the callback function</param>
+        /// <param name="callback">Action invoked when callback is triggered</param>
+        /// <param name="name">Name of the callback</param>
+        /// <param name="unique">True if callbacks with duplicate names must be prevented</param>
+        /// <param name="removeOnError">True if the callbacks must be removed on error</param>
+        /// <typeparam name="T1">Expected type of first object in callback</typeparam>
+        /// <typeparam name="T2">Expected type of second object in callback</typeparam>
+        /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
+        public bool AddCallback<T1, T2>(TKey key, Action<T1, T2> callback, string name = "", bool unique = false,
+            bool removeOnError = false)
+        {
+            return AddCallback(key, new Callback<T1, T2>(callback, name, removeOnError), unique);
+        }
+
+        private bool AddCallback(TKey key, Callback callback, bool unique)
+        {
             //make sure no other thread is modifying callbacks
             lock (_callbacks)
             {
@@ -30,7 +52,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
                 if (_callbacks.TryGetValue(key, out var callbacks))
                 {
                     //prevent duplicate callbacks with unique=true parameter
-                    if (unique && callbacks.Any((c => c.Name == name))) return false;
+                    if (unique && callbacks.Any((c => c.Name == callback.Name))) return false;
                 }
                 else 
                 {
@@ -39,7 +61,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
                     _callbacks.Add(key, callbacks);
                 }
                 
-                callbacks.Add(new Callback<T>(callback, name, removeOnError));
+                callbacks.Add(callback);
             }
 
             return true;
@@ -109,6 +131,39 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
 
                 //copy list to allow modifying origin
                 foreach (var callback in matchingCallbacks.Where(callback => !callback.Invoke(value)))
+                {
+                    //Callback caused error and needs to be removed
+                    callbacks.Remove(callback);
+                }
+
+                return matchingCallbacks.Count;
+            }
+        }
+
+        /// <summary>
+        /// Invokes callbacks
+        /// </summary>
+        /// <param name="key">Key of callbacks</param>
+        /// <param name="one">First parameter of callback</param>
+        /// <param name="other">Second parameter of callback</param>
+        /// <param name="name">Required name of callbacks to be invoked, if any</param>
+        /// <returns>Number of invoked callbacks</returns>
+        public int Invoke(TKey key, object one, object other, string name=null)
+        {
+            lock (_callbacks)
+            {
+                //no callbacks to invoke
+                if(!_callbacks.TryGetValue(key, out List<Callback> callbacks)) return 0;
+
+                //filter callbacks with expected name
+                List<Callback> matchingCallbacks =
+                    //no required name specified: Invoke all callbacks
+                    name == null ? new List<Callback>(callbacks)
+                        //get callbacks with expected name
+                        : callbacks.Where((callback => callback.Name == name)).ToList();
+
+                //copy list to allow modifying origin
+                foreach (var callback in matchingCallbacks.Where(callback => !callback.Invoke(one, other)))
                 {
                     //Callback caused error and needs to be removed
                     callbacks.Remove(callback);

@@ -6,7 +6,7 @@ using Data_Management_for_Unity.Submodules.NetCoreServer;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 {
-    public class MessageSession : TcpSession
+    public partial class MessageSession : TcpSession
     {
         /// <summary>
         /// Manages the sessions private callbacks.
@@ -86,7 +86,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
                 _sessionCallbacks.Invoke(type, value);
                 
                 //invoke server callbacks
-                _serverCallbacks.Invoke(type, value);
+                _serverCallbacks.Invoke(type, value, this);
             }
         }
     }

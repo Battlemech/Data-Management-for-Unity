@@ -31,7 +31,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         {
             return base.Multicast(NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data))));
         }
-        
+
         /// <summary>
         /// Adds a callback, which is invoked whenever an object of the expected type is received
         /// </summary>
@@ -40,8 +40,9 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <param name="unique">True if callbacks with duplicate names must be prevented</param>
         /// <param name="removeOnError">True if the callbacks must be removed on error</param>
         /// <typeparam name="T">Expected type of object in callback</typeparam>
+        /// <typeparam name="TSession">Expected type of session</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false)
+        public bool AddCallback<T, TSession>(Action<T, TSession> callback, string name = "", bool unique = false, bool removeOnError = false) where TSession : TcpSession
         {
             return CallbackHandler.AddCallback(typeof(T), callback, name, unique, removeOnError);
         }

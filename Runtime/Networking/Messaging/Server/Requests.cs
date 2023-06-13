@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
 
-namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
+namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 {
-    public partial class MessageClient
+    public partial class MessageSession
     {
         public Task<TReply> SendRequest<TRequest, TReply>(TRequest request, int timeout = Options.DefaultTimeout) where TRequest : Request where TReply : Reply
         {
