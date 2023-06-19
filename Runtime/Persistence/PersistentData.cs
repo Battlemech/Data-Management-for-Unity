@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Persistence
 {
-    public static class PersistentData
+    public static partial class PersistentData
     {
         private const string Path = "./Data.sql";
         private const string ConnectionString = "Data Source=" + Path;
@@ -16,10 +16,10 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             //make sure local database exists
             SqliteConnection.CreateFile(Path);
         }
-        
+
         public static void CreateDatabase(string databaseId)
         {
-            ExecuteCommand($"create table if not exists '{databaseId}'(id MESSAGE_TEXT PRIMARY KEY, bytes BLOB, type MESSAGE_TEXT, modCount INTEGER)");
+            ExecuteCommand($"create table if not exists '{databaseId}'(id MESSAGE_TEXT PRIMARY KEY, value BLOB, type MESSAGE_TEXT, modCount INTEGER)");
         }
 
         public static bool DoesDatabaseExists(string databaseId)
@@ -33,7 +33,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             command.CommandText = $"SELECT * FROM sqlite_master WHERE type='table' AND name='{databaseId}'";
 
             //execute lookup
-            SqliteDataReader reader = command.ExecuteReader();
+            using SqliteDataReader reader = command.ExecuteReader();
             //if reader can read at least one column, table exists
             return reader.Read();
         }
