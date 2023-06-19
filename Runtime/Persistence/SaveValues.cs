@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Mono.Data.Sqlite;
 using UnityEngine;
@@ -29,10 +30,8 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             
             lock (ToSave)
             {
-                //data is already being saved by another task
-                return SavingData ??
-                       //delegate saving of persistant data to a task
-                       Task.Run(SaveQueuedData);
+                //delegate saving of persistant data to thread
+                return SavingData ??= Task.Run(SaveQueuedData);
             }
         }
 
