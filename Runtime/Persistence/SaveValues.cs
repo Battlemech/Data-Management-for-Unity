@@ -12,7 +12,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
         /// <summary>
         /// True if a thread is currently saving data, otherwise false
         /// </summary>
-        public static Task SavingData { get; private set; }
+        public static Task SavingData { get; private set; } 
         
         /// <summary>
         /// Returns the amount of values which still have to be set.
@@ -43,6 +43,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
                 using SqliteConnection connection = new SqliteConnection(ConnectionString);
                 connection.Open();
 
+                //use a transaction to massively speed up the speed of each set: Data is written all at once, not one after another
                 using SqliteTransaction transaction = connection.BeginTransaction();
                 
                 //save all queued data
