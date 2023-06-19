@@ -135,7 +135,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
                     //Callback caused error and needs to be removed
                     callbacks.Remove(callback);
                 }
-
+                
                 return matchingCallbacks.Count;
             }
         }

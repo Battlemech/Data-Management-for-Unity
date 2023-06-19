@@ -2,8 +2,10 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
+using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
 using Data_Management_for_Unity.Tests.EditMode;
 using NUnit.Framework;
@@ -85,6 +87,50 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         public IEnumerator TestSendClass()
         {
             return TestSend(new TestObject("Detlef"));
+        }
+
+        [UnityTest]
+        public IEnumerator TestRequestReply()
+        {
+            return RequestReplyAsync().AsIEnumerator();
+        }
+        
+        public async Task RequestReplyAsync()
+        {
+            //register server request response
+            _server.AddCallback<TestRequest, MessageSession>(((request, session) =>
+            {
+                //return reply to client
+                session.Send(new TestReply(request));
+            }));
+            
+            //wait for reply
+            TestRequest request = new TestRequest(123123, 233);
+            Stopwatch waitTime = Stopwatch.StartNew();
+
+            TestReply reply = await _client.SendRequest<TestRequest, TestReply>(request);
+            Debug.Log($"RTT: {waitTime.ElapsedMilliseconds} ms");
+            
+            Assert.AreEqual(request.A + request.B, reply.Added);
+            Assert.AreEqual(request.A * request.B, reply.Multiplied);
+            
+            //make sure a timeout exception is raised when no reply is received
+            Assert.AreEqual(1, _server.RemoveCallbacks<TestRequest>());
+
+            waitTime.Restart();
+            try
+            {
+                await _client.SendRequest<TestRequest, TestReply>(request, 1000);
+                Assert.Fail("Failed to raise expected exception");
+            }
+            catch (TimedOutException)
+            {
+                //successfully caught expected exception
+                waitTime.Stop();
+                Debug.Log($"Raised TimedOutException after: {waitTime.ElapsedMilliseconds} ms!");
+            }
+            
+            Assert.GreaterOrEqual(waitTime.ElapsedMilliseconds, 1000);
         }
         
         private IEnumerator TestSend<T>(T expected, int count = 100000)
