@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Submodules.NetCoreServer
 {
@@ -10,15 +11,16 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
     ///     TCP client is used to read/write data from/into the connected TCP server
     /// </summary>
     /// <remarks>Thread-safe</remarks>
-    public class TcpClient : IDisposable
+    public class TcpClient : MonoBehaviour, IDisposable
     {
         /// <summary>
         ///     Initialize TCP client with a given server IP address and port number
         /// </summary>
         /// <param name="address">IP address</param>
         /// <param name="port">Port number</param>
-        public TcpClient(IPAddress address, int port) : this(new IPEndPoint(address, port))
+        public void Constructor(IPAddress address, int port)
         {
+            Constructor(new IPEndPoint(address, port));
         }
 
         /// <summary>
@@ -26,24 +28,27 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="address">IP address</param>
         /// <param name="port">Port number</param>
-        public TcpClient(string address, int port) : this(new IPEndPoint(IPAddress.Parse(address), port))
+        public void Constructor(string address, int port)
         {
+            Constructor(new IPEndPoint(IPAddress.Parse(address), port));
         }
 
         /// <summary>
         ///     Initialize TCP client with a given DNS endpoint
         /// </summary>
         /// <param name="endpoint">DNS endpoint</param>
-        public TcpClient(DnsEndPoint endpoint) : this(endpoint, endpoint.Host, endpoint.Port)
+        public void Constructor(DnsEndPoint endpoint)
         {
+            Constructor(endpoint, endpoint.Host, endpoint.Port);
         }
 
         /// <summary>
         ///     Initialize TCP client with a given IP endpoint
         /// </summary>
         /// <param name="endpoint">IP endpoint</param>
-        public TcpClient(IPEndPoint endpoint) : this(endpoint, endpoint.Address.ToString(), endpoint.Port)
+        public void Constructor(IPEndPoint endpoint)
         {
+            Constructor(endpoint, endpoint.Address.ToString(), endpoint.Port);
         }
 
         /// <summary>
@@ -52,33 +57,40 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <param name="endpoint">Endpoint</param>
         /// <param name="address">Server address</param>
         /// <param name="port">Server port</param>
-        private TcpClient(EndPoint endpoint, string address, int port)
+        private void Constructor(EndPoint endpoint, string address, int port)
         {
+            //make sure client isn't connected
+            if (IsConnecting || IsConnected)
+                throw new InvalidOperationException("Can't modify client endpoint if its already started!");
+            
             Id = Guid.NewGuid();
             Address = address;
             Port = port;
             Endpoint = endpoint;
+            
+            //call the onConstructorCalled Handler
+            OnConstructorCalled();
         }
 
         /// <summary>
         ///     Client Id
         /// </summary>
-        public Guid Id { get; }
+        public Guid Id { get; private set; }
 
         /// <summary>
         ///     TCP server address
         /// </summary>
-        public string Address { get; }
+        public string Address { get; private set;}
 
         /// <summary>
         ///     TCP server port
         /// </summary>
-        public int Port { get; }
+        public int Port { get; private set;}
 
         /// <summary>
         ///     Endpoint
         /// </summary>
-        public EndPoint Endpoint { get; }
+        public EndPoint Endpoint { get; private set;}
 
         /// <summary>
         ///     Socket
@@ -952,6 +964,14 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         #region Session handlers
 
         /// <summary>
+        ///     Handle client being created
+        /// </summary>
+        protected virtual void OnConstructorCalled()
+        {
+            
+        }
+        
+        /// <summary>
         ///     Handle client connecting notification
         /// </summary>
         protected virtual void OnConnecting()
@@ -1037,6 +1057,11 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         ///     Client socket disposed flag
         /// </summary>
         public bool IsSocketDisposed { get; private set; } = true;
+
+        private void OnDestroy()
+        {
+            if (IsConnecting || IsConnected) DisconnectAsync();
+        }
 
         // Implement IDisposable.
         public void Dispose()

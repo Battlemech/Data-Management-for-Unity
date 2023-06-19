@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Submodules.NetCoreServer
 {
@@ -12,15 +13,16 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
     ///     TCP server is used to connect, disconnect and manage TCP sessions
     /// </summary>
     /// <remarks>Thread-safe</remarks>
-    public class TcpServer : IDisposable
+    public class TcpServer : MonoBehaviour, IDisposable
     {
         /// <summary>
         ///     Initialize TCP server with a given IP address and port number
         /// </summary>
         /// <param name="address">IP address</param>
         /// <param name="port">Port number</param>
-        public TcpServer(IPAddress address, int port) : this(new IPEndPoint(address, port))
+        public void Constructor(IPAddress address, int port)
         {
+            Constructor(new IPEndPoint(address, port));
         }
 
         /// <summary>
@@ -28,24 +30,27 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="address">IP address</param>
         /// <param name="port">Port number</param>
-        public TcpServer(string address, int port) : this(new IPEndPoint(IPAddress.Parse(address), port))
+        public void Constructor(string address, int port)
         {
+            Constructor(new IPEndPoint(IPAddress.Parse(address), port));
         }
 
         /// <summary>
         ///     Initialize TCP server with a given DNS endpoint
         /// </summary>
         /// <param name="endpoint">DNS endpoint</param>
-        public TcpServer(DnsEndPoint endpoint) : this(endpoint, endpoint.Host, endpoint.Port)
+        public void Constructor(DnsEndPoint endpoint)
         {
+            Constructor(endpoint, endpoint.Host, endpoint.Port);
         }
 
         /// <summary>
         ///     Initialize TCP server with a given IP endpoint
         /// </summary>
         /// <param name="endpoint">IP endpoint</param>
-        public TcpServer(IPEndPoint endpoint) : this(endpoint, endpoint.Address.ToString(), endpoint.Port)
+        public void Constructor(IPEndPoint endpoint)
         {
+            Constructor(endpoint, endpoint.Address.ToString(), endpoint.Port);
         }
 
         /// <summary>
@@ -54,28 +59,35 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <param name="endpoint">Endpoint</param>
         /// <param name="address">Server address</param>
         /// <param name="port">Server port</param>
-        private TcpServer(EndPoint endpoint, string address, int port)
+        private void Constructor(EndPoint endpoint, string address, int port)
         {
+            //make sure server isn't connected
+            if (IsStarted)
+                throw new InvalidOperationException("Can't modify server endpoint if its already started!");
+
             Id = Guid.NewGuid();
             Address = address;
             Port = port;
             Endpoint = endpoint;
+
+            //call the onConstructorCalled Handler
+            OnConstructorCalled();
         }
 
         /// <summary>
         ///     Server Id
         /// </summary>
-        public Guid Id { get; }
+        public Guid Id { get; private set; }
 
         /// <summary>
         ///     TCP server address
         /// </summary>
-        public string Address { get; }
+        public string Address { get; private set; }
 
         /// <summary>
         ///     TCP server port
         /// </summary>
-        public int Port { get; }
+        public int Port { get; private set; }
 
         /// <summary>
         ///     Endpoint
@@ -232,8 +244,10 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         ///     Start the server
         /// </summary>
         /// <returns>'true' if the server was successfully started, 'false' if the server failed to start</returns>
-        public virtual bool Start()
+        public virtual bool StartServer()
         {
+            Debug.Log("Starting server!");
+            
             Debug.Assert(!IsStarted, "TCP server is already started!");
             if (IsStarted)
                 return false;
@@ -348,7 +362,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             while (IsStarted)
                 Thread.Yield();
 
-            return Start();
+            return StartServer();
         }
 
         #endregion
@@ -511,6 +525,14 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         #region Server handlers
 
         /// <summary>
+        ///     Handle server constructor function being called
+        /// </summary>
+        protected virtual void OnConstructorCalled()
+        {
+            
+        }
+        
+        /// <summary>
         ///     Handle server starting notification
         /// </summary>
         protected virtual void OnStarting()
@@ -611,6 +633,11 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         ///     Acceptor socket disposed flag
         /// </summary>
         public bool IsSocketDisposed { get; private set; } = true;
+
+        private void OnDestroy()
+        {
+            if (IsStarted) Stop();
+        }
 
         // Implement IDisposable.
         public void Dispose()

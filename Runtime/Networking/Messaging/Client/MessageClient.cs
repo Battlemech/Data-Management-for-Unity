@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading;
@@ -16,22 +17,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         //allows waiting until client is connected
         private readonly ManualResetEvent _connectEvent = new ManualResetEvent(false);
 
-        public MessageClient(IPAddress address, int port) : base(address, port)
-        {
-        }
-
-        public MessageClient(string address, int port) : base(address, port)
-        {
-        }
-
-        public MessageClient(DnsEndPoint endpoint) : base(endpoint)
-        {
-        }
-
-        public MessageClient(IPEndPoint endpoint) : base(endpoint)
-        {
-            
-        }
+        /// <summary>
+        /// Client will deserialize received objects on a thread, saving the result here.
+        /// The main thread will process received objects.
+        /// </summary>
+        private readonly ConcurrentQueue<Tuple<object, Type>> _receivedObjects =
+            new ConcurrentQueue<Tuple<object, Type>>();
 
         /// <summary>
         /// Send data to the server (asynchronous)
@@ -76,8 +67,18 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                 //deserialize received object
                 object value = message.Deserialize(out Type type);
                 
-                //invoke callbacks
-                _callbackHandler.Invoke(type, value);
+                //save deserialized objects to be processed later
+                _receivedObjects.Enqueue(new Tuple<object, Type>(value, type));
+            }
+        }
+
+        private void Update()
+        {
+            //process all received objects
+            while (_receivedObjects.TryDequeue(out Tuple<object, Type> tuple))
+            {
+                //invoke all callbacks for received object
+                _callbackHandler.Invoke(tuple.Item2, tuple.Item1);
             }
         }
     }

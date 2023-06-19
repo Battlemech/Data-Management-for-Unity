@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using Data_Management_for_Unity.Runtime.Callbacks;
 using Data_Management_for_Unity.Runtime.Serializer;
@@ -12,20 +13,18 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// Manages the sessions private callbacks.
         /// </summary>
         private readonly CallbackHandler<Type> _sessionCallbacks = new CallbackHandler<Type>();
+
         
-        /// <summary>
-        /// Manages the servers callbacks.
-        /// </summary>
-        private readonly CallbackHandler<Type> _serverCallbacks;
+        private readonly MessageServer _server;
      
         /// <summary>
         /// Tracks received bytes, making sure no partial messages are interpreted
         /// </summary>
         private readonly NetworkSerializer _networkSerializer = new();
-
+        
         public MessageSession(MessageServer server) : base(server)
         {
-            _serverCallbacks = server.CallbackHandler;
+            _server = server;
         }
         
         /// <summary>
@@ -81,12 +80,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
             {
                 //deserialize received object
                 object value = message.Deserialize(out Type type);
+
+                //enqueue received object to be processed by main thread
+                _server.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));
                 
-                //invoke sessions callbacks
-                _sessionCallbacks.Invoke(type, value);
-                
-                //invoke server callbacks
-                _serverCallbacks.Invoke(type, value, this);
+                //invoke the sessions private callbacks on a thread
+                _sessionCallbacks.Invoke(type, message);
             }
         }
     }

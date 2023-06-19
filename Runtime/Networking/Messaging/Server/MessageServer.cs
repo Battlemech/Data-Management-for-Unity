@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
 using Data_Management_for_Unity.Runtime.Callbacks;
 using Data_Management_for_Unity.Runtime.Serializer;
@@ -8,24 +9,14 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 {
     public class MessageServer : TcpServer
     {
-        protected internal readonly CallbackHandler<Type> CallbackHandler = new CallbackHandler<Type>();
+        private readonly CallbackHandler<Type> _callbackHandler = new CallbackHandler<Type>();
 
-        public MessageServer(IPAddress address, int port) : base(address, port)
-        {
-        }
-
-        public MessageServer(string address, int port) : base(address, port)
-        {
-        }
-
-        public MessageServer(DnsEndPoint endpoint) : base(endpoint)
-        {
-        }
-
-        public MessageServer(IPEndPoint endpoint) : base(endpoint)
-        {
-            
-        }
+        /// <summary>
+        /// Sessions will deserialize received objects on a thread, saving the result here.
+        /// The server will later process them on the main thread.
+        /// </summary>
+        protected internal readonly ConcurrentQueue<Tuple<object, Type, MessageSession>> ReceivedObjects =
+            new ConcurrentQueue<Tuple<object, Type, MessageSession>>();
 
         public bool Multicast<T>(T data)
         {
@@ -44,7 +35,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
         public bool AddCallback<T, TSession>(Action<T, TSession> callback, string name = "", bool unique = false, bool removeOnError = false) where TSession : TcpSession
         {
-            return CallbackHandler.AddCallback(typeof(T), callback, name, unique, removeOnError);
+            return _callbackHandler.AddCallback(typeof(T), callback, name, unique, removeOnError);
         }
 
         /// <summary>
@@ -54,7 +45,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <returns>Number of callbacks matching criterion</returns>
         public int GetCallbackCount<T>(string name=null)
         {
-            return CallbackHandler.GetCallbackCount(typeof(T), name);
+            return _callbackHandler.GetCallbackCount(typeof(T), name);
         }
 
         /// <summary>
@@ -64,12 +55,22 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <returns>Number of callbacks removed</returns>
         public int RemoveCallbacks<T>(string name = null)
         {
-            return CallbackHandler.RemoveCallbacks(typeof(T), name);
+            return _callbackHandler.RemoveCallbacks(typeof(T), name);
         }
 
         protected override TcpSession CreateSession()
         {
             return new MessageSession(this);
+        }
+
+        private void Update()
+        {
+            //process all received objects
+            while (ReceivedObjects.TryDequeue(out Tuple<object, Type, MessageSession> tuple))
+            {
+                //invoke all callbacks for received object
+                _callbackHandler.Invoke(tuple.Item2, tuple.Item1, tuple.Item3);
+            }
         }
     }
 }
