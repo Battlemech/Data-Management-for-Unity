@@ -42,6 +42,8 @@ namespace Data_Management_for_Unity.Runtime.Persistence
                 //establish connection to database
                 using SqliteConnection connection = new SqliteConnection(ConnectionString);
                 connection.Open();
+
+                using SqliteTransaction transaction = connection.BeginTransaction();
                 
                 //save all queued data
                 while (ToSave.TryDequeue(out SerializedObject r))
@@ -53,9 +55,12 @@ namespace Data_Management_for_Unity.Runtime.Persistence
                     command.Parameters.AddWithValue(":type", r.Type.AssemblyQualifiedName);
                     command.Parameters.AddWithValue(":modCount", r.ModCount);
                     
-                    //commit
+                    //queue changes
                     command.ExecuteNonQuery();
                 }
+                
+                //commit queued changes
+                transaction.Commit();
 
                 lock (ToSave)
                 {
