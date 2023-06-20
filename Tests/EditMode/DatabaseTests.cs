@@ -1,0 +1,73 @@
+﻿using System.Collections;
+using System.Threading.Tasks;
+using Data_Management_for_Unity.Runtime;
+using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Persistence;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+namespace Data_Management_for_Unity.Tests.EditMode
+{
+    public class DatabaseTests
+    {
+        [UnityTest]
+        public IEnumerator TestModCount()
+        {
+            return TestModCountAsync().AsIEnumerator();
+        }
+        
+        public async Task TestModCountAsync()
+        {
+            const string id = nameof(TestModCount);
+            const int setCount = 1000;
+            
+            Database database = new Database(id);
+
+            for (int i = 0; i < setCount; i++)
+            {
+                //make sure modification count matches
+                Assert.AreEqual(i, database.GetModCount(id), "ModCount");
+                
+                //update value
+                await database.Get<int>(id).Set(i);
+                
+                //make sure value matches
+                Assert.AreEqual(i, database.Get<int>(id).Get(), "Value");
+                
+                Debug.Log($"Finished iteration {i}");
+            }
+            
+        }
+
+        [UnityTest]
+        public IEnumerator TestPersistence()
+        {
+            return TestPersistenceAsync().AsIEnumerator();
+        }
+
+        /// <summary>
+        /// Test takes a long time because SQLite backend waits for written data to be confirmed, sends back confirmation.
+        /// This process is awaited here and repeated "setCount" times.
+        /// </summary>
+        private async Task TestPersistenceAsync()
+        {
+            const string id = nameof(TestPersistence);
+            const int setCount = 100;
+            
+            //clear old data
+            PersistentData.DeleteDatabase(id);
+
+            for (int i = 0; i < setCount; i++)
+            {
+                Database database = new Database(id, true);
+
+                //make sure value was loaded correctly
+                Assert.AreEqual(i, database.Get<int>(id).Get(), "Value not loaded");
+                
+                //update value
+                await database.Get<int>(id).Set(i + 1);
+            }
+        }
+    }
+}

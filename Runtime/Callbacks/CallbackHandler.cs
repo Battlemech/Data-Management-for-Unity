@@ -68,7 +68,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
         }
 
         /// <summary>
-        /// Gets the number of callbacks
+        /// Gets the number of callbacks.
         /// </summary>
         /// <param name="key">Key of callbacks</param>
         /// <param name="name">Required name of callbacks, if any</param>
@@ -86,7 +86,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
         }
 
         /// <summary>
-        /// Removes callbacks
+        /// Removes callbacks.
         /// </summary>
         /// <param name="key">Key of callbacks</param>
         /// <param name="name">Required name of callbacks, if any</param>
@@ -109,7 +109,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
         }
 
         /// <summary>
-        /// Invokes callbacks
+        /// Invokes callbacks.
         /// </summary>
         /// <param name="key">Key of callbacks</param>
         /// <param name="value">Value of objects to invoke callbacks with</param>
@@ -141,7 +141,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
         }
 
         /// <summary>
-        /// Invokes callbacks
+        /// Invokes callbacks.
         /// </summary>
         /// <param name="key">Key of callbacks</param>
         /// <param name="one">First parameter of callback</param>

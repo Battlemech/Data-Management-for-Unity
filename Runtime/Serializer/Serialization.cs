@@ -22,6 +22,12 @@ namespace Data_Management_for_Unity.Runtime.Serializer
             return Serializer.Serialize(o);
         }
 
+        public static byte[] Serialize<T>(T o, out Type type)
+        {
+            type = o?.GetType();
+            return Serializer.Serialize(o);
+        }
+
         public static byte[] Serialize(Type type, object o)
         {
             return Serializer.Serialize(type, o);

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Data_Management_for_Unity.Runtime.Serializer;
 using Mono.Data.Sqlite;
 using UnityEngine;
 
