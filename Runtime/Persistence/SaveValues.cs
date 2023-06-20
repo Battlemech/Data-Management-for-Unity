@@ -29,6 +29,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
         {
             ToSave.Enqueue(new SerializedObject(databaseId, valueId, value, type, modCount));
             
+            //todo: Implement this task queue for all SQLite commands
             lock (ToSave)
             {
                 //delegate saving of persistant data to thread

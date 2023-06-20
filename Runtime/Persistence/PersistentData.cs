@@ -1,8 +1,4 @@
-﻿
-
-using System;
-using Mono.Data.Sqlite;
-using UnityEngine;
+﻿using Mono.Data.Sqlite;
 
 namespace Data_Management_for_Unity.Runtime.Persistence
 {
