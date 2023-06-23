@@ -48,20 +48,16 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
 
             return replyTask;
         }
-
-        public void SendRequest<TRequest, TReply>(TRequest request, Action<TReply> onReply, int timeout = Options.DefaultTimeout)
+        
+        public Task SendRequest<TRequest, TReply>(TRequest request, Action<TReply> onReply, int timeout = Options.DefaultTimeout)
             where TRequest : Request where TReply : Reply
         {
-            //save reply and continue execution once its received
-            AddCallback<TReply>((reply =>
+            //invoke callback once reply was received
+            return SendRequest<TRequest, TReply>(request, timeout).ContinueWith((task =>
             {
-                //remove callback: Reply was received
-                RemoveCallbacks<TReply>(reply.Id.ToString());
-
-                onReply.Invoke(reply);
-            }), request.Id.ToString());
-
-            throw new NotImplementedException();
+                //todo: test what happens when exception is thrown
+                onReply.Invoke(task.Result);
+            }));
         }
     }
 }
