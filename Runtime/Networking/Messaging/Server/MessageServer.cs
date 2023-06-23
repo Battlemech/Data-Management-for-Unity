@@ -36,7 +36,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <typeparam name="TSession">Expected type of session</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T, TSession>(Action<T, TSession> callback, string name = "", bool unique = false, bool removeOnError = false) where TSession : TcpSession
+        public bool AddCallback<T, TSession>(Action<T, TSession> callback, string name = "", bool unique = false, bool removeOnError = false) where TSession : MessageSession
         {
             return _callbackHandler.AddCallback(typeof(T), callback, name, unique, removeOnError);
         }
