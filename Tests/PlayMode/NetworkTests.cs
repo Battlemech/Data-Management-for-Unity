@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -94,8 +95,86 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         {
             return RequestReplyAsync().AsIEnumerator();
         }
+
+        [UnityTest]
+        public IEnumerator TestReplyUnity()
+        {
+            return TestReplyUnityAsync().AsIEnumerator();
+        }
+
+        [UnityTest]
+        public IEnumerator TestServerRequests()
+        {
+            return TestServerRequestsAsync().AsIEnumerator();
+        }
+
+        private async Task TestServerRequestsAsync()
+        {
+            //reply to server requests
+            _client.AddCallback<TestRequest>((request =>
+            {
+                _client.Send(new TestReply(request));
+            }));
+
+            //server requests replies
+            TestReply[] replies = await _server.SendRequests<TestRequest, TestReply>(new TestRequest(1, 213), 1000);
+            
+            //make sure replies were received correctly
+            Assert.AreEqual(1, replies.Length);
+            Assert.NotNull(replies[0]);
+            
+            //remove client callback
+            _client.RemoveCallbacks<TestRequest>();
+
+            try
+            {
+                replies = await _server.SendRequests<TestRequest, TestReply>(new TestRequest(1, 213), 1000);
+                Assert.Fail("Received client replies");
+            }
+            catch (TimedOutException)
+            {
+                Debug.Log("Successfully caught exception");
+            }
+        }
         
-        public async Task RequestReplyAsync()
+        private async Task TestReplyUnityAsync()
+        {
+            GameObject serverObject = null;
+            GameObject clientObject = null;
+            
+            //spawn a unity game object when testRequest is received
+            _server.AddCallback<TestRequest>((request, session) =>
+            {
+                //spawn unity game object
+                serverObject = new GameObject("Server:"+request.Id);
+                Debug.Log(serverObject.name);
+                
+                //send reply
+                session.Send(new TestReply(request));
+            });
+
+            _client.AddCallback<TestReply>((reply =>
+            {
+                //spawn unity game object
+                clientObject = new GameObject("Client:" + reply.Id);
+                Debug.Log(clientObject.name);
+            }));
+            
+            //client sends request
+            TestReply reply = await _client.SendRequest<TestRequest, TestReply>(new TestRequest(12, 10));
+            
+            //spawn game Object once reply is received
+            GameObject onReplyObject = new GameObject("onReply:" + reply.Id);
+            Debug.Log(onReplyObject.name);
+
+            Assert.NotNull(serverObject);
+            Assert.NotNull(clientObject);
+            Assert.NotNull(onReplyObject);
+
+            Debug.Log("All objects were spawned successfully");
+        }
+        
+        private async Task RequestReplyAsync()
         {
             //register server request response
             _server.AddCallback<TestRequest, MessageSession>(((request, session) =>

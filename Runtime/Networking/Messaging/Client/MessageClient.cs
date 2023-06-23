@@ -67,7 +67,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                 //deserialize received object
                 object value = message.Deserialize(out Type type);
                 
-                //save deserialized objects to be processed later
+                //save deserialized objects to be processed on main thread
                 _receivedObjects.Enqueue(new Tuple<object, Type>(value, type));
             }
         }

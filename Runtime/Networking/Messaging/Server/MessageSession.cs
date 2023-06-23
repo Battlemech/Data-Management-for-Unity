@@ -4,6 +4,7 @@ using System.Linq;
 using Data_Management_for_Unity.Runtime.Callbacks;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 {
@@ -13,7 +14,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// Manages the sessions private callbacks.
         /// </summary>
         private readonly CallbackHandler<Type> _sessionCallbacks = new CallbackHandler<Type>();
-
         
         private readonly MessageServer _server;
      
@@ -83,9 +83,16 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 
                 //enqueue received object to be processed by main thread
                 _server.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));
-                
+
                 //invoke the sessions private callbacks on a thread
-                _sessionCallbacks.Invoke(type, message);
+                try
+                {
+                    _sessionCallbacks.Invoke(type, value);
+                } //catch any exceptions to make sure receiving thread doesn't terminate
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
             }
         }
     }

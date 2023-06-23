@@ -1,12 +1,14 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 {
     public partial class MessageSession
     {
-        public Task<TReply> SendRequest<TRequest, TReply>(TRequest request, int timeout = Options.DefaultTimeout) where TRequest : Request where TReply : Reply
+        public Task<TReply> SendRequest<TRequest, TReply>(TRequest request, int timeout = Options.DefaultTimeout)
+            where TRequest : Request where TReply : Reply
         {
             Task<TReply> replyTask = new Task<TReply>((() =>
             {
@@ -18,6 +20,9 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
                 //save reply and continue execution once its received
                 AddCallback<TReply>((r =>
                 {
+                    //reply for another request
+                    if(r.Id != request.Id) return;
+                    
                     //save reply for waiting task
                     reply = r;
 
