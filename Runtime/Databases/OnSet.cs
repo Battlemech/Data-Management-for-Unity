@@ -13,11 +13,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
             
             //save data persistently
             if (IsPersistent) await PersistentData.Save(Id, id, value, type, modCount);
+            //synchronise data across multiple clients
+            if(IsSynchronised) OnSetSynchronised(id, value, type, modCount);
         }
 
-        private void OnSetSynchronised(string id, byte[] value, Type type, int modCount)
+        private void OnSetSynchronised(string valueId, byte[] value, Type type, int modCount)
         {
-            
+            throw new NotImplementedException();
         }
     }
 }

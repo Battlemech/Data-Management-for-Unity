@@ -1058,7 +1058,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         public bool IsSocketDisposed { get; private set; } = true;
 
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             if (IsConnecting || IsConnected) DisconnectAsync();
         }

@@ -13,10 +13,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
         private readonly Dictionary<string, ValueStorage> _values =
             new Dictionary<string, ValueStorage>();
 
-        public Database(string id, bool isPersistent=false)
+        public Database(string id, bool isPersistent=false, bool isSynchronised=false)
         {
             Id = id;
             IsPersistent = isPersistent;
+            IsSynchronised = isSynchronised;
         }
 
         public ValueStorage<T> Get<T>(string id)

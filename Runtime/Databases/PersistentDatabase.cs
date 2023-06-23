@@ -47,10 +47,16 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 //load values
                 foreach (var savedObject in savedObjects)
                 {
+                    //persistently saved data isn't newer than already known one
+                    if(!UpdateModCount(savedObject.ValueId, savedObject.ModCount)) continue;
+                    
                     //if value storage exists
                     if (_values.TryGetValue(savedObject.ValueId, out ValueStorage valueStorage))
                     {
+                        //update value
                         valueStorage.UnsafeSet(Serialization.Deserialize(savedObject.Value, savedObject.Type));
+                        
+                        //update mod count
                         continue;
                     }  
 
