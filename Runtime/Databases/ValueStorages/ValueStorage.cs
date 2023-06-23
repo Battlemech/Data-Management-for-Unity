@@ -16,7 +16,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             Database = database;
         }
 
-        public abstract void UnsafeSet(object value);
+        public abstract Task UnsafeSet(object value);
     }
     
     public partial class ValueStorage<T> : ValueStorage
@@ -77,22 +77,17 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
             
             //delegate internal logic to background to increase performance
-            return Task.Run((() => {Database.OnSet(Id, value, type); }));
+            return Database.OnSet(Id, value, type);
         }
 
-        public override void UnsafeSet(object value)
+        public override Task UnsafeSet(object value)
         {
-            switch (value)
+            return value switch
             {
-                case T data:
-                    Set(data);
-                    break;
-                case null:
-                    Set(default);
-                    break;
-                default:
-                    throw new ArgumentException($"Expected type {typeof(T)}, but got {value?.GetType()}");
-            }
+                T data => Set(data),
+                null => Set(default),
+                _ => throw new ArgumentException($"Expected type {typeof(T)}, but got {value?.GetType()}")
+            };
         }
     }
 }
