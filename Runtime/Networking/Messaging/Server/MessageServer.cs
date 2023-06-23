@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Callbacks;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
@@ -8,7 +10,7 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 {
-    public partial class MessageServer : TcpServer
+    public class MessageServer : TcpServer
     {
         private readonly CallbackHandler<Type> _callbackHandler = new CallbackHandler<Type>();
 
@@ -74,6 +76,15 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
             return _callbackHandler.RemoveCallbacks(typeof(T), name);
         }
 
+        public Task<TReply[]> SendRequests<TRequest, TReply>(TRequest request, int timeout = Options.DefaultTimeout)
+            where TRequest : Request where TReply : Reply
+        {
+            //get all sessions, casting them to MessageSession to allow accessing request function
+            return Task.WhenAll(Sessions.Values.Cast<MessageSession>()
+                //send the request from all sessions
+                .Select((session => session.SendRequest<TRequest, TReply>(request, timeout))));
+        }
+        
         protected override TcpSession CreateSession()
         {
             return new MessageSession(this);
