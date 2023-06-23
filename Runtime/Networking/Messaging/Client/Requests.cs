@@ -60,6 +60,8 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
 
                 onReply.Invoke(reply);
             }), request.Id.ToString());
+
+            throw new NotImplementedException();
         }
     }
 }

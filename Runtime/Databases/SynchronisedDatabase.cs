@@ -9,7 +9,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// Client managing the synchronisation of the client. Per default, only one client exists locally.
         /// However, multiple may be used for testing.
         /// </summary>
-        public SynchronisedClient Client { get; private set; }
+        public SynchronisedClient Client;
 
         public bool IsSynchronised
         {

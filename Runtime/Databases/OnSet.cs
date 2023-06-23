@@ -17,6 +17,9 @@ namespace Data_Management_for_Unity.Runtime.Databases
             if(IsSynchronised) OnSetSynchronised(id, value, type, modCount);
         }
 
+        /// <summary>
+        /// Called when the local client sets a value in this database.
+        /// </summary>
         private void OnSetSynchronised(string valueId, byte[] value, Type type, int modCount)
         {
             throw new NotImplementedException();
