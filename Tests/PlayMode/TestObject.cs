@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework.Internal;
 
-namespace Data_Management_for_Unity.Tests.EditMode
+namespace Data_Management_for_Unity.Tests.PlayMode
 {
     public struct TestObject
     {

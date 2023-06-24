@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Callbacks;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
 using UnityEngine;
@@ -27,6 +28,28 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         }
 
         /// <summary>
+        /// Multicasts the object to all sessions except the specified one
+        /// </summary>
+        public bool MulticastToOthers<T>(T data, MessageSession session)
+        {
+            if (IsStarted) return false;
+            
+            //serialize value which needs to be sent
+            byte[] toSend = NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data)));
+
+            //loop through all sessions
+            foreach (var messageSession in Sessions.Values.Cast<MessageSession>())
+            {
+                //skip session which needs to be excluded
+                if(messageSession == session) continue;
+                
+                messageSession.SendAsync(toSend);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Adds a callback, which is invoked whenever an object of the expected type is received
         /// </summary>
         /// <param name="callback">Action invoked when callback is triggered</param>
@@ -36,7 +59,9 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <typeparam name="TSession">Expected type of session</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T, TSession>(Action<T, TSession> callback, string name = "", bool unique = false, bool removeOnError = false) where TSession : MessageSession
+        public bool AddCallback<T, TSession>(Action<T, TSession> callback, string name = "", bool unique = false, bool removeOnError = false)
+            //Make sure overwriting sessions use SynchronisedSessions, not only MessageSessions
+            where TSession : SynchronisedSession
         {
             return _callbackHandler.AddCallback(typeof(T), callback, name, unique, removeOnError);
         }
@@ -50,10 +75,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <param name="removeOnError">True if the callbacks must be removed on error</param>
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T>(Action<T, MessageSession> callback, string name = "", bool unique = false,
-            bool removeOnError = false)
+        public bool AddCallback<T>(Action<T, SynchronisedSession> callback, string name = "", bool unique = false,
+            bool removeOnError = false) 
         {
-            return _callbackHandler.AddCallback(typeof(T), callback, name, unique, removeOnError);
+            //Make sure overwriting sessions use SynchronisedSessions, not only MessageSessions
+            return AddCallback<T, SynchronisedSession>(callback, name, unique, removeOnError);
         }
 
         /// <summary>

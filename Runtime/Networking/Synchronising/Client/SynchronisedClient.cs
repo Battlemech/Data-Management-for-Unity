@@ -57,7 +57,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
             }
         }
         
-        private Database GetDatabase(string id)
+        public Database GetDatabase(string id, bool isSynchronised=true)
         {
             lock (_databases)
             {
@@ -66,7 +66,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
                 
                 //create new database referenced by remote
                 //(it will automatically be added to local list of databases)
-                database = new Database(id, isPersistent:PersistentData.DoesDatabaseExists(id), isSynchronised:true);
+                database = new Database(id, isPersistent:PersistentData.DoesDatabaseExists(id), isSynchronised:isSynchronised);
 
                 //return new database
                 return database;

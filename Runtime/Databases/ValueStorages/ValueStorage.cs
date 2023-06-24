@@ -15,8 +15,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             Id = id;
             Database = database;
         }
+        
+        /// <summary>
+        /// Updates the local value as a result of an internal operation
+        /// (Synchronisation or Persistence). Does not invoke callbacks, synchronisation or persistence.
+        /// </summary>
+        protected internal abstract void InternalSet(object value);
 
-        public abstract Task UnsafeSet(object value);
+        protected internal abstract byte[] Serialize(out Type type);
     }
     
     public partial class ValueStorage<T> : ValueStorage
@@ -80,14 +86,35 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             return Database.OnSet(Id, value, type);
         }
 
-        public override Task UnsafeSet(object value)
+        protected internal override byte[] Serialize(out Type type)
         {
-            return value switch
+            lock (Id)
             {
-                T data => Set(data),
-                null => Set(default),
-                _ => throw new ArgumentException($"Expected type {typeof(T)}, but got {value?.GetType()}")
-            };
+                return Serialization.Serialize(_data, out type);
+            }
+        }
+        
+        protected internal override void InternalSet(object value)
+        {
+            switch (value)
+            {
+                case T data:
+                    InternalSet(data);
+                    break;
+                case null:
+                    InternalSet(default);
+                    break;
+            }
+
+            throw new ArgumentException($"Expected type {typeof(T)}, but got {value?.GetType()}");
+        }
+
+        private void InternalSet(T data)
+        {
+            lock (Id)
+            {
+                _data = data;
+            }
         }
     }
 }

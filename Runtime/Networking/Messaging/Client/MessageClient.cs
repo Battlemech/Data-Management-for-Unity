@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
 {
@@ -72,7 +73,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
             }
         }
 
-        private void Update()
+        protected virtual void Update()
         {
             //process all received objects
             while (_receivedObjects.TryDequeue(out Tuple<object, Type> tuple))

@@ -1062,6 +1062,12 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         {
             if (IsConnecting || IsConnected) DisconnectAsync();
         }
+        
+        protected virtual void Start()
+        {
+            //make sure the client isn't
+            DontDestroyOnLoad(this);
+        }
 
         // Implement IDisposable.
         public void Dispose()

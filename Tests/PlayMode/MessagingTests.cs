@@ -8,7 +8,7 @@ using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
-using Data_Management_for_Unity.Tests.EditMode;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -16,12 +16,13 @@ using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Tests.PlayMode
 {
-    public class NetworkTests
+    public class MessagingTests
     {
         private static int _port = Options.DefaultPort;
 
         private MessageClient _client;
-        private MessageServer _server;
+        //Add synchronised server instead of message server to allow adding callbacks
+        private SynchronisedServer _server;
         
         public static int GetFreePort()
         {
@@ -34,7 +35,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             //create game object which holds client and server
             GameObject gameObject = new GameObject("NetworkManager");
             _client = gameObject.AddComponent<MessageClient>();
-            _server = gameObject.AddComponent<MessageServer>();
+            _server = gameObject.AddComponent<SynchronisedServer>();
             
             Assert.IsFalse(_server.IsStarted);
             Assert.IsFalse(_client.IsConnected);
@@ -177,7 +178,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         private async Task RequestReplyAsync()
         {
             //register server request response
-            _server.AddCallback<TestRequest, MessageSession>(((request, session) =>
+            _server.AddCallback<TestRequest>(((request, session) =>
             {
                 //return reply to client
                 session.Send(new TestReply(request));
@@ -221,7 +222,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
              */
 
             //Add callback, waiting for clients message
-            _server.AddCallback<T, MessageSession>(((arg1, session) =>
+            _server.AddCallback<T>(((arg1, session) =>
             {
                 Assert.AreEqual(expected, arg1);
                 

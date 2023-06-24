@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
+using Data_Management_for_Unity.Runtime.Serializer;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
@@ -32,13 +37,25 @@ namespace Data_Management_for_Unity.Runtime.Databases
         private void OnSynchronisationEnabled()
         {
             //set a reference to synchronised client, if necessary
-            if (Client == null) Client = SynchronisedClient.Instance;
+            if (Client.Equals(null)) Client = SynchronisedClient.Instance;
             
             //add database to list of local databases
             Client.AddDatabase(this);
-            
-            //send currently known values to remote
-            throw new NotImplementedException();
+
+            //synchronise values
+            lock (_values)
+            {
+                foreach (var storage in _values.Values)
+                {
+                    //start informing peers about local values
+                    OnSetSynchronised(storage.Id, storage.Serialize(out Type type), type, GetModCount(storage.Id))
+                        //and make sure the task doesn't terminate with an exception
+                        .ContinueWith((task =>
+                        {
+                            if(task.Exception != null) Debug.LogException(task.Exception);                            
+                        }));
+                }
+            }
         }
 
         private void OnSynchronisationDisabled()
@@ -52,7 +69,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// </summary>
         protected internal void OnRemoteSet(string id, byte[] value, Type type, int modCount)
         {
-            throw new NotImplementedException();
+            //value is already known to database
+            if(!UpdateModCount(id, modCount)) return;
+
+            lock (_values)
+            {
+                if (_values.TryGetValue(id, out ValueStorage storage))
+                    storage.InternalSet(Serialization.Deserialize(value, type));
+            }
         }
 
     }

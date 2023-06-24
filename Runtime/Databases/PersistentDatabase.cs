@@ -54,7 +54,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     if (_values.TryGetValue(savedObject.ValueId, out ValueStorage valueStorage))
                     {
                         //update value
-                        valueStorage.UnsafeSet(Serialization.Deserialize(savedObject.Value, savedObject.Type));
+                        valueStorage.InternalSet(Serialization.Deserialize(savedObject.Value, savedObject.Type));
                         
                         //update mod count
                         continue;

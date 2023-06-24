@@ -15,16 +15,16 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// </summary>
         private readonly CallbackHandler<Type> _sessionCallbacks = new CallbackHandler<Type>();
         
-        private readonly MessageServer _server;
-     
+        private readonly MessageServer _messageServer;
+
         /// <summary>
         /// Tracks received bytes, making sure no partial messages are interpreted
         /// </summary>
         private readonly NetworkSerializer _networkSerializer = new();
         
-        public MessageSession(MessageServer server) : base(server)
+        public MessageSession(MessageServer messageServer) : base(messageServer)
         {
-            _server = server;
+            _messageServer = messageServer;
         }
         
         /// <summary>
@@ -82,7 +82,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
                 object value = message.Deserialize(out Type type);
 
                 //enqueue received object to be processed by main thread
-                _server.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));
+                _messageServer.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));
 
                 //invoke the sessions private callbacks on a thread
                 try
