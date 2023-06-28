@@ -148,5 +148,32 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(value, () => _database3.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(value, () => _database4.Get<string>(id).Get(), "Remote set");
         }
+        
+        [UnityTest]
+        public IEnumerator TestConcurrentSet()
+        {
+            const string id = nameof(TestConcurrentSet);
+
+            //update local value in database 0
+            _database0.Get<int>(id).Set(10);
+            _database1.Get<int>(id).Set(1);
+            _database2.Get<int>(id).Set(2);
+            _database3.Get<int>(id).Set(3);
+            _database4.Get<int>(id).Set(4);
+
+            //make sure value is synchronised in other databases
+            yield return TestUtility.AreEqual(true, () =>
+            {
+                int a = _database0.Get<int>(id).Get();
+                int b = _database1.Get<int>(id).Get();
+                int c = _database2.Get<int>(id).Get();
+                int d = _database3.Get<int>(id).Get();
+                int e = _database4.Get<int>(id).Get();
+                
+                Debug.Log($"{a}, {b}, {c}, {d}, {e}");
+                
+                return a == b && b == c && c == d && d == e;
+            }, "Values Synchronised");
+        }
     }
 }
