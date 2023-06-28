@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Databases;
@@ -7,6 +8,7 @@ using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Tests.PlayMode
 {
@@ -133,23 +135,18 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         [UnityTest]
         public IEnumerator TestSimpleSet()
         {
-            return TestSimpleSetAsync().AsIEnumerator();
-        }
-        
-        private async Task TestSimpleSetAsync()
-        {
-            const string id = nameof(TestSimpleSetAsync);
+            const string id = nameof(TestSimpleSet);
             const string value = id + "= 'Some beautiful value!'";
 
             //update local value in database 0
-            await _database0.Get<string>(id).Set(value);
-            
+            _database0.Get<string>(id).Set(value);
+
             //make sure value is synchronised in other databases
-            TestUtility.AreEqual(value, () => _database0.Get<string>(id).Get(), "Local set");
-            TestUtility.AreEqual(value, () => _database1.Get<string>(id).Get(), "Remote set");
-            TestUtility.AreEqual(value, () => _database2.Get<string>(id).Get(), "Remote set");
-            TestUtility.AreEqual(value, () => _database3.Get<string>(id).Get(), "Remote set");
-            TestUtility.AreEqual(value, () => _database4.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _database0.Get<string>(id).Get(), "Local set");
+            yield return TestUtility.AreEqual(value, () => _database1.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _database2.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _database3.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _database4.Get<string>(id).Get(), "Remote set");
         }
     }
 }
