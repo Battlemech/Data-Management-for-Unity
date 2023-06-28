@@ -139,16 +139,17 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         private async Task TestSimpleSetAsync()
         {
             const string id = nameof(TestSimpleSetAsync);
+            const string value = id + "= 'Some beautiful value!'";
 
             //update local value in database 0
-            await _database0.Get<string>(id).Set(id);
+            await _database0.Get<string>(id).Set(value);
             
             //make sure value is synchronised in other databases
-            TestUtility.AreEqual(id, () => _database0.Get<string>(id).Get(), "Local set");
-            TestUtility.AreEqual(id, () => _database1.Get<string>(id).Get(), "Remote set");
-            TestUtility.AreEqual(id, () => _database2.Get<string>(id).Get(), "Remote set");
-            TestUtility.AreEqual(id, () => _database3.Get<string>(id).Get(), "Remote set");
-            TestUtility.AreEqual(id, () => _database4.Get<string>(id).Get(), "Remote set");
+            TestUtility.AreEqual(value, () => _database0.Get<string>(id).Get(), "Local set");
+            TestUtility.AreEqual(value, () => _database1.Get<string>(id).Get(), "Remote set");
+            TestUtility.AreEqual(value, () => _database2.Get<string>(id).Get(), "Remote set");
+            TestUtility.AreEqual(value, () => _database3.Get<string>(id).Get(), "Remote set");
+            TestUtility.AreEqual(value, () => _database4.Get<string>(id).Get(), "Remote set");
         }
     }
 }
