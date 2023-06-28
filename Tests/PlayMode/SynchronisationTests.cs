@@ -154,13 +154,9 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         {
             const string id = nameof(TestConcurrentSet);
 
-            //update local value in database 0
-            _database0.Get<int>(id).Set(10);
-            _database1.Get<int>(id).Set(1);
-            _database2.Get<int>(id).Set(2);
-            _database3.Get<int>(id).Set(3);
-            _database4.Get<int>(id).Set(4);
-
+            //wait for set process to terminate
+            yield return TestConcurrentSetAsync(id).AsIEnumerator();
+            
             //make sure value is synchronised in other databases
             yield return TestUtility.AreEqual(true, () =>
             {
@@ -174,6 +170,16 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 
                 return a == b && b == c && c == d && d == e;
             }, "Values Synchronised");
+        }
+
+        private async Task TestConcurrentSetAsync(string id)
+        {
+            //update local value in database 0
+            await _database0.Get<int>(id).Set(10);
+            await _database1.Get<int>(id).Set(1);
+            await _database2.Get<int>(id).Set(2);
+            await _database3.Get<int>(id).Set(3);
+            await _database4.Get<int>(id).Set(4);
         }
     }
 }

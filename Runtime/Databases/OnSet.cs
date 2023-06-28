@@ -37,7 +37,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //request was successful. No further action needed
             if(reply.Success(modCount)) return;
             
-            //todo: Is exception triggered? If not, why not shown?
             throw new NotImplementedException();
         }
     }
