@@ -32,7 +32,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// </summary>
         public bool MulticastToOthers<T>(T data, MessageSession session)
         {
-            if (IsStarted) return false;
+            if (!IsStarted) return false;
             
             //serialize value which needs to be sent
             byte[] toSend = NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data)));
@@ -41,7 +41,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
             foreach (var messageSession in Sessions.Values.Cast<MessageSession>())
             {
                 //skip session which needs to be excluded
-                if(messageSession == session) continue;
+                if(messageSession.Id == session.Id) continue;
                 
                 messageSession.SendAsync(toSend);
             }

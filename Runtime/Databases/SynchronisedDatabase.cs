@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
+using Data_Management_for_Unity.Runtime.Persistence;
 using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEngine;
 
@@ -67,16 +68,22 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <summary>
         /// Called when a remote client sets a value of this database
         /// </summary>
-        protected internal void OnRemoteSet(string id, byte[] value, Type type, int modCount)
+        protected internal void OnRemoteSet(string id, byte[] bytes, Type type, int modCount)
         {
             //value is already known to database
             if(!UpdateModCount(id, modCount)) return;
 
+            object value = Serialization.Deserialize(bytes, type);
+
             lock (_values)
             {
+                //update value locally, if it exists
                 if (_values.TryGetValue(id, out ValueStorage storage))
-                    storage.InternalSet(Serialization.Deserialize(value, type));
+                    storage.InternalSet(value);
+                //value can be loaded later
+                else _toLoad.Add(id, new SerializedObject(Id, id, bytes, type, modCount));
             }
+            
         }
 
     }

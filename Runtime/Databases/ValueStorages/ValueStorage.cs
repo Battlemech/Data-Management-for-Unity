@@ -1,6 +1,7 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEditor.VersionControl;
+using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
 namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
@@ -100,13 +101,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             {
                 case T data:
                     InternalSet(data);
-                    break;
+                    return;
                 case null:
                     InternalSet(default);
-                    break;
+                    return;
+                default:
+                    throw new ArgumentException($"Expected type {typeof(T)}, but got {value?.GetType()}");
             }
-
-            throw new ArgumentException($"Expected type {typeof(T)}, but got {value?.GetType()}");
         }
 
         private void InternalSet(T data)

@@ -1,6 +1,7 @@
 ﻿using System;
 using DMP.Utility;
 using GroBuf;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Serializer
 {
@@ -18,8 +19,15 @@ namespace Data_Management_for_Unity.Runtime.Serializer
         /// </remarks>
         public static byte[] Serialize<T>(T o)
         {
-            //Using type parameter to avoid an additional cast and allow the serializer to properly read object type.            
-            return Serializer.Serialize(o);
+            //Using type parameter to avoid an additional cast and allow the serializer to properly read object type.    
+            try
+            {
+                return Serializer.Serialize(o);
+            }
+            catch (NotSupportedException)
+            {
+                throw new NotSupportedException($"Failed to serialize {typeof(T)}");
+            }
         }
 
         public static byte[] Serialize<T>(T o, out Type type)

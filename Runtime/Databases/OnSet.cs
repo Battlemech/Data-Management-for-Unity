@@ -31,13 +31,9 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //create request which can be sent to server
             SetValueRequest request = new SetValueRequest(Id, valueId, value, type, modCount);
 
-            Debug.Log("Client: Sending request: " + request);
-            
             //wait for reply
             SetValueReply reply = await Client.SendRequest<SetValueRequest, SetValueReply>(request);
-            
-            Debug.Log("Client: Received reply: " + reply);
-            
+
             //request was successful. No further action needed
             if(reply.Success(modCount)) return;
             

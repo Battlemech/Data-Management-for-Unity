@@ -10,20 +10,20 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
         
         public readonly ValueReference Reference;
         public readonly byte[] Value;
-        public readonly Type Type;
+        public readonly string TypeString;
         public readonly int ModCount;
 
-        public SetValueMessage(SetValueRequest request) : this(request.Reference, request.Value, request.Type, request.ModCount)
+        public SetValueMessage(SetValueRequest request)
         {
-            
+            Reference = request.Reference;
+            Value = request.Value;
+            TypeString = request.TypeString;
+            ModCount = request.ModCount;
         }
-        
-        public SetValueMessage(ValueReference reference, byte[] value, Type type, int modCount)
+
+        public Type GetSerializedType()
         {
-            Reference = reference;
-            Value = value;
-            Type = type;
-            ModCount = modCount;
+            return Type.GetType(TypeString, true);
         }
     }
 }

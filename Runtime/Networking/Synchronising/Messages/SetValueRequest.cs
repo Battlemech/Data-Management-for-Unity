@@ -8,15 +8,20 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
     {
         public readonly ValueReference Reference;
         public readonly byte[] Value;
-        public readonly Type Type;
+        public readonly string TypeString;
         public readonly int ModCount;
 
         public SetValueRequest(string databaseId, string valueId, byte[] value, Type type, int modCount)
         {
             Reference = new ValueReference(databaseId, valueId);
             Value = value;
-            Type = type;
+            TypeString = type.AssemblyQualifiedName;
             ModCount = modCount;
+        }
+
+        public Type DeserializeType()
+        {
+            return Type.GetType(TypeString, true);
         }
     }
 

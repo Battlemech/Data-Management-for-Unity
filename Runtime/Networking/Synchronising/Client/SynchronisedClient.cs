@@ -28,7 +28,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
             AddCallback<SetValueMessage>((message =>
             {
                 GetDatabase(message.DatabaseId)
-                    .OnRemoteSet(message.ValueId, message.Value, message.Type, message.ModCount);
+                    .OnRemoteSet(message.ValueId, message.Value, message.GetSerializedType(), message.ModCount);
             }));
         }
 

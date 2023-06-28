@@ -20,9 +20,11 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 //test succeeded
                 if (expected.Equals(get.Invoke()))
                 {
-                    Debug.Log(name + $" succeeded after {stopwatch.ElapsedMilliseconds}");
+                    Debug.Log(name + $" succeeded after {stopwatch.ElapsedMilliseconds} ms");
                     return;
                 }
+                
+                Debug.Log($"Expected {expected}, got {get.Invoke()}");
                 
                 //wait for states to change
                 Thread.Sleep(10);
