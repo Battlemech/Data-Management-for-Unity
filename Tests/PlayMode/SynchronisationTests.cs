@@ -1,5 +1,7 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Databases;
@@ -26,6 +28,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         private Database _database2;
         private Database _database3;
         private Database _database4;
+        private List<Database> databases;
 
         [SetUp]
         public void Setup()
@@ -93,7 +96,9 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             _database4.Client = _client4;
             _database3.IsSynchronised = true;
             _database4.IsSynchronised = true;
-
+            
+            //init databases list
+            databases = new List<Database>() { _database0, _database1, _database2, _database3, _database4 };
         }
 
         [TearDown]
@@ -174,12 +179,8 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 
         private async Task TestConcurrentSetAsync(string id)
         {
-            //update local value in database 0
-            await _database0.Get<int>(id).Set(10);
-            await _database1.Get<int>(id).Set(1);
-            await _database2.Get<int>(id).Set(2);
-            await _database3.Get<int>(id).Set(3);
-            await _database4.Get<int>(id).Set(4);
+            //start set processes concurrently
+            await Task.WhenAll(databases.Select(((database, i) => database.Get<int>(id).Set(i + 1))));
         }
     }
 }

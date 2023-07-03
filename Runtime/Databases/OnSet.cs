@@ -18,7 +18,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             int modCount = IncrementModCount(id);
             
             //synchronise data across multiple clients
-            if(IsSynchronised) await OnSetSynchronised(id, value, type, modCount);
+            if (IsSynchronised) await OnSetSynchronised(id, value, type, modCount);
             //save data persistently
             if (IsPersistent) await PersistentData.Save(Id, id, value, type, modCount);
         }
