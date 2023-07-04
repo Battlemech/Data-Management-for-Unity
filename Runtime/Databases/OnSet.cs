@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence;
@@ -35,9 +36,25 @@ namespace Data_Management_for_Unity.Runtime.Databases
             SetValueReply reply = await Client.SendRequest<SetValueRequest, SetValueReply>(request);
 
             //request was successful. No further action needed
-            if(reply.Success(modCount)) return;
+            if (reply.Success(modCount)) return;
             
-            throw new NotImplementedException();
+            //enter critical area: Make sure no confirmed data is updated while later operation is enqueued
+            lock (_confirmed)
+            {
+                //if required modCount was reached locally while waiting for reply: Process delayed set instantly
+                if (_confirmed.TryGetValue(valueId, out ConfirmedValue data) && data.ModCount == reply.Expected - 1)
+                {
+                    //inform peers of new value
+                    Client.Send(new SetValueMessage(Id, valueId, value, type, reply.Expected));
+                
+                    //process confirmed set locally
+                    OnRemoteSet(valueId, value, type, reply.Expected);
+                    return;
+                }
+                
+                //enqueue operation: It will be executed once up to date value was received
+                EnqueueDelayedSet(valueId, value, type, reply.Expected);
+            }
         }
     }
 }

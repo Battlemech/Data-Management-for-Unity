@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
 {
-    public partial class SynchronisedSession
+    public class SynchronisedSession : MessageSession
     {
+        public SynchronisedSession(MessageServer messageServer) : base(messageServer)
+        {
+            
+        }
+        
         private readonly Dictionary<ValueReference, Queue<int>> _failedSets =
             new Dictionary<ValueReference, Queue<int>>();
 
-        private void TrackFailedSet(ValueReference reference, int expected)
+        protected internal void TrackFailedSet(ValueReference reference, int expected)
         {
             lock (_failedSets)
             {
@@ -25,7 +33,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             }
         }
 
-        private bool DequeueDelayedSet(ValueReference reference, int modCount)
+        protected internal bool DequeueDelayedSet(ValueReference reference, int modCount)
         {
             lock (_failedSets)
             {

@@ -21,7 +21,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// Updates the local value as a result of an internal operation
         /// (Synchronisation or Persistence). Does not invoke callbacks, synchronisation or persistence.
         /// </summary>
-        protected internal abstract void InternalSet(object value);
+        protected internal abstract void InternalSet(byte[] bytes, Type type);
 
         protected internal abstract byte[] Serialize(out Type type);
     }
@@ -87,16 +87,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             return Database.OnSet(Id, value, type);
         }
 
-        protected internal override byte[] Serialize(out Type type)
+        protected internal override void InternalSet(byte[] bytes, Type type)
         {
-            lock (Id)
-            {
-                return Serialization.Serialize(_data, out type);
-            }
-        }
-        
-        protected internal override void InternalSet(object value)
-        {
+            object value = Serialization.Deserialize(bytes, type);
+            
             switch (value)
             {
                 case T data:
@@ -107,6 +101,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                     return;
                 default:
                     throw new ArgumentException($"Expected type {typeof(T)}, but got {value?.GetType()}");
+            }
+        }
+
+        protected internal override byte[] Serialize(out Type type)
+        {
+            lock (Id)
+            {
+                return Serialization.Serialize(_data, out type);
             }
         }
 

@@ -19,8 +19,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
         /// </summary>
         private readonly Dictionary<string, Database> _databases = new Dictionary<string, Database>();
 
-        protected override void OnConstructorCalled()
+        protected override void Start()
         {
+            base.Start();
+            
             //update default local instance, if necessary
             if (Instance == null) Instance = this;
             

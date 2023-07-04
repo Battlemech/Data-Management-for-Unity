@@ -86,13 +86,13 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
                 return true;
             }
             //callback caused exception
-            catch (Exception e)
+            catch (Exception)
             {
                 //exception wasn't expected: Throw it
                 if (!_removeOnError) throw;
                 
                 //exception was expected. Signal caller that it needs to be removed
-                Debug.Log($"Removing callback {Name} because it caused exception: {e}");
+                Debug.Log($"Removing callback {Name} because it caused exception");
                 return false;
             }
         }

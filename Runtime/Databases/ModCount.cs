@@ -1,16 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
-        private readonly Dictionary<string, int> _modCount = new Dictionary<string, int>();
+        /// <summary>
+        /// Clients local mod count, usually exceeding that of the server
+        /// </summary>
+        private readonly Dictionary<string, int> _localModCount = new Dictionary<string, int>();
+
+        /// <summary>
+        /// Tracks latest data confirmed by server
+        /// </summary>
+        private readonly Dictionary<string, ConfirmedValue> _confirmed = new Dictionary<string, ConfirmedValue>();
 
         public int GetModCount(string id)
         {
-            lock (_modCount)
+            lock (_localModCount)
             {
-                return _modCount.TryGetValue(id, out int modCount) ? modCount : 0;
+                return _localModCount.TryGetValue(id, out int modCount) ? modCount : 0;
             }
         }
 
@@ -21,30 +30,28 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <returns></returns>
         private int IncrementModCount(string id)
         {
-            lock (_modCount)
+            lock (_localModCount)
             {
-                return _modCount.TryGetValue(id, out int modCount) ? _modCount[id] = modCount + 1 : _modCount[id] = 1;
+                return _localModCount.TryGetValue(id, out int modCount) ? _localModCount[id] = modCount + 1 : _localModCount[id] = 1;
             }
         }
 
-        /// <summary>
-        /// Updates the local modCount to newly received value
-        /// </summary>
-        /// <returns>True if the new modCount was higher than the previously known one</returns>
-        private bool UpdateModCount(string id, int modCount)
+        private bool UpdateConfirmedData(string id, int modCount, byte[] value, Type type)
         {
-            lock (_modCount)
+            //update last local value confirmed by server
+            lock (_confirmed)
             {
-                //no local reference of mod count: New modCount is higher
-                if (!_modCount.TryGetValue(id, out int knownCount)) return true;
+                if (_confirmed.TryGetValue(id, out ConfirmedValue confirmed))
+                {
+                    //more up to date value is already saved locally
+                    if (confirmed.ModCount >= modCount) return false;
+                }
 
-                //local modCount is lower
-                if (modCount <= knownCount) return false;
-
-                //update local modCount, remote value is higher
-                _modCount[id] = modCount;
-                return true;
+                _confirmed[id] = new ConfirmedValue(value, type, modCount);
             }
+
+            //value was updated successfully
+            return true;
         }
     }
 }

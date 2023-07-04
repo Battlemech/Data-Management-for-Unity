@@ -69,9 +69,6 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             Address = address;
             Port = port;
             Endpoint = endpoint;
-
-            //call the onConstructorCalled Handler
-            OnConstructorCalled();
         }
 
         /// <summary>
@@ -524,14 +521,6 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
 
         #region Server handlers
 
-        /// <summary>
-        ///     Handle server constructor function being called
-        /// </summary>
-        protected virtual void OnConstructorCalled()
-        {
-            
-        }
-        
         /// <summary>
         ///     Handle server starting notification
         /// </summary>

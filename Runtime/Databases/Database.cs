@@ -43,7 +43,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     if (_toLoad.TryGetValue(id, out SerializedObject toLoad))
                     {
                         //try updating the new valueStorage to current value
-                        valueStorage.InternalSet(toLoad.DeserializeObject());
+                        valueStorage.InternalSet(toLoad.Value, toLoad.Type);
                     }
                 }
                 

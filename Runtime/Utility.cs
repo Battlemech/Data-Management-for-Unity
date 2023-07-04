@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -38,6 +39,11 @@ namespace Data_Management_for_Unity.Runtime
             }
 
             yield return task.Result;
+        }
+
+        public static string GetContent<T>(this IEnumerable<T> enumerable)
+        {
+            return enumerable.Aggregate($"[{typeof(T)}]: ", (current, t) => current + t);
         }
     }
 }

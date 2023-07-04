@@ -67,9 +67,6 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             Address = address;
             Port = port;
             Endpoint = endpoint;
-            
-            //call the onConstructorCalled Handler
-            OnConstructorCalled();
         }
 
         /// <summary>
@@ -964,14 +961,6 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         #region Session handlers
 
         /// <summary>
-        ///     Handle client being created
-        /// </summary>
-        protected virtual void OnConstructorCalled()
-        {
-            
-        }
-        
-        /// <summary>
         ///     Handle client connecting notification
         /// </summary>
         protected virtual void OnConnecting()
@@ -1106,5 +1095,10 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            return $"Client({Id})";
+        }
     }
 }

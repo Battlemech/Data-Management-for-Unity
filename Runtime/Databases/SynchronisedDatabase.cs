@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence;
 using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEngine;
@@ -71,19 +72,28 @@ namespace Data_Management_for_Unity.Runtime.Databases
         protected internal void OnRemoteSet(string id, byte[] bytes, Type type, int modCount)
         {
             //value is already known to database
-            if(!UpdateModCount(id, modCount)) return;
-
-            object value = Serialization.Deserialize(bytes, type);
+            if(!UpdateConfirmedData(id, modCount, bytes, type)) return;
 
             lock (_values)
             {
                 //update value locally, if it exists
                 if (_values.TryGetValue(id, out ValueStorage storage))
-                    storage.InternalSet(value);
+                    storage.InternalSet(bytes, type);
                 //value can be loaded later
                 else _toLoad.Add(id, new SerializedObject(Id, id, bytes, type, modCount));
             }
+
+            //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
+            _callbackHandler.Invoke(id, Serialization.Deserialize(bytes, type));
             
+            //no delayed requests exist which need to be processed
+            if(!TryDequeueDelayedSet(id, modCount + 1, out ConfirmedValue delayed)) return;
+            
+            //notify peers of new value
+            Client.Send(new SetValueMessage(Id, id, delayed));
+            
+            //process delayed set locally
+            OnRemoteSet(id, delayed.Value, delayed.Type, delayed.ModCount);
         }
 
     }
