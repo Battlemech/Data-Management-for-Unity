@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
 using NUnit.Framework;
@@ -163,18 +164,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestConcurrentSetAsync(id).AsIEnumerator();
             
             //make sure value is synchronised in other databases
-            yield return TestUtility.AreEqual(true, () =>
-            {
-                int a = _database0.Get<int>(id).Get();
-                int b = _database1.Get<int>(id).Get();
-                int c = _database2.Get<int>(id).Get();
-                int d = _database3.Get<int>(id).Get();
-                int e = _database4.Get<int>(id).Get();
-                
-                Debug.Log($"{a}, {b}, {c}, {d}, {e}");
-                
-                return a == b && b == c && c == d && d == e;
-            }, "Values Synchronised");
+            yield return ValuesEqual<int>(id);
         }
 
         private Task TestConcurrentSetAsync(string id)
@@ -213,6 +203,49 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 //double data
                 return data * 2;
             })))));
+        }
+
+        [UnityTest]
+        public IEnumerator TestConcurrentAdd()
+        {
+            const string id = nameof(TestConcurrentAdd);
+            const int addCount = 3; //todo: implement for addCount = 1000
+
+            //start add process concurrently
+            yield return TestConcurrentAddAsync(id, addCount).AsIEnumerator();
+
+            //make sure values equal
+            yield return ValuesEqual<List<int>>(id);
+        }
+
+        private Task TestConcurrentAddAsync(string id, int addCount)
+        {
+            //start add processes concurrently
+            return Task.WhenAll(databases.Select(((database, i) =>
+            {
+                Task[] tasks = new Task[addCount];
+                
+                //start adding elements to list
+                for (int j = 0; j < addCount; j++)
+                {
+                    tasks[j] = database.Get<List<int>>(id).Add(i + j);
+                }
+
+                return Task.WhenAll(tasks);
+            })));
+        }
+
+        private IEnumerator ValuesEqual<T>(string id, int timeout = Options.DefaultTimeout)
+        {
+            //make sure value is synchronised in other databases
+            yield return TestUtility.AreEqual(true, () =>
+            {
+                List<T> items = databases.Select((database => database.Get<T>(id).Get())).ToList();
+                
+                Debug.Log(items.GetContent());
+
+                return items.ItemsAreEqual();
+            }, "Values Synchronised", timeout);
         }
     }
 }

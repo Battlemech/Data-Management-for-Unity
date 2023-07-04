@@ -45,9 +45,10 @@ namespace Data_Management_for_Unity.Runtime
             yield return task.Result;
         }
 
-        public static string GetContent<T>(this IEnumerable<T> enumerable)
+        public static string GetContent(this IEnumerable enumerable)
         {
-            return enumerable.Aggregate($"[{typeof(T)}]: ", (current, t) => current + t);
+            return enumerable.Cast<object>().Aggregate("[",
+                (current, value) => current + (value is IEnumerable e ? e.GetContent() : value) + ' ') + ']';
         }
         
         public static byte[] InvokeSafe<T>(this ModifyDelegate<T> modify, byte[] value, Type type, out Type resultType)

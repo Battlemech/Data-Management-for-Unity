@@ -19,7 +19,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             while (stopwatch.ElapsedMilliseconds <= timeout)
             {
                 //test succeeded
-                if (expected.Equals(get.Invoke()))
+                if (ObjectComparer.ObjectsAreEqual(expected, get.Invoke()))
                 {
                     Debug.Log(name + $" succeeded after {stopwatch.ElapsedMilliseconds} ms");
                     yield break;
