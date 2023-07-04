@@ -205,7 +205,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             
             return Task.WhenAll(databases.Select((database => database.Get<int>(id).Modify((data =>
             {
-                Debug.Log($"Invoking modification for the {invokeCount++} time!");
+                Debug.Log($"Previous modify operation invocations: {invokeCount++}");
                 
                 //init value to 100
                 if (data == default) return 100;
