@@ -6,7 +6,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Data_Management_for_Unity.Runtime.Databases.Structs;
+using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
+using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Runtime
 {
@@ -44,6 +48,18 @@ namespace Data_Management_for_Unity.Runtime
         public static string GetContent<T>(this IEnumerable<T> enumerable)
         {
             return enumerable.Aggregate($"[{typeof(T)}]: ", (current, t) => current + t);
+        }
+        
+        public static byte[] InvokeSafe<T>(this ModifyDelegate<T> modify, byte[] value, Type type, out Type resultType)
+        {
+            object current = Serialization.Deserialize(value, type);
+            
+            if (current is T data)
+            {
+                return Serialization.Serialize(modify.Invoke(data), out resultType); 
+            }
+
+            throw new ArgumentException($"Expected {typeof(T)}, but got {current?.GetType()}");
         }
     }
 }

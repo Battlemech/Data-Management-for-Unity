@@ -1,5 +1,6 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Databases.Structs;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
 {
@@ -33,12 +34,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
             Value = request.Value;
             TypeString = request.TypeString;
             ModCount = request.ModCount;
-        }
-
-        public SetValueMessage(string databaseId, string valueId, ConfirmedValue value) 
-            : this(databaseId, valueId, value.Value, value.Type, value.ModCount)
-        {
-            
         }
 
         public Type GetSerializedType()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Data_Management_for_Unity.Runtime.Databases.Structs;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
@@ -13,7 +14,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <summary>
         /// Tracks latest data confirmed by server
         /// </summary>
-        private readonly Dictionary<string, ConfirmedValue> _confirmed = new Dictionary<string, ConfirmedValue>();
+        private readonly Dictionary<string, ValueRecord> _confirmed = new Dictionary<string, ValueRecord>();
 
         public int GetModCount(string id)
         {
@@ -41,13 +42,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //update last local value confirmed by server
             lock (_confirmed)
             {
-                if (_confirmed.TryGetValue(id, out ConfirmedValue confirmed))
+                if (_confirmed.TryGetValue(id, out ValueRecord confirmed))
                 {
                     //more up to date value is already saved locally
                     if (confirmed.ModCount >= modCount) return false;
                 }
 
-                _confirmed[id] = new ConfirmedValue(value, type, modCount);
+                _confirmed[id] = new ValueRecord(value, type, modCount);
             }
 
             //value was updated successfully

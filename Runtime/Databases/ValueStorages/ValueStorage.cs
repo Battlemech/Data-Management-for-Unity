@@ -1,4 +1,5 @@
 ﻿using System;
+using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEditor.VersionControl;
 using UnityEngine;
@@ -69,7 +70,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             return Database.OnSet(Id, value, type);
         }
         
-        public Task BlockingSet(ModifyDelegate<T> modifyDelegate)
+        public Task Modify(ModifyDelegate<T> modifyDelegate)
         {
             byte[] value;
             Type type;
@@ -84,7 +85,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
             
             //delegate internal logic to background to increase performance
-            return Database.OnSet(Id, value, type);
+            return Database.OnModify(Id, value, type, modifyDelegate);
         }
 
         protected internal override void InternalSet(byte[] bytes, Type type)

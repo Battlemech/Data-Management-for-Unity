@@ -177,10 +177,42 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             }, "Values Synchronised");
         }
 
-        private async Task TestConcurrentSetAsync(string id)
+        private Task TestConcurrentSetAsync(string id)
         {
             //start set processes concurrently
-            await Task.WhenAll(databases.Select(((database, i) => database.Get<int>(id).Set(i + 1))));
+            return Task.WhenAll(databases.Select(((database, i) => database.Get<int>(id).Set(i + 1))));
+        }
+
+        [UnityTest]
+        public IEnumerator TestConcurrentModify()
+        {
+            const string id = nameof(TestConcurrentModify);
+
+            //start chain of modifications, depending on order of results
+            yield return TestConcurrentModifyAsync(id).AsIEnumerator();
+            
+            //make sure all values were synchronised
+            yield return TestUtility.AreEqual(1600, () => _database0.Get<int>(id).Get());
+            yield return TestUtility.AreEqual(1600, () => _database1.Get<int>(id).Get());
+            yield return TestUtility.AreEqual(1600, () => _database2.Get<int>(id).Get());
+            yield return TestUtility.AreEqual(1600, () => _database3.Get<int>(id).Get());
+            yield return TestUtility.AreEqual(1600, () => _database4.Get<int>(id).Get());
+        }
+
+        private Task TestConcurrentModifyAsync(string id)
+        {
+            int invokeCount = 0;
+            
+            return Task.WhenAll(databases.Select((database => database.Get<int>(id).Modify((data =>
+            {
+                Debug.Log($"Invoking modification for the {invokeCount++} time!");
+                
+                //init value to 100
+                if (data == default) return 100;
+
+                //double data
+                return data * 2;
+            })))));
         }
     }
 }
