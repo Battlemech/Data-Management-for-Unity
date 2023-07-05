@@ -12,54 +12,58 @@ namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
-        protected internal async Task OnSet(string id, byte[] value, Type type)
+        protected internal Task OnSet(string valueId, byte[] value, Type type)
         {
             //value changed -> Increment modification count
-            int modCount = IncrementModCount(id);
-            
-            //invoke local callbacks
-            _callbackHandler.Invoke(id, Serialization.Deserialize(value, type));
+            int modCount = IncrementModCount(valueId);
 
-            //synchronise data across multiple clients
-            if (IsSynchronised) await OnSetSynchronised(id, value, type, modCount);
-            //save data persistently
-            if (IsPersistent) await PersistentData.Save(Id, id, value, type, modCount);
+            return OnOperation(valueId, value, type,new SynchronisedSet(value, type, modCount));
         }
 
-        /// <summary>
-        /// Called when the local client sets a value in this database.
-        /// </summary>
-        private async Task OnSetSynchronised(string valueId, byte[] value, Type type, int modCount)
+        protected internal Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify)
         {
-            //create request which can be sent to server
-            SetValueRequest request = new SetValueRequest(Id, valueId, value, type, modCount);
+            //value changed -> Increment modification count
+            int modCount = IncrementModCount(valueId);
 
-            //wait for reply
-            SetValueReply reply = await Client.SendRequest<SetValueRequest, SetValueReply>(request);
+            return OnOperation(valueId, value, type, new SynchronisedModify<T>(modify, modCount));
+        }
+        
+        private async Task OnOperation(string valueId, byte[] value, Type type, SynchronisedOperation op)
+        {
+            //invoke local callbacks
+            _callbackHandler.Invoke(valueId, Serialization.Deserialize(value, type));
 
-            //request was successful. No further action needed
-            if (reply.Success(modCount)) return;
+            //synchronise data across multiple clients
+            if (IsSynchronised) await ExecuteOperation(valueId, value, type, op);
+            //persistent data is updated after values were confirmed by remote. If not synchronised: Update instantly
+            else if (IsPersistent) await PersistentData.Save(Id, valueId, value, type, op.ModCount);
+        }
+
+        private async Task ExecuteOperation(string valueId, byte[] value, Type type, SynchronisedOperation operation)
+        {
+            AccessValueReply reply = await operation.Invoke(Client, Id, valueId, value, type);
             
+            //operation was successful. New data was confirmed by remote
+            if (reply.Success(operation.ModCount))
+            {
+                //update local data confirmed by remote
+                UpdateConfirmedData(valueId, operation.ModCount, value, type);
+                
+                //save data persistently, if necessary
+                if (IsPersistent) await PersistentData.Save(Id, valueId, value, type, operation.ModCount);
+                return;
+            }
+
             //enter critical area: Make sure no confirmed data is updated while later operation is enqueued
             lock (_confirmed)
             {
-                DelayedSet delayedSet = new DelayedSet(value, type, reply.Expected);
-                
-                //if required modCount was reached locally while waiting for reply: Process delayed set instantly
+                //if required modCount was reached locally while waiting for reply: Process delayed operation instantly
                 if (_confirmed.TryGetValue(valueId, out ValueRecord data) && data.ModCount == reply.Expected - 1)
-                    ExecuteDelayedOperation(valueId, value, type, delayedSet);
+                    ExecuteDelayedOperation(valueId, value, type, operation);
                 else
                     //enqueue operation: It will be executed once up-to-date value was received
-                    EnqueueDelayedOperation(valueId, delayedSet);
+                    EnqueueDelayedOperation(valueId, operation);
             }
-            
-            //todo: encode following pattern:
-            /*
-             * Operation: First attempt, waits for request?
-             * Operation: Deal with failure:
-             *      - Execute instantly
-             *      - Continue waiting
-             */
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
     public partial class Database
     {
         /// <summary>
-        /// Client managing the synchronisation of the client. Per default, only one client exists locally.
+        /// Client managing the synchronisation of the database. Per default, only one client exists locally.
         /// However, multiple may be used for testing.
         /// </summary>
         public SynchronisedClient Client;
@@ -51,13 +51,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             {
                 foreach (var storage in _values.Values)
                 {
-                    //start informing peers about local values
-                    OnSetSynchronised(storage.Id, storage.Serialize(out Type type), type, GetModCount(storage.Id))
-                        //and make sure the task doesn't terminate with an exception
-                        .ContinueWith((task =>
-                        {
-                            if(task.Exception != null) Debug.LogException(task.Exception);                            
-                        }));
+                    throw new NotImplementedException();
                 }
             }
         }
@@ -90,14 +84,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
             _callbackHandler.Invoke(id, Serialization.Deserialize(bytes, type));
 
             //execute any delayed operations, if they exist
-            if (TryDequeueDelayedOperation(id, modCount + 1, out DelayedOperation operation))
+            if (TryDequeueDelayedOperation(id, modCount + 1, out SynchronisedOperation operation))
                 ExecuteDelayedOperation(id, bytes, type, operation);
         }
 
-        private void ExecuteDelayedOperation(string valueId, byte[] value, Type type, DelayedOperation operation)
+        private void ExecuteDelayedOperation(string valueId, byte[] value, Type type, SynchronisedOperation operation)
         {
             //repeat operation with up to date data
-            object toProcess = operation.Invoke(Id, valueId, value, type);
+            object toProcess = operation.Repeat(Id, valueId, value, type);
 
             //notify peers of new value
             Client.Send(toProcess);

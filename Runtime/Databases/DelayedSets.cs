@@ -7,17 +7,17 @@ namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
-        private readonly Dictionary<string, Queue<DelayedOperation>> _delayedOperations =
-            new Dictionary<string, Queue<DelayedOperation>>();
+        private readonly Dictionary<string, Queue<SynchronisedOperation>> _delayedOperations =
+            new Dictionary<string, Queue<SynchronisedOperation>>();
 
-        private void EnqueueDelayedOperation(string id, DelayedOperation operation)
+        private void EnqueueDelayedOperation(string id, SynchronisedOperation operation)
         {
             lock (_delayedOperations)
             {
                 //create queue if necessary
-                if (!_delayedOperations.TryGetValue(id, out Queue<DelayedOperation> delayed))
+                if (!_delayedOperations.TryGetValue(id, out Queue<SynchronisedOperation> delayed))
                 {
-                    delayed = new Queue<DelayedOperation>();
+                    delayed = new Queue<SynchronisedOperation>();
                     _delayedOperations.Add(id, delayed);
                 }
                 
@@ -29,7 +29,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <summary>
         /// Tries to find delayed set requests with required modCount
         /// </summary>
-        private bool TryDequeueDelayedOperation(string id, int modCount, out DelayedOperation operation)
+        private bool TryDequeueDelayedOperation(string id, int modCount, out SynchronisedOperation operation)
         {
             //init default value
             operation = default;
@@ -37,7 +37,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             lock (_delayedOperations)
             {
                 //no delayed sets for id exist
-                if (!_delayedOperations.TryGetValue(id, out Queue<DelayedOperation> delayedSets))
+                if (!_delayedOperations.TryGetValue(id, out Queue<SynchronisedOperation> delayedSets))
                     return false;
 
                 //no delayed sets for id exist

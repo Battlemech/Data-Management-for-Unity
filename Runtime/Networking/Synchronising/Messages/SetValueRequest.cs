@@ -25,23 +25,21 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
         }
     }
 
-    public class SetValueReply : Reply
+    public class AccessValueReply : Reply
     {
         /// <summary>
         /// Modification count expected by server
         /// </summary>
         public readonly int Expected;
         
-        public SetValueReply(SetValueRequest request, int expected) : base(request)
+        public AccessValueReply(SetValueRequest request, int expected) : base(request)
         {
             Expected = expected;
         }
 
         /// <summary>
-        /// Request was successful if local mod count matched servers remote mod count
+        /// Given the local modification count, returns true if the request was successful, otherwise false
         /// </summary>
-        /// <param name="local"></param>
-        /// <returns></returns>
-        public bool Success(int local) => local == Expected;
+        public bool Success(int modCount) => modCount == Expected;
     }
 }
