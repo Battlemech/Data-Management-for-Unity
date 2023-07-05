@@ -89,11 +89,15 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
             _callbackHandler.Invoke(id, Serialization.Deserialize(bytes, type));
 
-            //no delayed requests exist which need to be processed
-            if (!TryDequeueDelayedOperation(id, modCount + 1, out DelayedOperation operation)) return;
+            //execute any delayed operations, if they exist
+            if (TryDequeueDelayedOperation(id, modCount + 1, out DelayedOperation operation))
+                ExecuteDelayedOperation(id, bytes, type, operation);
+        }
 
+        private void ExecuteDelayedOperation(string valueId, byte[] value, Type type, DelayedOperation operation)
+        {
             //repeat operation with up to date data
-            object toProcess = operation.Invoke(Id, id, bytes, type);
+            object toProcess = operation.Invoke(Id, valueId, value, type);
 
             //notify peers of new value
             Client.Send(toProcess);

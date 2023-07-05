@@ -35,9 +35,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
             _type = type;
         }
         
-        // Overwrites current value with the one which was attempted to be set earlier
         public override object Invoke(string databaseId, string valueId, byte[] value, Type type)
         {
+            // Overwrites current value with the one which was attempted to be set earlier
             return new SetValueMessage(databaseId, valueId, _value, _type, ModCount);
         }
     }
@@ -53,7 +53,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
         
         public override object Invoke(string databaseId, string valueId, byte[] value, Type type)
         {
-            //repeat operation, overwriting old value and type
+            //repeat operation with up-to-date value, overwriting old value and type
             value = _modify.InvokeSafe(value, type, out type);
 
             return new SetValueMessage(databaseId, valueId, value, type, ModCount);

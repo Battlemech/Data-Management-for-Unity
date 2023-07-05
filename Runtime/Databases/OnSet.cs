@@ -43,19 +43,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //enter critical area: Make sure no confirmed data is updated while later operation is enqueued
             lock (_confirmed)
             {
+                DelayedSet delayedSet = new DelayedSet(value, type, reply.Expected);
+                
                 //if required modCount was reached locally while waiting for reply: Process delayed set instantly
                 if (_confirmed.TryGetValue(valueId, out ValueRecord data) && data.ModCount == reply.Expected - 1)
-                {
-                    //inform peers of new value
-                    Client.Send(new SetValueMessage(Id, valueId, value, type, reply.Expected));
-                
-                    //process confirmed set locally
-                    OnRemoteSet(valueId, value, type, reply.Expected);
-                    return;
-                }
-                
-                //enqueue operation: It will be executed once up-to-date value was received
-                EnqueueDelayedOperation(valueId, new DelayedSet(value, type, reply.Expected));
+                    ExecuteDelayedOperation(valueId, value, type, delayedSet);
+                else
+                    //enqueue operation: It will be executed once up-to-date value was received
+                    EnqueueDelayedOperation(valueId, delayedSet);
             }
         }
     }
