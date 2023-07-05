@@ -52,6 +52,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     //enqueue operation: It will be executed once up-to-date value was received
                     EnqueueDelayedOperation(valueId, delayedSet);
             }
+            
+            //todo: encode following pattern:
+            /*
+             * Operation: First attempt, waits for request?
+             * Operation: Deal with failure:
+             *      - Execute instantly
+             *      - Continue waiting
+             */
         }
     }
 }
