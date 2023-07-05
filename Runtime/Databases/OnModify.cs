@@ -55,7 +55,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     return;
                 }
                 
-                //enqueue operation: It will be executed once up to date value was received
+                //enqueue operation: It will be executed once up-to-date value was received
                 EnqueueDelayedOperation(valueId, new DelayedModify<T>(modify, reply.Expected));
             }
         }
