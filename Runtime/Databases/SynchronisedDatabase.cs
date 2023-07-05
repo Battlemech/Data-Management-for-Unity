@@ -73,36 +73,33 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// </summary>
         protected internal void OnRemoteSet(string id, byte[] bytes, Type type, int modCount)
         {
-            while (true)
+            //value is already known to database
+            if (!UpdateConfirmedData(id, modCount, bytes, type)) return;
+
+            lock (_values)
             {
-                //value is already known to database
-                if (!UpdateConfirmedData(id, modCount, bytes, type)) return;
-
-                lock (_values)
-                {
-                    //update value locally, if it exists
-                    if (_values.TryGetValue(id, out ValueStorage storage))
-                        storage.InternalSet(bytes, type);
-                    //value can be loaded later
-                    else
-                        _toLoad.Add(id, new SerializedObject(Id, id, bytes, type, modCount));
-                }
-
-                //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
-                _callbackHandler.Invoke(id, Serialization.Deserialize(bytes, type));
-
-                //no delayed requests exist which need to be processed
-                if (!TryDequeueDelayedOperation(id, modCount + 1, out DelayedOperation operation)) return;
-
-                //repeat operation with up to date data
-                bytes = operation.Invoke(bytes, type, out type);
-
-                //notify peers of new value
-                Client.Send(new SetValueMessage(Id, id, bytes, type, operation.ModCount));
-
-                //process delayed set locally
-                modCount = operation.ModCount;
+                //update value locally, if it exists
+                if (_values.TryGetValue(id, out ValueStorage storage))
+                    storage.InternalSet(bytes, type);
+                //value can be loaded later
+                else
+                    _toLoad.Add(id, new SerializedObject(Id, id, bytes, type, modCount));
             }
+
+            //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
+            _callbackHandler.Invoke(id, Serialization.Deserialize(bytes, type));
+
+            //no delayed requests exist which need to be processed
+            if (!TryDequeueDelayedOperation(id, modCount + 1, out DelayedOperation operation)) return;
+
+            //repeat operation with up to date data
+            object toProcess = operation.Invoke(Id, id, bytes, type);
+
+            //notify peers of new value
+            Client.Send(toProcess);
+            
+            //process new value locally
+            Client.InvokeCallbacks(toProcess);
         }
     }
 }

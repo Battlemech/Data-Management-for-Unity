@@ -23,8 +23,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging
         public static Message Create<T>(T data)
         {
             if (data == null) throw new ArgumentNullException();
+
+            Type type = data.GetType();
             
-            return new Message(data.GetType().AssemblyQualifiedName, Serialization.Serialize(data));
+            return new Message(type.AssemblyQualifiedName, Serialization.Serialize(type, data));
         }
     }
 }

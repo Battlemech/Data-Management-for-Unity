@@ -1,5 +1,6 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 
 namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
 {
@@ -12,7 +13,15 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
             ModCount = modCount;
         }
 
-        public abstract byte[] Invoke(byte[] value, Type type, out Type resultType);
+        /// <summary>
+        /// Repeats the delayed operation
+        /// </summary>
+        /// <param name="databaseId">Id of database which is processing delayed operation</param>
+        /// <param name="valueId">Id of value on database for which delayed operation is being processed</param>
+        /// <param name="value">Current value of current value</param>
+        /// <param name="type">Current type of current value</param>
+        /// <returns>Object which needs to be processed locally and on remote. Example: SetValueMessage</returns>
+        public abstract object Invoke(string databaseId, string valueId, byte[] value, Type type);
     }
     
     public class DelayedSet : DelayedOperation
@@ -27,10 +36,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
         }
         
         // Overwrites current value with the one which was attempted to be set earlier
-        public override byte[] Invoke(byte[] value, Type type, out Type resultType)
+        public override object Invoke(string databaseId, string valueId, byte[] value, Type type)
         {
-            resultType = _type;
-            return _value;
+            return new SetValueMessage(databaseId, valueId, _value, _type, ModCount);
         }
     }
     
@@ -42,10 +50,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
         {
             _modify = modify;
         }
-
-        public override byte[] Invoke(byte[] value, Type type, out Type resultType)
+        
+        public override object Invoke(string databaseId, string valueId, byte[] value, Type type)
         {
-            return _modify.InvokeSafe(value, type, out resultType);
+            //repeat operation, overwriting old value and type
+            value = _modify.InvokeSafe(value, type, out type);
+
+            return new SetValueMessage(databaseId, valueId, value, type, ModCount);
         }
     }
 }

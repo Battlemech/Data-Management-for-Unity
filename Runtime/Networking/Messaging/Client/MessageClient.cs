@@ -82,5 +82,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                 _callbackHandler.Invoke(tuple.Item2, tuple.Item1);
             }
         }
+        
+        protected internal void InvokeCallbacks(object toProcess)
+        {
+            _receivedObjects.Enqueue(new Tuple<object, Type>(toProcess, toProcess.GetType()));
+        }
     }
 }
