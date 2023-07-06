@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 
@@ -26,7 +25,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             return await client.SendRequest<SetValueRequest, AccessValueReply>(request);
         }
 
-        public override object Repeat(string databaseId, string valueId, byte[] value, Type type)
+        public override object Repeat(string databaseId, string valueId, byte[] currentValue, Type currentType)
         {
             // Overwrites current value with the one which was attempted to be set earlier
             return new SetValueMessage(databaseId, valueId, _value, _type, ModCount);

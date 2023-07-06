@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.Structs;
-using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 
-namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
+namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
+    //todo: make class static??
     public abstract class SynchronisedOperation
     {
         public int ModCount;
@@ -32,9 +31,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
         /// </summary>
         /// <param name="databaseId">Id of database which is processing delayed operation</param>
         /// <param name="valueId">Id of value on database for which delayed operation is being processed</param>
-        /// <param name="value">Current value of current value</param>
-        /// <param name="type">Current type of current value</param>
+        /// <param name="currentValue">Current value of current value</param>
+        /// <param name="currentType">Current type of current value</param>
         /// <returns>Object which needs to be processed locally and on remote. Example: SetValueMessage</returns>
-        public abstract object Repeat(string databaseId, string valueId, byte[] value, Type type);
+        public abstract object Repeat(string databaseId, string valueId, byte[] currentValue, Type currentType);
     }
 }

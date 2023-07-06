@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
@@ -25,12 +24,12 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             return await client.SendRequest<SetValueRequest, AccessValueReply>(request);
         }
 
-        public override object Repeat(string databaseId, string valueId, byte[] value, Type type)
+        public override object Repeat(string databaseId, string valueId, byte[] currentValue, Type currentType)
         {
             //repeat operation with up-to-date value, overwriting old value and type
-            value = _modify.InvokeSafe(value, type, out type);
+            currentValue = _modify.InvokeSafe(currentValue, currentType, out currentType);
 
-            return new SetValueMessage(databaseId, valueId, value, type, ModCount);
+            return new SetValueMessage(databaseId, valueId, currentValue, currentType, ModCount);
         }
     }
 }

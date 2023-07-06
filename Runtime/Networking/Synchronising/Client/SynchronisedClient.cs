@@ -4,6 +4,7 @@ using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
 {
@@ -32,6 +33,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
             {
                 GetDatabase(message.DatabaseId)
                     .OnRemoteSet(message.ValueId, message.Value, message.GetSerializedType(), message.ModCount);
+            }));
+
+            AddCallback<AddValueMessage>((message =>
+            {
+                Debug.Log("Received add value message");
             }));
         }
 

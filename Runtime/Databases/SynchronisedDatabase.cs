@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
+using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
@@ -79,13 +80,39 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 else
                     _toLoad.Add(id, new SerializedObject(Id, id, bytes, type, modCount));
             }
-
+            
             //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
             _callbackHandler.Invoke(id, Serialization.Deserialize(bytes, type));
 
             //execute any delayed operations, if they exist
             if (TryDequeueDelayedOperation(id, modCount + 1, out SynchronisedOperation operation))
                 ExecuteDelayedOperation(id, bytes, type, operation);
+        }
+
+        protected internal void OnRemoteAdd(string id, byte[] bytes, Type type, int modCount)
+        {
+            lock (_confirmed)
+            {
+                if (_confirmed.TryGetValue(id, out ValueRecord data))
+                {
+                    //more up to date value is already saved locally
+                    if(data.ModCount >= modCount) return;
+
+                    
+                }
+            }
+
+            //todo: instead of saving ValueRecord in _confirmed or SerializedObjects in _toLoad:
+            /*
+             * Abstact classes for serialized objects:
+             *  - one for values
+             *  - one for collections
+             *      - values can be added
+             *      - values to be removed: Saved, operations repeated on load
+             *      ("history") is deleted once set is received
+             */
+            
+            throw new NotImplementedException();
         }
 
         private void ExecuteDelayedOperation(string valueId, byte[] value, Type type, SynchronisedOperation operation)

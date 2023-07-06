@@ -27,9 +27,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         protected internal abstract byte[] Serialize(out Type type);
     }
     
-    public partial class ValueStorage<T> : ValueStorage
+    public class ValueStorage<T> : ValueStorage
     {
-        protected T Data;
+        protected internal T Data;
         
         public ValueStorage(string id, Database database) : base(id, database)
         {

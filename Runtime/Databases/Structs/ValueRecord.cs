@@ -1,4 +1,5 @@
 ﻿using System;
+using Data_Management_for_Unity.Runtime.Serializer;
 
 namespace Data_Management_for_Unity.Runtime.Databases.Structs
 {
@@ -14,5 +15,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.Structs
             Type = type;
             ModCount = modCount;
         }
+
+        public object Deserialize() => Serialization.Deserialize(Value, Type);
     }
 }

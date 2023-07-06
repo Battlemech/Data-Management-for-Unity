@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
 {
-    public partial class SynchronisedServer : MessageServer
+    public class SynchronisedServer : MessageServer
     {
         /// <summary>
         /// Tracks the modCount of all values of all databases
@@ -18,6 +18,9 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
         {
             //process incoming sets and modifies
             RegisterMessage<SetValueRequest, SetValueMessage>();
+            
+            //process incoming collection adds
+            RegisterMessage<AddValueRequest, AddValueMessage>();
         }
 
         protected override TcpSession CreateSession()
@@ -72,14 +75,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             lock (_modCount)
             {
                 return _modCount.TryGetValue(id, out int modCount) ? _modCount[id] = modCount + 1 : _modCount[id] = 1;
-            }
-        }
-
-        private int GetModCount(ValueReference id)
-        {
-            lock (_modCount)
-            {
-                return _modCount.TryGetValue(id, out int modCount) ? modCount : 0;
             }
         }
     }

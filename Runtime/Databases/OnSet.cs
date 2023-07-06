@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
@@ -13,6 +12,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
+        /// <summary>
+        /// Invoked when a value is overwritten
+        /// </summary>
+        /// <param name="valueId">Id of value storage</param>
+        /// <param name="value">Serialized value</param>
+        /// <param name="type">Type of value</param>
+        /// <returns></returns>
         protected internal Task OnSet(string valueId, byte[] value, Type type)
         {
             //value changed -> Increment modification count
@@ -21,6 +27,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
             return OnOperation(valueId, value, type,new SynchronisedSet(value, type, modCount));
         }
 
+        /// <summary>
+        /// Invoked when a value is modified
+        /// </summary>
+        /// <param name="valueId">Id of value storage</param>
+        /// <param name="value">Serialized value</param>
+        /// <param name="type">Type of value</param>
+        /// <param name="modify">Delegate used to modify value</param>
+        /// <returns></returns>
         protected internal Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify)
         {
             //value changed -> Increment modification count
@@ -29,12 +43,21 @@ namespace Data_Management_for_Unity.Runtime.Databases
             return OnOperation(valueId, value, type, new SynchronisedModify<T>(modify, modCount));
         }
 
-        protected internal Task OnAdd(string valueId, byte[] value, Type type)
+        /// <summary>
+        /// Invoked when a value is added to a collection
+        /// </summary>
+        /// <param name="valueId">Id of value storage</param>
+        /// <param name="collectionValue">Serialized collection</param>
+        /// <param name="collectionType">Type of collection</param>
+        /// <param name="addedValue">Serialized added value</param>
+        /// <param name="addedType">Type of added value</param>
+        /// <returns></returns>
+        protected internal Task OnAdd(string valueId, byte[] collectionValue, Type collectionType, byte[] addedValue, Type addedType)
         {
             //value changed -> Increment modification count
             int modCount = IncrementModCount(valueId);
 
-            return OnOperation(valueId, value, type, null);
+            return OnOperation(valueId, collectionValue, collectionType, new SynchronisedAdd(addedValue, addedType, modCount));
         }
         
         private async Task OnOperation(string valueId, byte[] value, Type type, SynchronisedOperation op)
