@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
@@ -47,7 +48,9 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
         {
             lock (_databases)
             {
-                _databases.Add(database.Id, database);
+                if(_databases.TryAdd(database.Id, database)) return;
+
+                throw new InvalidOperationException($"Another synchronised database with id={database.Id} already exists! Use SynchronisedClient.GetDatabase() to make retrieve existing databases!");
             }
         }
 

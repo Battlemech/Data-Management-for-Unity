@@ -54,11 +54,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 return;
             }
 
+            //update modCount of operation from locally expected to remotely required
+            operation.ModCount = reply.Expected;
+            
             //enter critical area: Make sure no confirmed data is updated while later operation is enqueued
             lock (_confirmed)
             {
                 //if required modCount was reached locally while waiting for reply: Process delayed operation instantly
-                if (_confirmed.TryGetValue(valueId, out ValueRecord data) && data.ModCount == reply.Expected - 1)
+                if (_confirmed.TryGetValue(valueId, out ValueRecord data) && data.ModCount == operation.ModCount - 1)
                     ExecuteDelayedOperation(valueId, value, type, operation);
                 else
                     //enqueue operation: It will be executed once up-to-date value was received

@@ -9,7 +9,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
 {
     public abstract class SynchronisedOperation
     {
-        public readonly int ModCount;
+        public int ModCount;
 
         protected SynchronisedOperation(int modCount)
         {
