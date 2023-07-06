@@ -23,7 +23,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 int modCount = IncrementModCount(request.Reference);
                 
                 //create reply
-                SetValueReply reply = new SetValueReply(request, modCount);
+                AccessValueReply reply = new AccessValueReply(request, modCount);
                 
                 //if request was successful:
                 if (reply.Success(request.ModCount))
