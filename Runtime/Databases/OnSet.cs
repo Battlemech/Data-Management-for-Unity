@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
+using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence;
 using Data_Management_for_Unity.Runtime.Serializer;
@@ -26,6 +27,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
             int modCount = IncrementModCount(valueId);
 
             return OnOperation(valueId, value, type, new SynchronisedModify<T>(modify, modCount));
+        }
+
+        protected internal Task OnAdd(string valueId, byte[] value, Type type)
+        {
+            //value changed -> Increment modification count
+            int modCount = IncrementModCount(valueId);
+
+            return OnOperation(valueId, value, type, null);
         }
         
         private async Task OnOperation(string valueId, byte[] value, Type type, SynchronisedOperation op)

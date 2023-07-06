@@ -4,7 +4,7 @@ using Data_Management_for_Unity.Runtime.Databases.Structs;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
 {
-    public readonly struct SetValueMessage
+    public class SetValueMessage
     {
         public string DatabaseId => Reference.DatabaseId;
         public string ValueId => Reference.ValueId;

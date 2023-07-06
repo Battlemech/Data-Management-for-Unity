@@ -4,7 +4,7 @@ using Data_Management_for_Unity.Runtime.Networking.Messaging;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
 {
-    public class SetValueRequest : Request
+    public class SetValueRequest : ValueRequest
     {
         public readonly ValueReference Reference;
         public readonly byte[] Value;
@@ -22,6 +22,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
         public Type DeserializeType()
         {
             return Type.GetType(TypeString, true);
+        }
+
+        public override SetValueMessage ToMessage()
+        {
+            return new SetValueMessage(this);
         }
     }
 

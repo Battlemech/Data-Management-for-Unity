@@ -29,7 +29,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
     
     public partial class ValueStorage<T> : ValueStorage
     {
-        private T _data;
+        protected T Data;
         
         public ValueStorage(string id, Database database) : base(id, database)
         {
@@ -40,7 +40,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             lock (Id)
             {
-                return _data;
+                return Data;
             }
         }
 
@@ -48,7 +48,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             lock (Id)
             {
-                safeOperation.Invoke(_data);
+                safeOperation.Invoke(Data);
             }
         }
 
@@ -60,7 +60,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             lock (Id)
             {
                 //update value
-                _data = data;
+                Data = data;
                 
                 //save its serialized version
                 value = Serialization.Serialize(data, out type);
@@ -78,10 +78,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             lock (Id)
             {
                 //update value
-                _data = modifyDelegate.Invoke(_data);
+                Data = modifyDelegate.Invoke(Data);
                 
                 //save its serialized version
-                value = Serialization.Serialize(_data, out type);
+                value = Serialization.Serialize(Data, out type);
             }
             
             //delegate internal logic to background to increase performance
@@ -109,7 +109,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             lock (Id)
             {
-                return Serialization.Serialize(_data, out type);
+                return Serialization.Serialize(Data, out type);
             }
         }
 
@@ -117,7 +117,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             lock (Id)
             {
-                _data = data;
+                Data = data;
             }
         }
     }

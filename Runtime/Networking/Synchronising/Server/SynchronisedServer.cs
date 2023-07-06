@@ -16,8 +16,19 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
 
         protected virtual void Start()
         {
+            //process incoming sets and modifies
+            RegisterMessage<SetValueRequest, SetValueMessage>();
+        }
+
+        protected override TcpSession CreateSession()
+        {
+            return new SynchronisedSession(this);
+        }
+
+        private void RegisterMessage<TRequest, TMessage>() where TRequest : SetValueRequest where TMessage : SetValueMessage
+        {
             //process incoming requests
-            AddCallback<SetValueRequest>(((request, session) =>
+            AddCallback<TRequest>(((request, session) =>
             {
                 //client is planning to change a value
                 int modCount = IncrementModCount(request.Reference);
@@ -29,7 +40,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 if (reply.Success(request.ModCount))
                 {
                     //inform other clients of new value
-                    MulticastToOthers(new SetValueMessage(request), session);
+                    MulticastToOthers(request.ToMessage(), session);
                 }
                 else
                 {
@@ -41,7 +52,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             }));
 
             //process delayed sets
-            AddCallback<SetValueMessage>(((message, session) =>
+            AddCallback<TMessage>(((message, session) =>
             {
                 //if delayed set was expected
                 if (session.DequeueDelayedSet(message.Reference, message.ModCount))
@@ -52,12 +63,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                     throw new InvalidOperationException("Received invalid delayed set!");
             }));
         }
-
-        protected override TcpSession CreateSession()
-        {
-            return new SynchronisedSession(this);
-        }
-
+        
         /// <summary>
         /// Increments the current modification count by one and returns it
         /// </summary>
