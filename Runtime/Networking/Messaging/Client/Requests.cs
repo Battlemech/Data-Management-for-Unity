@@ -46,7 +46,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                     throw new TimedOutException(timeout);
                 
                 return reply;
-            }));
+            }), TaskCreationOptions.LongRunning);
             
             replyTask.Start();
 

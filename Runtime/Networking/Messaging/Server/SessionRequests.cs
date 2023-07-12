@@ -42,7 +42,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
                     throw new TimedOutException(timeout);
 
                 return reply;
-            }));
+            }), TaskCreationOptions.LongRunning);
             
             replyTask.Start();
 
