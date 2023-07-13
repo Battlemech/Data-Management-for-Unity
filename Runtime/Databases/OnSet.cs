@@ -71,7 +71,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
             {
                 //if required modCount was reached locally while waiting for reply: Process delayed operation instantly
                 if (_confirmed.TryGetValue(valueId, out ValueRecord data) && data.ModCount == operation.ModCount - 1)
+                {
+                    //update data from saved value
+                    value = data.Value;
+                    type = data.Type;
+                 
+                    //instantly execute operation
                     ExecuteDelayedOperation(valueId, value, type, operation);
+                }
                 else
                     //enqueue operation: It will be executed once up-to-date value was received
                     EnqueueDelayedOperation(valueId, operation);
