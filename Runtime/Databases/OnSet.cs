@@ -7,6 +7,7 @@ using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence;
 using Data_Management_for_Unity.Runtime.Serializer;
+using DMP.Threading;
 using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases
@@ -15,26 +16,38 @@ namespace Data_Management_for_Unity.Runtime.Databases
     {
         protected internal Task OnSet(string valueId, byte[] value, Type type)
         {
-            //value changed -> Increment modification count
-            int modCount = IncrementModCount(valueId);
-
-            return OnOperation(valueId, value, type,new SynchronisedSet(value, type, modCount));
+            /*
+             * Task factory uses this databases concurrent scheduler, making sure tasks are executed in order.
+             * The task factory allows scheduling asynchronous code.
+             */
+            
+            /*
+             * Tasks executed in _factory, using QueuedScheduler, can only be executed one at a time.
+             * this ensures requests being created first will be received by server first, not messing with the modCount order
+             */
+            return _factory.StartNew((() =>
+            {
+                //Value changed -> Increment modification count
+                int modCount = IncrementModCount(valueId);
+                
+                return OnOperation(valueId, value, type,new SynchronisedSet(value, type, modCount));
+            })).Unwrap();
         }
 
         protected internal Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify)
         {
-            //value changed -> Increment modification count
-            int modCount = IncrementModCount(valueId);
+            return _factory.StartNew((() =>
+            {
+                //value changed -> Increment modification count
+                int modCount = IncrementModCount(valueId);
 
-            return OnOperation(valueId, value, type, new SynchronisedModify<T>(modify, modCount));
+                return OnOperation(valueId, value, type, new SynchronisedModify<T>(modify, modCount));
+            })).Unwrap();
         }
 
         protected internal Task OnAdd(string valueId, byte[] value, Type type)
         {
-            //value changed -> Increment modification count
-            int modCount = IncrementModCount(valueId);
-
-            return OnOperation(valueId, value, type, null);
+            throw new NotImplementedException();
         }
         
         private async Task OnOperation(string valueId, byte[] value, Type type, SynchronisedOperation op)

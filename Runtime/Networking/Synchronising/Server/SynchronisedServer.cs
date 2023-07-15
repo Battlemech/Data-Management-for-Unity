@@ -39,11 +39,15 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //if request was successful:
                 if (reply.Success(request.ModCount))
                 {
+                    Debug.Log($"Server: Confirming set: modCount={request.ModCount}");
+                    
                     //inform other clients of new value
                     MulticastToOthers(request.ToMessage(), session);
                 }
                 else
                 {
+                    Debug.Log($"Server: Delaying set: modCount={request.ModCount}->{modCount}");
+                    
                     session.TrackFailedSet(request.Reference, modCount);
                 }
 
@@ -56,8 +60,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             {
                 //if delayed set was expected
                 if (session.DequeueDelayedSet(message.Reference, message.ModCount))
+                {
+                    Debug.Log($"Server: Informing others of delayed set: modCount={message.ModCount}");
+                    
                     //inform others of new value
                     MulticastToOthers(message, session);
+                }
                 else
                     //delayed set was unexpected
                     throw new InvalidOperationException("Received invalid delayed set!");

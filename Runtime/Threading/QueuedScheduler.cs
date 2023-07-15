@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DMP.Utility;
 using UnityEngine;
@@ -10,10 +11,25 @@ namespace DMP.Threading
 {
     public class QueuedScheduler : Scheduler
     {
+        /// <summary>
+        /// Number of tasks still scheduled
+        /// </summary>
         public int QueuedTasksCount => _queuedTasks.Count + (ExecutingTasks ? 1 : 0);
-        public bool ExecutingTasks { get; private set; }
         
+        /// <summary>
+        /// True if tasks are currently being processed, otherwise false
+        /// </summary>
+        public bool ExecutingTasks => _executingThread != null;
+
+        /// <summary>
+        /// Queue of tasks to execute
+        /// </summary>
         private readonly ConcurrentQueue<Task> _queuedTasks = new ConcurrentQueue<Task>();
+        
+        /// <summary>
+        /// Thread processing tasks
+        /// </summary>
+        private Thread _executingThread;
 
         protected override IEnumerable<Task> GetScheduledTasks()
         {
@@ -27,11 +43,12 @@ namespace DMP.Threading
             //start executing tasks if no thread is doing that already
             lock (_queuedTasks)
             {
-                if(ExecutingTasks) return;
-                ExecutingTasks = true;
+                if(_executingThread != null) return;
+                _executingThread = new Thread(Execute);
             }
-
-            Task.Run(Execute);
+            
+            //start executing
+            _executingThread.Start();
         }
 
         protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
@@ -62,7 +79,7 @@ namespace DMP.Threading
                     //if no tasks are queued: stop executing
                     if (_queuedTasks.IsEmpty)
                     {
-                        ExecutingTasks = false;
+                        _executingThread = null;
                         return;
                     }
                 }
