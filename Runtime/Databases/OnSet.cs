@@ -55,6 +55,8 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //operation was successful. New data was confirmed by remote
             if (reply.Success(operation.ModCount))
             {
+                Debug.Log($"{Client} operation success, modCount={operation.ModCount}");
+                
                 //update local data confirmed by remote
                 UpdateConfirmedData(valueId, operation.ModCount, value, type);
                 
@@ -76,12 +78,17 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     value = data.Value;
                     type = data.Type;
                  
+                    Debug.Log($"{Client} operation failure, but can be executed instantly, modCount={operation.ModCount}");
+                    
                     //instantly execute operation
                     ExecuteDelayedOperation(valueId, value, type, operation);
                 }
                 else
+                {
+                    Debug.Log($"{Client} operation failure, delaying it, modCount={operation.ModCount}");
                     //enqueue operation: It will be executed once up-to-date value was received
                     EnqueueDelayedOperation(valueId, operation);
+                }
             }
         }
     }

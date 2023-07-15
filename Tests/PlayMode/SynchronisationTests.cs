@@ -17,11 +17,11 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 {
     public class SynchronisationTests
     {
-        private SynchronisedClient _client0;
-        private SynchronisedClient _client1;
-        private SynchronisedClient _client2;
-        private SynchronisedClient _client3;
-        private SynchronisedClient _client4;
+        private TestClient _client0;
+        private TestClient _client1;
+        private TestClient _client2;
+        private TestClient _client3;
+        private TestClient _client4;
         private SynchronisedServer _server;
 
         private Database _database0;
@@ -36,11 +36,11 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         {
             //create game object which holds clients and server
             GameObject gameObject = new GameObject("NetworkManager");
-            _client0 = gameObject.AddComponent<SynchronisedClient>();
-            _client1 = gameObject.AddComponent<SynchronisedClient>();
-            _client2 = gameObject.AddComponent<SynchronisedClient>();
-            _client3 = gameObject.AddComponent<SynchronisedClient>();
-            _client4 = gameObject.AddComponent<SynchronisedClient>();
+            _client0 = gameObject.AddComponent<TestClient>();
+            _client1 = gameObject.AddComponent<TestClient>();
+            _client2 = gameObject.AddComponent<TestClient>();
+            _client3 = gameObject.AddComponent<TestClient>();
+            _client4 = gameObject.AddComponent<TestClient>();
             _server = gameObject.AddComponent<SynchronisedServer>();
             
             Assert.IsFalse(_server.IsStarted);
@@ -180,13 +180,15 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 
             //start chain of modifications, depending on order of results
             yield return TestConcurrentModifyAsync(id).AsIEnumerator();
+
+            yield return TestUtility.AreEqual(1600, () => _database0.Get<int>(id).Get(), "Database 1");
+            yield return TestUtility.AreEqual(1600, () => _database1.Get<int>(id).Get(), "Database 2");
+            yield return TestUtility.AreEqual(1600, () => _database2.Get<int>(id).Get(), "Database 3");
+            yield return TestUtility.AreEqual(1600, () => _database3.Get<int>(id).Get(), "Database 4");
+            yield return TestUtility.AreEqual(1600, () => _database4.Get<int>(id).Get(), "Database 5");
             
             //make sure all values were synchronised
-            yield return TestUtility.AreEqual(1600, () => _database0.Get<int>(id).Get());
-            yield return TestUtility.AreEqual(1600, () => _database1.Get<int>(id).Get());
-            yield return TestUtility.AreEqual(1600, () => _database2.Get<int>(id).Get());
-            yield return TestUtility.AreEqual(1600, () => _database3.Get<int>(id).Get());
-            yield return TestUtility.AreEqual(1600, () => _database4.Get<int>(id).Get());
+            yield return ValuesEqual<int>(id);
         }
 
         private Task TestConcurrentModifyAsync(string id)
@@ -195,12 +197,15 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             
             return Task.WhenAll(databases.Select((database => database.Get<int>(id).Modify((data =>
             {
-                Debug.Log($"Previous modify operation invocations: {invokeCount++}");
-                
                 //init value to 100
-                if (data == default) return 100;
+                if (data == default)
+                {
+                    Debug.Log($"{invokeCount++}=100");
+                    return 100;
+                }
 
                 //double data
+                Debug.Log($"{invokeCount++}={data * 2}");
                 return data * 2;
             })))));
         }

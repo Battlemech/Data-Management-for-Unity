@@ -68,8 +68,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
         protected internal void OnRemoteSet(string id, byte[] bytes, Type type, int modCount)
         {
             //value is already known to database
-            if (!UpdateConfirmedData(id, modCount, bytes, type)) return;
+            if (!UpdateConfirmedData(id, modCount, bytes, type))
+            {
+                Debug.Log($"{Client} Discarded message with known modCount={modCount}");
+                return;
+            }
 
+            Debug.Log($"{Client} received remote set modCount={modCount}, value={Serialization.Deserialize(bytes, type)}");
+            
             lock (_values)
             {
                 //update value locally, if it exists
@@ -85,7 +91,10 @@ namespace Data_Management_for_Unity.Runtime.Databases
 
             //execute any delayed operations, if they exist
             if (TryDequeueDelayedOperation(id, modCount + 1, out SynchronisedOperation operation))
-                ExecuteDelayedOperation(id, bytes, type, operation);
+            {
+                Debug.Log($"{Client} is executing delayed set modCount={operation.ModCount}");
+                ExecuteDelayedOperation(id, bytes, type, operation);   
+            }
         }
 
         private void ExecuteDelayedOperation(string valueId, byte[] value, Type type, SynchronisedOperation operation)
