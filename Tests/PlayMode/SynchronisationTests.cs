@@ -214,13 +214,13 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         public IEnumerator TestConcurrentAdd()
         {
             const string id = nameof(TestConcurrentAdd);
-            const int addCount = 30; //todo: implement for addCount = 1000
+            const int addCount = 200; //todo: implement for addCount = 1000
 
             //start add process concurrently
             yield return TestConcurrentAddAsync(id, addCount).AsIEnumerator();
 
             //make sure values equal
-            yield return ValuesEqual<List<int>>(id);
+            yield return ValuesEqual<List<int>>(id, 15000);
         }
 
         private Task TestConcurrentAddAsync(string id, int addCount)
