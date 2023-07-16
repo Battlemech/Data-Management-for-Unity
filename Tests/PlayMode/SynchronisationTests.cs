@@ -216,11 +216,18 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             const string id = nameof(TestConcurrentAdd);
             const int addCount = 200; //todo: implement for addCount = 1000
 
+            //measure elapsed time
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            
             //start add process concurrently
             yield return TestConcurrentAddAsync(id, addCount).AsIEnumerator();
 
             //make sure values equal
             yield return ValuesEqual<List<int>>(id, 15000);
+            
+            //output time
+            stopwatch.Stop();
+            Debug.Log($"Concurrently added and synchronised {addCount * databases.Count} elements within {stopwatch.ElapsedMilliseconds} ms!");
         }
 
         private Task TestConcurrentAddAsync(string id, int addCount)
