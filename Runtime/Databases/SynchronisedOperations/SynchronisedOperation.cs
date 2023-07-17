@@ -1,40 +1,63 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 
-namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
+namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
     public abstract class SynchronisedOperation
     {
+        public readonly string DatabaseId;
+        
+        public byte[] Value;
+        public Type Type;
+        
         public int ModCount;
 
-        protected SynchronisedOperation(int modCount)
+        protected SynchronisedOperation(string databaseId, byte[] value, Type type, int modCount)
         {
+            DatabaseId = databaseId;
+            
+            Value = value;
+            Type = type;
+            
             ModCount = modCount;
         }
 
         /// <summary>
-        /// Invokes an operation, trying to perform it
+        /// Creates a SynchronisationRequest, attempting to perform the current operation in a synchronised context.
+        /// Updates this classes Value and Type.
         /// </summary>
-        /// <param name="client"></param>
-        /// <param name="databaseId">Id of database which is processing delayed operation</param>
-        /// <param name="valueId">Id of value on database for which delayed operation is being processed</param>
-        /// <param name="value">Current value of current value</param>
-        /// <param name="type">Current type of current value</param>
-        /// <returns>The reply to the initial operation</returns>
-        public abstract Task<AccessValueReply> Invoke(SynchronisedClient client, string databaseId, string valueId, byte[] value, Type type);
+        public OperationRequest Invoke()
+        {
+            OnInvoke();
+            return new OperationRequest(this);
+        }
 
         /// <summary>
-        /// Repeats the delayed operation locally
+        /// Repeats the Operation after up-to-date data has been received from server.
+        /// Updates this classes Value and Type.
         /// </summary>
-        /// <param name="databaseId">Id of database which is processing delayed operation</param>
-        /// <param name="valueId">Id of value on database for which delayed operation is being processed</param>
-        /// <param name="value">Current value of current value</param>
-        /// <param name="type">Current type of current value</param>
-        /// <returns>Object which needs to be processed locally and on remote. Example: SetValueMessage</returns>
-        public abstract object Repeat(string databaseId, string valueId, byte[] value, Type type);
+        public OperationMessage Repeat()
+        {
+            OnRepeat();
+            return new OperationMessage(this);
+        }
+
+        /// <summary>
+        /// Performs the operation on the remote, returning the updated value and type.
+        /// </summary>
+        public abstract byte[] OnRemote(out Type type);
+
+        /// <summary>
+        /// Function is called when operation is invoked for the first time
+        /// </summary>
+        protected abstract void OnInvoke();
+
+        /// <summary>
+        /// Function is called when the operation is repeated after receiving up-to-date data from server.
+        /// </summary>
+        protected abstract void OnRepeat();
     }
 }
