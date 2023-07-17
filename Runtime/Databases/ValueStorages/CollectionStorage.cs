@@ -27,7 +27,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 value = Serialization.Serialize(toAdd, out type);
             }
 
-            return Database.OnAdd(Id, value, type);
+            return Database.OnAdd<T, TValue>(Id, value, type);
         }
     }
 }

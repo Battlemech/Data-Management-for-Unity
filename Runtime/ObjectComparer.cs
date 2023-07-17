@@ -4,7 +4,7 @@ namespace Data_Management_for_Unity.Runtime
 {
     public static class ObjectComparer
     {
-        public static bool ItemsAreEqual(this IList list)
+        public static bool AreEqual(this IList list)
         {
             for (int i = 0; i < list.Count - 1; i++)
             {

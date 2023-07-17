@@ -45,9 +45,15 @@ namespace Data_Management_for_Unity.Runtime.Databases
             })).Unwrap();
         }
 
-        protected internal Task OnAdd(string valueId, byte[] value, Type type)
+        protected internal Task OnAdd<T, TValue>(string valueId, byte[] value, Type type) where T : ICollection<TValue>, new()
         {
-            throw new NotImplementedException();
+            return _factory.StartNew((() =>
+            {
+                //value changed -> Increment modification count
+                int modCount = IncrementModCount(valueId);
+
+                return OnOperation(valueId, value, type, new SynchronisedAdd<T, TValue>(value, type, modCount));
+            })).Unwrap();
         }
         
         private async Task OnOperation(string valueId, byte[] value, Type type, SynchronisedOperation op)
@@ -68,7 +74,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //operation was successful. New data was confirmed by remote
             if (reply.Success(operation.ModCount))
             {
-                Debug.Log($"{Client} operation success, modCount={operation.ModCount}");
+                //Debug.Log($"{Client} operation success, modCount={operation.ModCount}");
                 
                 //update local data confirmed by remote
                 UpdateConfirmedData(valueId, operation.ModCount, value, type);
@@ -91,14 +97,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     value = data.Value;
                     type = data.Type;
                  
-                    Debug.Log($"{Client} operation failure, but can be executed instantly, modCount={operation.ModCount}");
+                    //Debug.Log($"{Client} operation failure, but can be executed instantly, modCount={operation.ModCount}");
                     
                     //instantly execute operation
                     ExecuteDelayedOperation(valueId, value, type, operation);
                 }
                 else
                 {
-                    Debug.Log($"{Client} operation failure, delaying it, modCount={operation.ModCount}");
+                    //Debug.Log($"{Client} operation failure, delaying it, modCount={operation.ModCount}");
                     //enqueue operation: It will be executed once up-to-date value was received
                     EnqueueDelayedOperation(valueId, operation);
                 }

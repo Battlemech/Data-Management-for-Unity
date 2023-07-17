@@ -256,7 +256,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 
                 Debug.Log(items.GetContent());
 
-                return items.ItemsAreEqual();
+                return items.AreEqual();
             }, "Values Synchronised", timeout);
         }
     }

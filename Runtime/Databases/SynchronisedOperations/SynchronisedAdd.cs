@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
@@ -6,9 +7,11 @@ using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    public class SynchronisedAdd : SynchronisedOperation
+    public class SynchronisedAdd<T, TValue> : SynchronisedOperation where T : ICollection<TValue>, new()
     {
+        //value added to collection
         private readonly byte[] _value;
+        //type of value added to collection
         private readonly Type _type;
         
         public SynchronisedAdd(byte[] value, Type type, int modCount) : base(modCount)

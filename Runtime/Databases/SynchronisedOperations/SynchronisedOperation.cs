@@ -28,7 +28,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
         public abstract Task<AccessValueReply> Invoke(SynchronisedClient client, string databaseId, string valueId, byte[] value, Type type);
 
         /// <summary>
-        /// Repeats the delayed operation
+        /// Repeats the delayed operation locally
         /// </summary>
         /// <param name="databaseId">Id of database which is processing delayed operation</param>
         /// <param name="valueId">Id of value on database for which delayed operation is being processed</param>

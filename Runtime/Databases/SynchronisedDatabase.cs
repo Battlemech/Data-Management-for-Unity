@@ -70,11 +70,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //value is already known to database
             if (!UpdateConfirmedData(id, modCount, bytes, type))
             {
-                Debug.Log($"{Client} Discarded message with known modCount={modCount}");
+                //Debug.Log($"{Client} Discarded message with known modCount={modCount}");
                 return;
             }
 
-            Debug.Log($"{Client} received remote set modCount={modCount}, value={Serialization.Deserialize(bytes, type)}");
+            //Debug.Log($"{Client} received remote set modCount={modCount}, value={Serialization.Deserialize(bytes, type)}");
             
             lock (_values)
             {
@@ -92,7 +92,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //execute any delayed operations, if they exist
             if (TryDequeueDelayedOperation(id, modCount + 1, out SynchronisedOperation operation))
             {
-                Debug.Log($"{Client} is executing delayed set modCount={operation.ModCount}");
+                //Debug.Log($"{Client} is executing delayed set modCount={operation.ModCount}");
                 ExecuteDelayedOperation(id, bytes, type, operation);   
             }
         }
