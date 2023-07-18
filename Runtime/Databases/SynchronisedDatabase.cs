@@ -62,51 +62,66 @@ namespace Data_Management_for_Unity.Runtime.Databases
             Client.RemoveDatabase(this);
         }
 
-        /// <summary>
-        /// Called when a remote client sets a value of this database
-        /// </summary>
-        protected internal void OnRemoteSet(string id, byte[] bytes, Type type, int modCount)
+        protected internal void OnRemoteOperation(SynchronisedOperation operation)
         {
-            //value is already known to database
-            if (!UpdateConfirmedData(id, modCount, bytes, type))
-            {
-                //Debug.Log($"{Client} Discarded message with known modCount={modCount}");
-                return;
-            }
-
-            //Debug.Log($"{Client} received remote set modCount={modCount}, value={Serialization.Deserialize(bytes, type)}");
+            //init default values with 0
+            byte[] value = null;
+            Type type = null;
             
-            lock (_values)
+            //try retrieving current values
+            lock (_confirmed)
             {
-                //update value locally, if it exists
-                if (_values.TryGetValue(id, out ValueStorage storage))
-                    storage.InternalSet(bytes, type);
-                //value can be loaded later
-                else
-                    _toLoad.Add(id, new SerializedObject(Id, id, bytes, type, modCount));
+                if (_confirmed.TryGetValue(operation.ValueId, out ValueRecord record))
+                {
+                    //data is already known. No need to process operation
+                    if(record.ModCount >= operation.ModCount) return;
+                    
+                    value = record.Value;
+                    type = record.Type;
+                }
             }
 
-            //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
-            _callbackHandler.Invoke(id, Serialization.Deserialize(bytes, type));
-
-            //execute any delayed operations, if they exist
-            if (TryDequeueDelayedOperation(id, modCount + 1, out SynchronisedOperation operation))
-            {
-                //Debug.Log($"{Client} is executing delayed set modCount={operation.ModCount}");
-                ExecuteDelayedOperation(id, bytes, type, operation);   
-            }
+            //process remote operation
+            OnOperation(value, type, operation, false);
         }
 
-        private void ExecuteDelayedOperation(string valueId, byte[] value, Type type, SynchronisedOperation operation)
+        private void OnOperation(byte[] value, Type type, SynchronisedOperation operation, bool local)
         {
-            //repeat operation with up to date data
-            object toProcess = operation.Repeat(Id, valueId, value, type);
+            while (true)
+            {
+                //extract basic information about target
+                string id = operation.ValueId;
+                int modCount = operation.ModCount;
 
-            //notify peers of new value
-            Client.Send(toProcess);
-            
-            //process new value locally
-            Client.InvokeCallbacks(toProcess);
+                //repeat operation with up to date data
+                value = local ? operation.Repeat(value, type, out type) : operation.OnRemote(value, type, out type);
+
+                //update value locally
+                lock (_values)
+                {
+                    //update value locally, if it exists
+                    if (_values.TryGetValue(id, out ValueStorage storage))
+                        storage.InternalSet(value, type);
+                    //value can be loaded later
+                    else
+                        _toLoad.Add(id, new PersistentObject(Id, id, value, type, modCount));
+                }
+
+                //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
+                _callbackHandler.Invoke(id, Serialization.Deserialize(value, type));
+
+                //update confirmed data
+                lock (_confirmed) _confirmed[id] = new ValueRecord(value, type, modCount);
+                
+                //notify peers of new value
+                if(local) Client.Send(new OperationMessage(operation));
+
+                //stop executing operations if no more delayed exist
+                if (!TryDequeueDelayedOperation(id, modCount + 1, out operation)) return;
+
+                //any remaining operations source will be local
+                local = true;
+            }
         }
     }
 }

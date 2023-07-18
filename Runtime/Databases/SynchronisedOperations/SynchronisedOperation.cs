@@ -1,63 +1,57 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Networking.Messaging;
-using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
+using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using UnityEngine.UI;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
     public abstract class SynchronisedOperation
     {
+        /// <summary>
+        /// Id of the database the operation was performed on
+        /// </summary>
         public readonly string DatabaseId;
+
+        /// <summary>
+        /// Id of the value the operation was performed on
+        /// </summary>
+        public readonly string ValueId;
         
-        public byte[] Value;
-        public Type Type;
-        
+        /// <summary>
+        /// Expected modificationCount, used to synchronise order of operations
+        /// </summary>
         public int ModCount;
 
-        protected SynchronisedOperation(string databaseId, byte[] value, Type type, int modCount)
+        protected SynchronisedOperation(string databaseId, string valueId)
         {
             DatabaseId = databaseId;
-            
-            Value = value;
-            Type = type;
-            
-            ModCount = modCount;
+            ValueId = valueId;
         }
 
         /// <summary>
-        /// Creates a SynchronisationRequest, attempting to perform the current operation in a synchronised context.
-        /// Updates this classes Value and Type.
+        /// Create a tuple containing the database and value id of value operation was performed on
         /// </summary>
-        public OperationRequest Invoke()
+        public ValueReference GetReference()
         {
-            OnInvoke();
-            return new OperationRequest(this);
+            return new ValueReference(DatabaseId, ValueId);
         }
+        
+        /// <summary>
+        /// Operation is repeated locally after synchronisation failed initially
+        /// </summary>
+        /// <param name="value">Current value</param>
+        /// <param name="type">Current type</param>
+        /// <param name="resultType">Result type</param>
+        /// <returns>Result value</returns>
+        public abstract byte[] Repeat(byte[] value, Type type, out Type resultType);
 
         /// <summary>
-        /// Repeats the Operation after up-to-date data has been received from server.
-        /// Updates this classes Value and Type.
+        /// Operation is processed on remote
         /// </summary>
-        public OperationMessage Repeat()
-        {
-            OnRepeat();
-            return new OperationMessage(this);
-        }
-
-        /// <summary>
-        /// Performs the operation on the remote, returning the updated value and type.
-        /// </summary>
-        public abstract byte[] OnRemote(out Type type);
-
-        /// <summary>
-        /// Function is called when operation is invoked for the first time
-        /// </summary>
-        protected abstract void OnInvoke();
-
-        /// <summary>
-        /// Function is called when the operation is repeated after receiving up-to-date data from server.
-        /// </summary>
-        protected abstract void OnRepeat();
+        /// <param name="value">Current value</param>
+        /// <param name="type">Current type</param>
+        /// <param name="resultType">Result type</param>
+        /// <returns>Result value</returns>
+        public abstract byte[] OnRemote(byte[] value, Type type, out Type resultType);
     }
 }

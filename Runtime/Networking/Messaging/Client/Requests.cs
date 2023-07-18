@@ -36,10 +36,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                     //remove callback: Reply was received
                     RemoveCallbacks<TReply>(reply.Id.ToString());
                 }), request.Id.ToString());
-
+                
                 //send the request
                 if (!Send(request)) 
                     throw new NotConnectedException();
+                
+                Debug.Log("Waiting for a reply");
                 
                 //wait for reply
                 if (!receivedEvent.WaitOne(timeout)) 

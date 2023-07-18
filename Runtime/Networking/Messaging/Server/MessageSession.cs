@@ -75,24 +75,34 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            //deserialize received bytes, unpacking information about expected length.
-            foreach (var message in _networkSerializer.Deserialize(buffer, offset, size).Select(Serialization.Deserialize<Message>))
+            try
             {
-                //deserialize received object
-                object value = message.Deserialize(out Type type);
-
-                //enqueue received object to be processed by main thread
-                _messageServer.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));
-
-                //invoke the sessions private callbacks on a thread
-                try
+                Debug.Log("Server session: Received data!");
+            
+                //deserialize received bytes, unpacking information about expected length.
+                foreach (var received in _networkSerializer.Deserialize(buffer, offset, size))
                 {
+                    Debug.Log("Server received enough data to create message");
+                
+                    //deserialize network message
+                    Message message = Serialization.Deserialize<Message>(received);
+                
+                    //deserialize received object
+                    object value = message.Deserialize(out Type type);
+
+                    Debug.Log($"Server Session: Received: {type}");
+                
+                    //enqueue received object to be processed by main thread
+                    _messageServer.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));
+
+                    //invoke the sessions private callbacks on a thread
                     _sessionCallbacks.Invoke(type, value);
-                } //catch any exceptions to make sure receiving thread doesn't terminate
-                catch (Exception e)
-                {
-                    Debug.LogException(e);
                 }
+            }
+            catch (Exception e)
+            {
+                //print any occurring exceptions, and make sure receiving thread will continue to run
+                Debug.LogException(e);
             }
         }
     }

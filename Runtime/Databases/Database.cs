@@ -13,16 +13,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
         public readonly string Id;
 
         /// <summary>
-        /// Scheduler executing task after another, making sure synchronised sets are executed in order
-        /// </summary>
-        public readonly QueuedScheduler Scheduler = new QueuedScheduler();
-
-        /// <summary>
-        /// Task factory allowing async code to be executed on custom scheduler
-        /// </summary>
-        private readonly TaskFactory _factory;
-        
-        /// <summary>
         /// Values stored in database
         /// </summary>
         private readonly Dictionary<string, ValueStorage> _values = new Dictionary<string, ValueStorage>();
@@ -32,9 +22,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
             Id = id;
             IsPersistent = isPersistent;
             IsSynchronised = isSynchronised;
-
-            //initialise task factory
-            _factory = new TaskFactory(Scheduler);
         }
 
         public ValueStorage<T> Get<T>(string id)
@@ -57,7 +44,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 lock (_toLoad)
                 {
                     //if value exists
-                    if (_toLoad.TryGetValue(id, out SerializedObject toLoad))
+                    if (_toLoad.TryGetValue(id, out PersistentObject toLoad))
                     {
                         //try updating the new valueStorage to current value
                         valueStorage.InternalSet(toLoad.Value, toLoad.Type);

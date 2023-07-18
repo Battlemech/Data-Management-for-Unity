@@ -29,7 +29,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         private Database _database2;
         private Database _database3;
         private Database _database4;
-        private List<Database> databases;
+        private List<Database> _databases;
 
         [SetUp]
         public void Setup()
@@ -99,7 +99,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             _database4.IsSynchronised = true;
             
             //init databases list
-            databases = new List<Database>() { _database0, _database1, _database2, _database3, _database4 };
+            _databases = new List<Database>() { _database0, _database1, _database2, _database3, _database4 };
         }
 
         [TearDown]
@@ -145,7 +145,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             const string value = id + "= 'Some beautiful value!'";
 
             //update local value in database 0
-            _database0.Get<string>(id).Set(value);
+            yield return _database0.Get<string>(id).Set(value).AsIEnumerator();
 
             //make sure value is synchronised in other databases
             yield return TestUtility.AreEqual(value, () => _database0.Get<string>(id).Get(), "Local set");
@@ -170,7 +170,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         private Task TestConcurrentSetAsync(string id)
         {
             //start set processes concurrently
-            return Task.WhenAll(databases.Select(((database, i) => database.Get<int>(id).Set(i + 1))));
+            return Task.WhenAll(_databases.Select(((database, i) => database.Get<int>(id).Set(i + 1))));
         }
 
         [UnityTest]
@@ -195,7 +195,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         {
             int invokeCount = 0;
             
-            return Task.WhenAll(databases.Select((database => database.Get<int>(id).Modify((data =>
+            return Task.WhenAll(_databases.Select((database => database.Get<int>(id).Modify((data =>
             {
                 //init value to 100
                 if (data == default)
@@ -227,13 +227,13 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             
             //output time
             stopwatch.Stop();
-            Debug.Log($"Concurrently added and synchronised {addCount * databases.Count} elements within {stopwatch.ElapsedMilliseconds} ms!");
+            Debug.Log($"Concurrently added and synchronised {addCount * _databases.Count} elements within {stopwatch.ElapsedMilliseconds} ms!");
         }
 
         private Task TestConcurrentAddAsync(string id, int addCount)
         {
             //start add processes concurrently
-            return Task.WhenAll(databases.Select(((database, i) =>
+            return Task.WhenAll(_databases.Select(((database, i) =>
             {
                 Task[] tasks = new Task[addCount];
                 
@@ -252,7 +252,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             //make sure value is synchronised in other databases
             yield return TestUtility.AreEqual(true, () =>
             {
-                List<T> items = databases.Select((database => database.Get<T>(id).Get())).ToList();
+                List<T> items = _databases.Select((database => database.Get<T>(id).Get())).ToList();
                 
                 Debug.Log(items.GetContent());
 

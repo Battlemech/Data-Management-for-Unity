@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
@@ -16,52 +17,49 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
 
         protected virtual void Start()
         {
-            //process incoming sets and modifies
-            RegisterMessage<SetValueRequest, SetValueMessage>();
-            //process incoming adds
-            RegisterMessage<AddValueRequest, AddValueMessage>();
-        }
-
-        protected override TcpSession CreateSession()
-        {
-            return new SynchronisedSession(this);
-        }
-
-        private void RegisterMessage<TRequest, TMessage>() where TRequest : SetValueRequest where TMessage : SetValueMessage
-        {
-            //process incoming requests
-            AddCallback<TRequest>(((request, session) =>
+            //process incoming requests to perform operations
+            AddCallback<OperationRequest>(((request, session) =>
             {
+                Debug.Log("Server: Processing callback for operationRequest");
+                
+                //extract operation for easier reference
+                SynchronisedOperation operation = request.Operation;
+                ValueReference reference = operation.GetReference();
+                
                 //client is planning to change a value
-                int modCount = IncrementModCount(request.Reference);
+                int modCount = IncrementModCount(reference);
                 
                 //create reply
-                AccessValueReply reply = new AccessValueReply(request, modCount);
+                OperationReply reply = new OperationReply(request, modCount);
                 
-                //if request was successful:
-                if (reply.Success(request.ModCount))
+                //if request was successful
+                if (reply.Success(operation.ModCount))
                 {
-                    //Debug.Log($"Server: Confirming set: modCount={request.ModCount}");
+                    Debug.Log($"Successful remote set request, modCount={modCount}");
                     
                     //inform other clients of new value
-                    MulticastToOthers(request.ToMessage(), session);
+                    MulticastToOthers(new OperationMessage(operation), session);
                 }
                 else
                 {
-                    //Debug.Log($"Server: Delaying set: modCount={request.ModCount}->{modCount}");
+                    Debug.Log($"Delayed remote set request, modCount={operation.ModCount}->{modCount}");
                     
-                    session.TrackFailedSet(request.Reference, modCount);
+                    //expect a OperationMessage when client received up to date data
+                    session.TrackFailedSet(reference, modCount);
                 }
-
+                
                 //send reply
                 session.Send(reply);
             }));
 
-            //process delayed sets
-            AddCallback<TMessage>(((message, session) =>
+            //process delayed operations
+            AddCallback<OperationMessage>(((message, session) =>
             {
+                //extract operation for easier access
+                SynchronisedOperation operation = message.Operation;
+
                 //if delayed set was expected
-                if (session.DequeueDelayedSet(message.Reference, message.ModCount))
+                if (session.DequeueDelayedSet(operation.GetReference(), operation.ModCount))
                 {
                     //Debug.Log($"Server: Informing others of delayed set: modCount={message.ModCount}");
                     
@@ -73,7 +71,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                     throw new InvalidOperationException("Received invalid delayed set!");
             }));
         }
-        
+
+        protected override TcpSession CreateSession()
+        {
+            return new SynchronisedSession(this);
+        }
+
         /// <summary>
         /// Increments the current modification count by one and returns it
         /// </summary>

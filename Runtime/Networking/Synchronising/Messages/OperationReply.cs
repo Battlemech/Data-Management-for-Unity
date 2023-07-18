@@ -13,5 +13,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
         {
             Expected = expected;
         }
+
+        public bool Success(int modCount) => modCount == Expected;
     }
 }

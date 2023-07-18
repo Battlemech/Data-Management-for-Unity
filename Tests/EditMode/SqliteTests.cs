@@ -72,7 +72,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             
             //make sure they were saved
             stopwatch.Restart();
-            Assert.IsTrue(PersistentData.TryLoadDatabase(id, out List<SerializedObject> savedObjects));
+            Assert.IsTrue(PersistentData.TryLoadDatabase(id, out List<PersistentObject> savedObjects));
             Debug.Log($"Loading {saveCount} values took: {stopwatch.ElapsedMilliseconds} ms");
             Assert.AreEqual(saveCount, savedObjects.Count);
 
