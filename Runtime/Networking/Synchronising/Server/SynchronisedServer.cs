@@ -23,7 +23,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 Debug.Log("Server: Processing callback for operationRequest");
                 
                 //extract operation for easier reference
-                SynchronisedOperation operation = request.Operation;
+                SynchronisedOperation operation = request.GetOperation();
                 ValueReference reference = operation.GetReference();
                 
                 //client is planning to change a value
@@ -56,7 +56,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             AddCallback<OperationMessage>(((message, session) =>
             {
                 //extract operation for easier access
-                SynchronisedOperation operation = message.Operation;
+                SynchronisedOperation operation = message.GetOperation();
 
                 //if delayed set was expected
                 if (session.DequeueDelayedSet(operation.GetReference(), operation.ModCount))

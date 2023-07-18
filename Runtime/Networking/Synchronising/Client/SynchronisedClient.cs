@@ -32,7 +32,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
             AddCallback<OperationMessage>((message =>
             {
                 //extract operation for easier access
-                SynchronisedOperation operation = message.Operation;
+                SynchronisedOperation operation = message.GetOperation();
                 
                 //process operation
                 GetDatabase(operation.DatabaseId).OnRemoteOperation(operation);

@@ -1,4 +1,5 @@
 using System;
+using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using Data_Management_for_Unity.Runtime.Serializer;
@@ -61,6 +62,14 @@ namespace Data_Management_for_Unity.Tests.EditMode
 
             var serializer = new NetworkSerializer();
             Assert.AreEqual(test, serializer.Deserialize(NetworkSerializer.Serialize(test))[0]);
+        }
+
+        [Test]
+        public void TestOperationMessage()
+        {
+            SynchronisedSet set = new SynchronisedSet("123", "213213", Array.Empty<byte>(), typeof(string));
+            
+            Assert.AreEqual(set.GetType(), Copy(set).GetType());
         }
 
         /// <summary>
