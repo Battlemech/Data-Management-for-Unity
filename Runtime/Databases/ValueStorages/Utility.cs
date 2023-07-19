@@ -20,5 +20,21 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 return collection;
             }));
         }
+
+        public static Task Remove<TCollection, TData>(this ValueStorage<TCollection> valueStorage, TData toRemove)
+            where TCollection : ICollection<TData>, new()
+        {
+            return valueStorage.Modify((collection =>
+            {
+                //no value to remove
+                if (collection == null) return default;
+                
+                //remove value
+                collection.Remove(toRemove);
+
+                //return updated collection
+                return collection;
+            }));
+        }
     }
 }

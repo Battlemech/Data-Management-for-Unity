@@ -42,8 +42,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //operation was successful. New data was confirmed by remote
             if (reply.Success(operation.ModCount))
             {
-                //Debug.Log($"{Client} operation success, modCount={operation.ModCount}");
-                
                 //update local data confirmed by remote
                 UpdateConfirmedData(operation.ValueId, operation.ModCount, value, type);
                 
