@@ -23,6 +23,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
             await OnLocalOperation(value, type, new SynchronisedModify<T>(Id, valueId, value, type, modify));
         }
 
+        protected internal async Task OnAdd<TCollection, TValue>(string valueId, byte[] collectionValue,
+            Type collectionType, byte[] addedValue, Type addedType)
+            where TCollection : ICollection<TValue>, new()
+        {
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedAdd<TCollection, TValue>(Id, valueId, addedValue, addedType));
+        }
+        
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
             //invoke local callbacks
