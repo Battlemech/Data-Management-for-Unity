@@ -83,9 +83,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
                 {
                     //deserialize received object
                     object value = message.Deserialize(out Type type);
-
-                    if(value is OperationRequest request)
-                        Debug.Log($"Session: Received request: modCount={request.GetOperation().ModCount}");
                     
                     //enqueue received object to be processed by main thread
                     _messageServer.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));

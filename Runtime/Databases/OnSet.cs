@@ -84,8 +84,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
             {
                 operation.ModCount = IncrementModCount(operation.ValueId);
             
-                Debug.Log($"{Client}: Sent request: modCount={operation.ModCount}");
-                
                 return Client.SendRequest<OperationRequest, OperationReply>(new OperationRequest(operation));   
             }
         }
