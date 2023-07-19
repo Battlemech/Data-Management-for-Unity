@@ -20,6 +20,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public SynchronisedModify(string databaseId, string valueId, byte[] value, Type type, ModifyDelegate<T> modify) : base(databaseId, valueId)
         {
             _modify = modify;
+
+            //save value to allow setting it on remote
+            _value = value;
+            _typeString = type.AssemblyQualifiedName;
         }
 
         public override byte[] Repeat(byte[] value, Type type, out Type resultType)
