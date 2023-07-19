@@ -20,8 +20,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             //process incoming requests to perform operations
             AddCallback<OperationRequest>(((request, session) =>
             {
-                Debug.Log("Server: Processing callback for operationRequest");
-                
                 //extract operation for easier reference
                 SynchronisedOperation operation = request.GetOperation();
                 ValueReference reference = operation.GetReference();
@@ -35,15 +33,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //if request was successful
                 if (reply.Success(operation.ModCount))
                 {
-                    Debug.Log($"Successful remote set request, modCount={modCount}");
-                    
                     //inform other clients of new value
                     MulticastToOthers(new OperationMessage(operation), session);
                 }
                 else
                 {
-                    Debug.Log($"Delayed remote set request, modCount={operation.ModCount}->{modCount}");
-                    
                     //expect a OperationMessage when client received up to date data
                     session.TrackFailedSet(reference, modCount);
                 }

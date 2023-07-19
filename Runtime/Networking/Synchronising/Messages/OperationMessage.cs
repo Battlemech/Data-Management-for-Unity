@@ -12,7 +12,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
 
         public OperationMessage(SynchronisedOperation operation)
         {
-            _operationValue = Serialization.Serialize(operation, out Type type);
+            //get type of object, allowing the serialization of an abstract class
+            Type type = operation.GetType();
+            
+            //serialize operation
+            _operationValue = Serialization.Serialize(type, operation);
             _operationType = type.AssemblyQualifiedName;
         }
 

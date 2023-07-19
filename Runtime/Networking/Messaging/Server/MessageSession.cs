@@ -77,21 +77,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         {
             try
             {
-                Debug.Log("Server session: Received data!");
-            
                 //deserialize received bytes, unpacking information about expected length.
-                foreach (var received in _networkSerializer.Deserialize(buffer, offset, size))
+                foreach (var message in _networkSerializer.Deserialize(buffer, offset, size).Select(Serialization.Deserialize<Message>))
                 {
-                    Debug.Log("Server received enough data to create message");
-                
-                    //deserialize network message
-                    Message message = Serialization.Deserialize<Message>(received);
-                
                     //deserialize received object
                     object value = message.Deserialize(out Type type);
 
-                    Debug.Log($"Server Session: Received: {type}");
-                
                     //enqueue received object to be processed by main thread
                     _messageServer.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, this));
 
