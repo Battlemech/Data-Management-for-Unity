@@ -33,11 +33,15 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //if request was successful
                 if (reply.Success(operation.ModCount))
                 {
+                    Debug.Log($"Server: Successful operation: modCount={modCount}");
+                    
                     //inform other clients of new value
                     MulticastToOthers(new OperationMessage(operation), session);
                 }
                 else
                 {
+                    Debug.Log($"Server: Delayed operation: modCount={operation.ModCount}->{modCount}");
+                    
                     //expect a OperationMessage when client received up to date data
                     session.TrackFailedSet(reference, modCount);
                 }
@@ -55,7 +59,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //if delayed set was expected
                 if (session.DequeueDelayedSet(operation.GetReference(), operation.ModCount))
                 {
-                    //Debug.Log($"Server: Informing others of delayed set: modCount={message.ModCount}");
+                    Debug.Log($"Server: Informing others of delayed set: modCount={operation.ModCount}");
                     
                     //inform others of new value
                     MulticastToOthers(message, session);

@@ -213,6 +213,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         [UnityTest]
         public IEnumerator TestConcurrentAdd()
         {
+            //todo: messages are not received in order
             const string id = nameof(TestConcurrentAdd);
             const int addCount = 200; //todo: implement for addCount = 1000
 
