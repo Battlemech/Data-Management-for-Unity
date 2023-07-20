@@ -101,7 +101,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         [UnityTest]
         public IEnumerator TestReplyUnity()
         {
-            return TestReplyUnityAsync().AsIEnumerator();
+            return TestReplyUnityAsync();
         }
 
         [UnityTest]
@@ -183,7 +183,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             }
         }
         
-        private async Task TestReplyUnityAsync()
+        private IEnumerator TestReplyUnityAsync()
         {
             GameObject serverObject = null;
             GameObject clientObject = null;
@@ -199,18 +199,27 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 session.Send(new TestReply(request));
             });
 
+            //todo: this is not triggered: Requests are processed in threads?
             _client.AddCallback<TestReply>((reply =>
             {
+                Debug.Log("Client is invoking callback");
+                
                 //spawn unity game object
                 clientObject = new GameObject("Client:" + reply.Id);
                 Debug.Log(clientObject.name);
-            }));
+            }), mainThread:true);
             
             //client sends request
-            TestReply reply = await _client.SendRequest<TestRequest, TestReply>(new TestRequest(12, 10));
+            Task<TestReply> replyTask = _client.SendRequest<TestRequest, TestReply>(new TestRequest(12, 10));
+
+            //wait until reply was received
+            yield return replyTask.AsIEnumerator();
+
+            //wait until client processed callback on main thread
+            yield return null;
             
             //spawn game Object once reply is received
-            GameObject onReplyObject = new GameObject("onReply:" + reply.Id);
+            GameObject onReplyObject = new GameObject("onReply:" + replyTask.Result.Id);
             Debug.Log(onReplyObject.name);
 
             Assert.NotNull(serverObject);
