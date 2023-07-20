@@ -19,14 +19,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 
         protected override TCollection PerformAction(TCollection collection)
         {
-            //deserialize value to add
+            //deserialize value to remove
             object deserialized = Serialization.Deserialize(_removedValue, Type.GetType(_removedTypeString, true));
             
             //make sure object to add is of expected type
             if (deserialized is not TValue value)
                 throw new InvalidCastException($"Expected collection of type {typeof(TCollection)}, but was {deserialized?.GetType()}");
             
-            //add element
+            //remove element
             collection.Remove(value);
             
             //return updated collection
