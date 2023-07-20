@@ -62,9 +62,45 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 //serialize collection
                 collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
             }
-            
+
             //process remove internally
             return valueStorage.Database.OnRemove<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType);
+        }
+
+        public static Task Add<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value)
+            where TCollection : IDictionary<TKey, TValue>, new()
+        {
+            return valueStorage.Add(new KeyValuePair<TKey, TValue>(key, value));
+        }
+
+        public static Task RemoveKey<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey toRemove)
+            where TCollection : IDictionary<TKey, TValue>, new()
+        {
+            //serialize added value
+            byte[] removedValue;
+            Type removedType;
+
+            //serialize entire collection
+            byte[] collectionValue;
+            Type collectionType;
+            
+            lock (valueStorage.Id)
+            {
+                //init collection if necessary
+                valueStorage.Data ??= new TCollection();
+                
+                //remove value from collection
+                valueStorage.Data.Remove(toRemove);
+                
+                //serialize removed value
+                removedValue = Serialization.Serialize(toRemove, out removedType);
+                
+                //serialize collection
+                collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
+            }
+
+            //process remove internally
+            return valueStorage.Database.OnRemoveKey<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType);
         }
     }
 }

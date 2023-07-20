@@ -282,6 +282,25 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 return Task.WhenAll(tasks);
             })));
         }
+
+        [UnityTest]
+        public IEnumerator TestDictionary()
+        {
+            const string id = nameof(TestDictionary);
+
+            //add keys
+            yield return _database0.Get<Dictionary<string, int>>(id).Add(id, 1);
+            yield return _database1.Get<Dictionary<string, int>>(id).Add(id + "_", 2);
+            
+            //make sure they are equal
+            yield return ValuesEqual<Dictionary<string, int>>(id);
+            
+            //remove a key
+            yield return _database3.Get<Dictionary<string, int>>(id).RemoveKey<Dictionary<string, int>, string, int>(id);
+
+            //make sure they are equal
+            yield return ValuesEqual<Dictionary<string, int>>(id);
+        }
         
         private IEnumerator ValuesEqual<T>(string id, int timeout = Options.DefaultTimeout)
         {
