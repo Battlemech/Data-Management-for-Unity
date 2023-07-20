@@ -1,36 +1,48 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using Data_Management_for_Unity.Runtime.Serializer;
+using DMP.Utility;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
     public class SynchronisedModify<T> : SynchronisedOperation
     {
+        [PreventSerialization]
         private readonly ModifyDelegate<T> _modify;
-
-        public SynchronisedModify(ModifyDelegate<T> modify, int modCount) : base(modCount)
+        
+        //saves value and type resulting from operation to allow synchronising result on remote
+        private byte[] _value;
+        private string _typeString;
+        
+        public SynchronisedModify(string databaseId, string valueId, byte[] value, Type type, ModifyDelegate<T> modify) : base(databaseId, valueId)
         {
             _modify = modify;
+
+            //save value to allow setting it on remote
+            _value = value;
+            _typeString = type.AssemblyQualifiedName;
         }
 
-        public override async Task<AccessValueReply> Invoke(SynchronisedClient client, string databaseId, string valueId, byte[] value, Type type)
+        public override byte[] Repeat(byte[] value, Type type, out Type resultType)
         {
-            //create request which can be sent to server
-            SetValueRequest request = new SetValueRequest(databaseId, valueId, value, type, ModCount);
+            //updates cached value and type since operation had to be repeated
+            _value = _modify.InvokeSafe(value, type, out resultType);
+            
+            //update serialized type
+            _typeString = resultType.AssemblyQualifiedName;
 
-            //wait for reply
-            return await client.SendRequest<SetValueRequest, AccessValueReply>(request);
+            //return value and type
+            return _value;
         }
 
-        public override object Repeat(string databaseId, string valueId, byte[] value, Type type)
+        public override byte[] OnRemote(byte[] value, Type type, out Type resultType)
         {
-            //repeat operation with up-to-date value, overwriting old value and type
-            value = _modify.InvokeSafe(value, type, out type);
-
-            return new SetValueMessage(databaseId, valueId, value, type, ModCount);
+            //deserialize type
+            resultType = Type.GetType(_typeString, true);
+            return _value;
         }
     }
 }

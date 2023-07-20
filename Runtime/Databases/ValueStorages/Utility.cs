@@ -1,24 +1,70 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Data_Management_for_Unity.Runtime.Serializer;
 
 namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
 {
     public static class Utility
     {
-        public static Task Add<TCollection, TData>(this ValueStorage<TCollection> valueStorage, TData toAdd)
-            where TCollection : ICollection<TData>, new()
+        public static Task Add<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toAdd)
+            where TCollection : ICollection<TValue>, new()
         {
-            return valueStorage.Modify((collection =>
+            //serialize added value
+            byte[] addedValue;
+            Type addedType;
+
+            //serialize entire collection
+            byte[] collectionValue;
+            Type collectionType;
+            
+            lock (valueStorage.Id)
             {
                 //init collection if necessary
-                collection ??= new TCollection();
+                valueStorage.Data ??= new TCollection();
                 
-                //add value
-                collection.Add(toAdd);
+                //add value to collection
+                valueStorage.Data.Add(toAdd);
+                
+                //serialize added value
+                addedValue = Serialization.Serialize(toAdd, out addedType);
+                
+                //serialize collection
+                collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
+            }
+            
+            //process add internally
+            return valueStorage.Database.OnAdd<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, addedValue, addedType);
+        }
 
-                //return updated collection
-                return collection;
-            }));
+        public static Task Remove<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toRemove)
+            where TCollection : ICollection<TValue>, new()
+        {
+            //serialize added value
+            byte[] removedValue;
+            Type removedType;
+
+            //serialize entire collection
+            byte[] collectionValue;
+            Type collectionType;
+            
+            lock (valueStorage.Id)
+            {
+                //init collection if necessary
+                valueStorage.Data ??= new TCollection();
+                
+                //remove value from collection
+                valueStorage.Data.Remove(toRemove);
+                
+                //serialize removed value
+                removedValue = Serialization.Serialize(toRemove, out removedType);
+                
+                //serialize collection
+                collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
+            }
+            
+            //process add internally
+            return valueStorage.Database.OnRemove<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType);
         }
     }
 }

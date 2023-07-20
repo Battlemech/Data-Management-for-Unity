@@ -4,30 +4,30 @@ using Data_Management_for_Unity.Runtime.Serializer;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    public class SynchronisedAdd<TCollection, TValue> : CollectionOperation<TCollection, TValue>
+    public class SynchronisedRemove<TCollection, TValue> : CollectionOperation<TCollection, TValue>
         where TCollection : ICollection<TValue>, new()
     {
         //serialize added value
-        private readonly byte[] _addedValue;
-        private readonly string _addedTypeString;
+        private readonly byte[] _removedValue;
+        private readonly string _removedTypeString;
         
-        public SynchronisedAdd(string databaseId, string valueId, byte[] addedValue, Type addedType) : base(databaseId, valueId)
+        public SynchronisedRemove(string databaseId, string valueId, byte[] removedValue, Type removedType) : base(databaseId, valueId)
         {
-            _addedValue = addedValue;
-            _addedTypeString = addedType.AssemblyQualifiedName;
+            _removedValue = removedValue;
+            _removedTypeString = removedType.AssemblyQualifiedName;
         }
 
         protected override TCollection PerformAction(TCollection collection)
         {
             //deserialize value to add
-            object deserialized = Serialization.Deserialize(_addedValue, Type.GetType(_addedTypeString, true));
+            object deserialized = Serialization.Deserialize(_removedValue, Type.GetType(_removedTypeString, true));
             
             //make sure object to add is of expected type
             if (deserialized is not TValue value)
                 throw new InvalidCastException($"Expected collection of type {typeof(TCollection)}, but was {deserialized?.GetType()}");
             
             //add element
-            collection.Add(value);
+            collection.Remove(value);
             
             //return updated collection
             return collection;

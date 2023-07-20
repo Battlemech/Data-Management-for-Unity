@@ -7,10 +7,10 @@ namespace Data_Management_for_Unity.Runtime.Persistence
 {
     public static partial class PersistentData
     {
-        public static bool TryLoadDatabase(string databaseId, out List<SerializedObject> savedObjects)
+        public static bool TryLoadDatabase(string databaseId, out List<PersistentObject> savedObjects)
         {
             //init return list
-            savedObjects = new List<SerializedObject>();
+            savedObjects = new List<PersistentObject>();
             
             //establish connection
             using SqliteConnection connection = new SqliteConnection(ConnectionString);
@@ -28,7 +28,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
                 while (reader.Read())
                 {
                     //deserialize object
-                    savedObjects.Add(new SerializedObject(databaseId, reader.GetString(0), reader[1] as byte[], Type.GetType(reader.GetString(2), true), reader.GetInt32(3)));
+                    savedObjects.Add(new PersistentObject(databaseId, reader.GetString(0), reader[1] as byte[], Type.GetType(reader.GetString(2), true), reader.GetInt32(3)));
                 }
             }
             catch (SqliteException e)

@@ -23,11 +23,11 @@ namespace Data_Management_for_Unity.Runtime.Persistence
         /// <summary>
         /// Queue of values which have to be saved persistently.
         /// </summary>
-        private static readonly ConcurrentQueue<SerializedObject> ToSave = new ConcurrentQueue<SerializedObject>();
+        private static readonly ConcurrentQueue<PersistentObject> ToSave = new ConcurrentQueue<PersistentObject>();
 
         public static Task Save(string databaseId, string valueId, byte[] value, Type type, int modCount)
         {
-            ToSave.Enqueue(new SerializedObject(databaseId, valueId, value, type, modCount));
+            ToSave.Enqueue(new PersistentObject(databaseId, valueId, value, type, modCount));
             
             //todo: Implement this task queue for all SQLite commands
             lock (ToSave)
@@ -49,7 +49,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
                 using SqliteTransaction transaction = connection.BeginTransaction();
                 
                 //save all queued data
-                while (ToSave.TryDequeue(out SerializedObject r))
+                while (ToSave.TryDequeue(out PersistentObject r))
                 {
                     //setup set
                     using SqliteCommand command = connection.CreateCommand();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
@@ -14,67 +13,54 @@ namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
-        protected internal Task OnSet(string valueId, byte[] value, Type type)
+        protected internal async Task OnSet(string valueId, byte[] value, Type type)
         {
-            /*
-             * Task factory uses this databases concurrent scheduler, making sure tasks are executed in order.
-             * The task factory allows scheduling asynchronous code.
-             */
-            
-            /*
-             * Tasks executed in _factory, using QueuedScheduler, can only be executed one at a time.
-             * this ensures requests being created first will be received by server first, not messing with the modCount order
-             */
-            return _factory.StartNew((() =>
-            {
-                //Value changed -> Increment modification count
-                int modCount = IncrementModCount(valueId);
-                
-                return OnOperation(valueId, value, type,new SynchronisedSet(value, type, modCount));
-            })).Unwrap();
+            await OnLocalOperation(value, type, new SynchronisedSet(Id, valueId, value, type));
         }
 
-        protected internal Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify)
+        protected internal async Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify)
         {
-            return _factory.StartNew((() =>
-            {
-                //value changed -> Increment modification count
-                int modCount = IncrementModCount(valueId);
-
-                return OnOperation(valueId, value, type, new SynchronisedModify<T>(modify, modCount));
-            })).Unwrap();
+            await OnLocalOperation(value, type, new SynchronisedModify<T>(Id, valueId, value, type, modify));
         }
 
-        protected internal Task OnAdd(string valueId, byte[] value, Type type)
+        protected internal async Task OnAdd<TCollection, TValue>(string valueId, byte[] collectionValue,
+            Type collectionType, byte[] addedValue, Type addedType)
+            where TCollection : ICollection<TValue>, new()
         {
-            throw new NotImplementedException();
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedAdd<TCollection, TValue>(Id, valueId, addedValue, addedType));
+        }
+
+        protected internal async Task OnRemove<TCollection, TValue>(string valueId, byte[] collectionValue,
+            Type collectionType, byte[] removedValue, Type removedType)
+            where TCollection : ICollection<TValue>, new()
+        {
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedRemove<TCollection, TValue>(Id, valueId, removedValue, removedType));
         }
         
-        private async Task OnOperation(string valueId, byte[] value, Type type, SynchronisedOperation op)
+        private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
             //invoke local callbacks
-            _callbackHandler.Invoke(valueId, Serialization.Deserialize(value, type));
+            _callbackHandler.Invoke(op.ValueId, Serialization.Deserialize(value, type));
 
             //synchronise data across multiple clients
-            if (IsSynchronised) await ExecuteOperation(valueId, value, type, op);
+            if (IsSynchronised) await OnLocalSynchronisedOperation(value, type, op);
             //persistent data is updated after values were confirmed by remote. If not synchronised: Update instantly
-            else if (IsPersistent) await PersistentData.Save(Id, valueId, value, type, op.ModCount);
+            else if (IsPersistent) await PersistentData.Save(Id, op.ValueId, value, type, op.ModCount);
         }
 
-        private async Task ExecuteOperation(string valueId, byte[] value, Type type, SynchronisedOperation operation)
+        private async Task OnLocalSynchronisedOperation(byte[] value, Type type, SynchronisedOperation operation)
         {
-            AccessValueReply reply = await operation.Invoke(Client, Id, valueId, value, type);
-            
+            //assign modCount and request operation to be executed
+            OperationReply reply = await SendOperationRequest(operation);
+
             //operation was successful. New data was confirmed by remote
             if (reply.Success(operation.ModCount))
             {
-                Debug.Log($"{Client} operation success, modCount={operation.ModCount}");
-                
                 //update local data confirmed by remote
-                UpdateConfirmedData(valueId, operation.ModCount, value, type);
+                UpdateConfirmedData(operation.ValueId, operation.ModCount, value, type);
                 
                 //save data persistently, if necessary
-                if (IsPersistent) await PersistentData.Save(Id, valueId, value, type, operation.ModCount);
+                if (IsPersistent) await PersistentData.Save(Id, operation.ValueId, value, type, operation.ModCount);
                 return;
             }
 
@@ -85,23 +71,32 @@ namespace Data_Management_for_Unity.Runtime.Databases
             lock (_confirmed)
             {
                 //if required modCount was reached locally while waiting for reply: Process delayed operation instantly
-                if (_confirmed.TryGetValue(valueId, out ValueRecord data) && data.ModCount == operation.ModCount - 1)
+                if (_confirmed.TryGetValue(operation.ValueId, out ValueRecord data) && data.ModCount == operation.ModCount - 1)
                 {
                     //update data from saved value
                     value = data.Value;
                     type = data.Type;
                  
-                    Debug.Log($"{Client} operation failure, but can be executed instantly, modCount={operation.ModCount}");
-                    
                     //instantly execute operation
-                    ExecuteDelayedOperation(valueId, value, type, operation);
+                    OnOperation(value, type, operation, true);
                 }
                 else
                 {
-                    Debug.Log($"{Client} operation failure, delaying it, modCount={operation.ModCount}");
                     //enqueue operation: It will be executed once up-to-date value was received
-                    EnqueueDelayedOperation(valueId, operation);
+                    EnqueueDelayedOperation(operation.ValueId, operation);
                 }
+            }
+        }
+
+        private Task<OperationReply> SendOperationRequest(SynchronisedOperation operation)
+        {
+            //Make sure modCount is incremented and request is sent in one go:
+            //Prevents request with higher modCount reaching server, which will think the request has expected value
+            lock (Id)
+            {
+                operation.ModCount = IncrementModCount(operation.ValueId);
+            
+                return Client.SendRequest<OperationRequest, OperationReply>(new OperationRequest(operation));   
             }
         }
     }

@@ -1,35 +1,35 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.DelayedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
     public class SynchronisedSet : SynchronisedOperation
     {
+        //saves value and type resulting from operation to allow synchronising result on remote
         private readonly byte[] _value;
-        private readonly Type _type;
+        private readonly string _typeString;
         
-        public SynchronisedSet(byte[] value, Type type, int modCount) : base(modCount)
+        public SynchronisedSet(string databaseId, string valueId, byte[] value, Type type) : base(databaseId, valueId)
         {
             _value = value;
-            _type = type;
+            _typeString = type.AssemblyQualifiedName;
         }
 
-        public override async Task<AccessValueReply> Invoke(SynchronisedClient client, string databaseId, string valueId, byte[] value, Type type)
+        public override byte[] Repeat(byte[] value, Type type, out Type resultType)
         {
-            //create request which can be sent to server
-            SetValueRequest request = new SetValueRequest(databaseId, valueId, value, type, ModCount);
-
-            //wait for reply
-            return await client.SendRequest<SetValueRequest, AccessValueReply>(request);
+            //no action necessary, set overwrites previous value
+            resultType = Type.GetType(_typeString, true);
+            return _value;
         }
 
-        public override object Repeat(string databaseId, string valueId, byte[] value, Type type)
+        public override byte[] OnRemote(byte[] value, Type type, out Type resultType)
         {
-            // Overwrites current value with the one which was attempted to be set earlier
-            return new SetValueMessage(databaseId, valueId, _value, _type, ModCount);
+            //no action necessary, set overwrites previous value
+            resultType = Type.GetType(_typeString, true);
+            return _value;
         }
     }
 }

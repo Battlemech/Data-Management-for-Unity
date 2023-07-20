@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence;
@@ -28,10 +29,13 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
             if (Instance == null) Instance = this;
             
             //update values received by remote
-            AddCallback<SetValueMessage>((message =>
+            AddCallback<OperationMessage>((message =>
             {
-                GetDatabase(message.DatabaseId)
-                    .OnRemoteSet(message.ValueId, message.Value, message.GetSerializedType(), message.ModCount);
+                //extract operation for easier access
+                SynchronisedOperation operation = message.GetOperation();
+                
+                //process operation
+                GetDatabase(operation.DatabaseId).OnRemoteOperation(operation);
             }));
         }
 

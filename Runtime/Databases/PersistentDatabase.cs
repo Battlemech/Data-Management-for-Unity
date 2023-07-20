@@ -29,12 +29,12 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <summary>
         /// Dict of values which could not be loaded to a value storage successfully
         /// </summary>
-        private readonly Dictionary<string, SerializedObject> _toLoad = new Dictionary<string, SerializedObject>();
+        private readonly Dictionary<string, PersistentObject> _toLoad = new Dictionary<string, PersistentObject>();
 
         private void OnPersistenceEnabled()
         {
             //create database in SQLite if it doesn't exist
-            if (!PersistentData.TryLoadDatabase(Id, out List<SerializedObject> savedObjects))
+            if (!PersistentData.TryLoadDatabase(Id, out List<PersistentObject> savedObjects))
             {
                 //database didn't exist in SQL. Create it
                 PersistentData.CreateDatabase(Id);

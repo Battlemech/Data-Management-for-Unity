@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -109,6 +110,50 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             return TestServerRequestsAsync().AsIEnumerator();
         }
 
+        [UnityTest]
+        public IEnumerator TestMessageOrder()
+        {
+            const int messageCount = 10000;
+            
+            //create test messages to send
+            List<TestMessage> messages = new List<TestMessage>();
+            for (int i = 0; i < messageCount; i++)
+            {
+                messages.Add(new TestMessage(i));
+            }
+            
+            //track order of received messages on server
+            int received = 0;
+            _server.AddCallback<TestMessage>(((message, session) =>
+            {
+                //make sure message is received in right order
+                Assert.AreEqual(received, message.Id, $"Received {message.Id}, but expected {received}");
+                
+                //increment number or received messages
+                received++;
+            }));
+            
+            //send messages
+            foreach (var message in messages)
+            {
+                _client.Send(message);
+            }
+            
+            //make sure all messages are received
+            yield return TestUtility.AreEqual(messageCount, () => received);
+        }
+
+        public struct TestMessage
+        {
+            public readonly int Id;
+
+            public TestMessage(int id)
+            {
+                Id = id;
+            }
+        }
+        
+        
         private async Task TestServerRequestsAsync()
         {
             //reply to server requests

@@ -1,40 +1,57 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases.Structs;
-using Data_Management_for_Unity.Runtime.Networking.Messaging;
-using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
+using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using UnityEngine.UI;
 
-namespace Data_Management_for_Unity.Runtime.Databases.DelayedOperations
+namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
     public abstract class SynchronisedOperation
     {
+        /// <summary>
+        /// Id of the database the operation was performed on
+        /// </summary>
+        public readonly string DatabaseId;
+
+        /// <summary>
+        /// Id of the value the operation was performed on
+        /// </summary>
+        public readonly string ValueId;
+        
+        /// <summary>
+        /// Expected modificationCount, used to synchronise order of operations
+        /// </summary>
         public int ModCount;
 
-        protected SynchronisedOperation(int modCount)
+        protected SynchronisedOperation(string databaseId, string valueId)
         {
-            ModCount = modCount;
+            DatabaseId = databaseId;
+            ValueId = valueId;
         }
 
         /// <summary>
-        /// Invokes an operation, trying to perform it
+        /// Create a tuple containing the database and value id of value operation was performed on
         /// </summary>
-        /// <param name="client"></param>
-        /// <param name="databaseId">Id of database which is processing delayed operation</param>
-        /// <param name="valueId">Id of value on database for which delayed operation is being processed</param>
-        /// <param name="value">Current value of current value</param>
-        /// <param name="type">Current type of current value</param>
-        /// <returns>The reply to the initial operation</returns>
-        public abstract Task<AccessValueReply> Invoke(SynchronisedClient client, string databaseId, string valueId, byte[] value, Type type);
+        public ValueReference GetReference()
+        {
+            return new ValueReference(DatabaseId, ValueId);
+        }
+        
+        /// <summary>
+        /// Operation is repeated locally after synchronisation failed initially
+        /// </summary>
+        /// <param name="value">Current value</param>
+        /// <param name="type">Current type</param>
+        /// <param name="resultType">Result type</param>
+        /// <returns>Result value</returns>
+        public abstract byte[] Repeat(byte[] value, Type type, out Type resultType);
 
         /// <summary>
-        /// Repeats the delayed operation
+        /// Operation is processed on remote
         /// </summary>
-        /// <param name="databaseId">Id of database which is processing delayed operation</param>
-        /// <param name="valueId">Id of value on database for which delayed operation is being processed</param>
-        /// <param name="value">Current value of current value</param>
-        /// <param name="type">Current type of current value</param>
-        /// <returns>Object which needs to be processed locally and on remote. Example: SetValueMessage</returns>
-        public abstract object Repeat(string databaseId, string valueId, byte[] value, Type type);
+        /// <param name="value">Current value</param>
+        /// <param name="type">Current type</param>
+        /// <param name="resultType">Result type</param>
+        /// <returns>Result value</returns>
+        public abstract byte[] OnRemote(byte[] value, Type type, out Type resultType);
     }
 }
