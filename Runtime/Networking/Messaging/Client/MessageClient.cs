@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,17 +60,25 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            //deserialize received bytes, unpacking information about expected length.
-            foreach (var bytes in _networkSerializer.Deserialize(buffer, offset, size))
+            try
             {
-                //deserialize received message
-                Message message = Serialization.Deserialize<Message>(bytes);
+                //deserialize received bytes, unpacking information about expected length.          //deserialize received message
+                foreach (var message in _networkSerializer.Deserialize(buffer, offset, size).Select(Serialization.Deserialize<Message>))
+                {
+                    //deserialize received object
+                    object value = message.Deserialize(out Type type);
                 
-                //deserialize received object
-                object value = message.Deserialize(out Type type);
+                    //don't delegate callbacks to the main thread if they could be invoked on receiving thread
+                    if(_threadedCallbacks.Invoke(type, value) > 0) continue;
                 
-                //save deserialized objects to be processed on main thread
-                _receivedObjects.Enqueue(new Tuple<object, Type>(value, type));
+                    //save deserialized objects to be processed on main thread
+                    _receivedObjects.Enqueue(new Tuple<object, Type>(value, type));
+                }
+            }
+            catch (Exception e)
+            {
+                //log any exceptions which occur, but don't terminate receiving thread
+                Debug.LogException(e);
             }
         }
 
@@ -79,13 +88,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
             while (_receivedObjects.TryDequeue(out Tuple<object, Type> tuple))
             {
                 //invoke all callbacks for received object
-                _callbackHandler.Invoke(tuple.Item2, tuple.Item1);
+                if(_mainThreadCallbacks.Invoke(tuple.Item2, tuple.Item1) > 0) continue;
+                
+                //warn user if received object didn't trigger callbacks
+                Debug.LogWarning($"Client: Received object of type {tuple.Item2} didn't trigger any callbacks!");
             }
-        }
-        
-        protected internal void InvokeCallbacks(object toProcess)
-        {
-            _receivedObjects.Enqueue(new Tuple<object, Type>(toProcess, toProcess.GetType()));
         }
     }
 }

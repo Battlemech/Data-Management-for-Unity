@@ -1,23 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Data_Management_for_Unity.Runtime.Databases;
-using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
 {
-    public class SynchronisedSession : MessageSession
+    public partial class SynchronisedSession
     {
-        public SynchronisedSession(MessageServer messageServer) : base(messageServer)
-        {
-            
-        }
-        
+        /// <summary>
+        /// Tracks the modification count of expected delayed requests
+        /// </summary>
         private readonly Dictionary<ValueReference, Queue<int>> _failedSets =
             new Dictionary<ValueReference, Queue<int>>();
 
-        protected internal void TrackFailedSet(ValueReference reference, int expected)
+        /// <summary>
+        /// Expect a delayed set to be received in the near future
+        /// </summary>
+        private void TrackFailedSet(ValueReference reference, int expected)
         {
             lock (_failedSets)
             {
@@ -33,7 +29,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             }
         }
 
-        protected internal bool DequeueDelayedSet(ValueReference reference, int modCount)
+        /// <summary>
+        /// Ensure the delayed set was expected
+        /// </summary>
+        private bool DequeueDelayedSet(ValueReference reference, int modCount)
         {
             lock (_failedSets)
             {

@@ -14,13 +14,13 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <summary>
         ///     Initialize the session with a given server
         /// </summary>
-        /// <param name="messageServer">TCP server</param>
-        public TcpSession(TcpServer messageServer)
+        /// <param name="server">TCP server</param>
+        public TcpSession(TcpServer server)
         {
             Id = Guid.NewGuid();
-            MessageServer = messageServer;
-            OptionReceiveBufferSize = messageServer.OptionReceiveBufferSize;
-            OptionSendBufferSize = messageServer.OptionSendBufferSize;
+            Server = server;
+            OptionReceiveBufferSize = server.OptionReceiveBufferSize;
+            OptionSendBufferSize = server.OptionSendBufferSize;
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <summary>
         ///     Server
         /// </summary>
-        public TcpServer MessageServer { get; }
+        public TcpServer Server { get; }
 
         /// <summary>
         ///     Socket
@@ -129,10 +129,10 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             _sendEventArg.Completed += OnAsyncCompleted;
 
             // Apply the option: keep alive
-            if (MessageServer.OptionKeepAlive)
+            if (Server.OptionKeepAlive)
                 Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
             // Apply the option: no delay
-            if (MessageServer.OptionNoDelay)
+            if (Server.OptionNoDelay)
                 Socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
 
             // Prepare receive & send buffers
@@ -150,7 +150,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             OnConnecting();
 
             // Call the session connecting handler in the server
-            MessageServer.OnConnectingInternal(this);
+            Server.OnConnectingInternal(this);
 
             // Update the connected flag
             IsConnected = true;
@@ -166,7 +166,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             OnConnected();
 
             // Call the session connected handler in the server
-            MessageServer.OnConnectedInternal(this);
+            Server.OnConnectedInternal(this);
 
             // Call the empty send buffer handler
             if (_sendBufferMain.IsEmpty)
@@ -190,7 +190,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             OnDisconnecting();
 
             // Call the session disconnecting handler in the server
-            MessageServer.OnDisconnectingInternal(this);
+            Server.OnDisconnectingInternal(this);
 
             try
             {
@@ -234,10 +234,10 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             OnDisconnected();
 
             // Call the session disconnected handler in the server
-            MessageServer.OnDisconnectedInternal(this);
+            Server.OnDisconnectedInternal(this);
 
             // Unregister session
-            MessageServer.UnregisterSession(Id);
+            Server.UnregisterSession(Id);
 
             return true;
         }
@@ -301,7 +301,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             {
                 // Update statistic
                 BytesSent += sent;
-                Interlocked.Add(ref MessageServer._bytesSent, sent);
+                Interlocked.Add(ref Server._bytesSent, sent);
 
                 // Call the buffer sent handler
                 OnSent(sent, BytesPending + BytesSending);
@@ -410,7 +410,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             {
                 // Update statistic
                 BytesReceived += received;
-                Interlocked.Add(ref MessageServer._bytesReceived, received);
+                Interlocked.Add(ref Server._bytesReceived, received);
 
                 // Call the buffer received handler
                 OnReceived(buffer, 0, received);
@@ -604,7 +604,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             {
                 // Update statistic
                 BytesReceived += size;
-                Interlocked.Add(ref MessageServer._bytesReceived, size);
+                Interlocked.Add(ref Server._bytesReceived, size);
 
                 // Call the buffer received handler
                 OnReceived(_receiveBuffer.Data, 0, size);
@@ -659,7 +659,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
                 // Update statistic
                 BytesSending -= size;
                 BytesSent += size;
-                Interlocked.Add(ref MessageServer._bytesSent, size);
+                Interlocked.Add(ref Server._bytesSent, size);
 
                 // Increase the flush buffer offset
                 _sendBufferFlushOffset += size;

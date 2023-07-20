@@ -1,0 +1,63 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
+using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using UnityEngine;
+
+namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
+{
+    public partial class SynchronisedSession : MessageSession
+    {
+        public SynchronisedSession(SynchronisedServer server) : base(server)
+        {
+            //process incoming requests to perform operations
+            AddCallback<OperationRequest>(((request) =>
+            {
+                //extract operation for easier reference
+                SynchronisedOperation operation = request.GetOperation();
+                ValueReference reference = operation.GetReference();
+                
+                //client is planning to change a value
+                int modCount = server.IncrementModCount(reference);
+                
+                //create reply
+                OperationReply reply = new OperationReply(request, modCount);
+                
+                //if request was successful
+                if (reply.Success(operation.ModCount))
+                {
+                    //inform other clients of new value
+                    server.MulticastToOthers(new OperationMessage(operation), this);
+                }
+                else
+                {
+                    //expect a OperationMessage when client received up to date data
+                    TrackFailedSet(reference, modCount);
+                }
+                
+                //send reply
+                Send(reply);
+            }));
+
+            //process delayed operations
+            AddCallback<OperationMessage>(((message) =>
+            {
+                //extract operation for easier access
+                SynchronisedOperation operation = message.GetOperation();
+
+                //if delayed set was expected
+                if (DequeueDelayedSet(operation.GetReference(), operation.ModCount))
+                {
+                    //inform others of new value
+                    server.MulticastToOthers(message, this);
+                }
+                else
+                    //delayed set was unexpected
+                    throw new InvalidOperationException("Received invalid delayed set!");
+            }));
+        }
+    }
+}

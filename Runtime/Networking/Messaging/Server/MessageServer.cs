@@ -122,7 +122,9 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
             while (ReceivedObjects.TryDequeue(out Tuple<object, Type, MessageSession> tuple))
             {
                 //invoke all callbacks for received object
-                _callbackHandler.Invoke(tuple.Item2, tuple.Item1, tuple.Item3);
+                if(_callbackHandler.Invoke(tuple.Item2, tuple.Item1, tuple.Item3) > 0) continue;
+                
+                Debug.LogWarning($"Server: Received object of type {tuple.Item2} didn't trigger any callbacks!");
             }
         }
     }

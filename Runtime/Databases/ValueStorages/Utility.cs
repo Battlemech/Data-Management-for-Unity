@@ -11,8 +11,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             where TCollection : ICollection<TValue>, new()
         {
             //serialize added value
-            byte[] addedValue;
-            Type addedType;
+            byte[] addedValue = Serialization.Serialize(toAdd, out Type addedType);
 
             //serialize entire collection
             byte[] collectionValue;
@@ -25,10 +24,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 
                 //add value to collection
                 valueStorage.Data.Add(toAdd);
-                
-                //serialize added value
-                addedValue = Serialization.Serialize(toAdd, out addedType);
-                
+
                 //serialize collection
                 collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
             }
@@ -40,9 +36,8 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         public static Task Remove<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toRemove)
             where TCollection : ICollection<TValue>, new()
         {
-            //serialize added value
-            byte[] removedValue;
-            Type removedType;
+            //serialize removed value
+            byte[] removedValue = Serialization.Serialize(toRemove, out Type removedType);
 
             //serialize entire collection
             byte[] collectionValue;
@@ -55,10 +50,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 
                 //remove value from collection
                 valueStorage.Data.Remove(toRemove);
-                
-                //serialize removed value
-                removedValue = Serialization.Serialize(toRemove, out removedType);
-                
+
                 //serialize collection
                 collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
             }
@@ -76,9 +68,8 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         public static Task RemoveKey<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey toRemove)
             where TCollection : IDictionary<TKey, TValue>, new()
         {
-            //serialize added value
-            byte[] removedValue;
-            Type removedType;
+            //serialize removed key
+            byte[] removedValue = Serialization.Serialize(toRemove, out Type removedType);
 
             //serialize entire collection
             byte[] collectionValue;
@@ -91,16 +82,19 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 
                 //remove value from collection
                 valueStorage.Data.Remove(toRemove);
-                
-                //serialize removed value
-                removedValue = Serialization.Serialize(toRemove, out removedType);
-                
+
                 //serialize collection
                 collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
             }
 
             //process remove internally
             return valueStorage.Database.OnRemoveKey<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType);
+        }
+
+        public static Task Update<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value)
+            where TCollection : IDictionary<TKey, TValue>, new()
+        {
+            throw new NotImplementedException();
         }
     }
 }

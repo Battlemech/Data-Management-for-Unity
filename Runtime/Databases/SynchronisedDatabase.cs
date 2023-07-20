@@ -104,10 +104,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
                         storage.InternalSet(value, type);
                     //value can be loaded later
                     else
-                        _toLoad.Add(id, new PersistentObject(Id, id, value, type, modCount));
+                        _toLoad[id] = new PersistentObject(Id, id, value, type, modCount);
                 }
 
                 //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
+                //todo: invoke in main thread?
                 _callbackHandler.Invoke(id, Serialization.Deserialize(value, type));
 
                 //update confirmed data
