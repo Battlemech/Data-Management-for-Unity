@@ -50,8 +50,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         }
 
         /// <summary>
-        /// Adds a callback, which is invoked whenever an object of the expected type is received
+        /// Adds a callback, which is invoked whenever an object of the expected type is received.
+        /// Callbacks added here are executed on the main thread.
         /// </summary>
+        /// <remarks>If a callback with the same type was added to the server's receiving session, the servers callback will not be invoked!</remarks>
         /// <param name="callback">Action invoked when callback is triggered</param>
         /// <param name="name">Name of the callback</param>
         /// <param name="unique">True if callbacks with duplicate names must be prevented</param>
