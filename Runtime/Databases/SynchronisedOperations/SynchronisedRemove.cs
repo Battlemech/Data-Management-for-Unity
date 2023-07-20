@@ -7,7 +7,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
     public class SynchronisedRemove<TCollection, TValue> : CollectionOperation<TCollection, TValue>
         where TCollection : ICollection<TValue>, new()
     {
-        //serialize added value
+        //serialize removed value
         private readonly byte[] _removedValue;
         private readonly string _removedTypeString;
         
