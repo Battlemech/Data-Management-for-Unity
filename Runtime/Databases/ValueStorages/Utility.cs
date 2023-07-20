@@ -63,7 +63,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
             }
             
-            //process add internally
+            //process remove internally
             return valueStorage.Database.OnRemove<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType);
         }
     }
