@@ -247,6 +247,42 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             })));
         }
 
+        [UnityTest]
+        public IEnumerator TestConcurrentCollectionOperations()
+        {
+            const string id = nameof(TestConcurrentCollectionOperations);
+            const int addCount = 1000;
+            const int removeCount = 200;
+            
+            //measure elapsed time
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            
+            //start adding and removing objects concurrently
+            yield return Task.WhenAll(TestConcurrentAddAsync(id, addCount), TestConcurrentRemoveAsync(id, removeCount)).AsIEnumerator();
+            
+            //make sure values equal
+            yield return ValuesEqual<List<int>>(id, 15000);
+            
+            //output time
+            stopwatch.Stop();
+            Debug.Log($"Concurrently added or removed and synchronised {addCount * _databases.Count + removeCount * _databases.Count} elements within {stopwatch.ElapsedMilliseconds} ms!");
+        }
+
+        private Task TestConcurrentRemoveAsync(string id, int removeCount)
+        {
+            return Task.WhenAll(_databases.Select(((database, i) =>
+            {
+                Task[] tasks = new Task[removeCount];
+                
+                for (int j = 0; j < removeCount; j++)
+                {
+                    tasks[j] = database.Get<List<int>>(id).Remove(i + j);
+                }
+
+                return Task.WhenAll(tasks);
+            })));
+        }
+        
         private IEnumerator ValuesEqual<T>(string id, int timeout = Options.DefaultTimeout)
         {
             //make sure value is synchronised in other databases

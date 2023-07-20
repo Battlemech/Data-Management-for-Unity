@@ -29,6 +29,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
         {
             await OnLocalOperation(collectionValue, collectionType, new SynchronisedAdd<TCollection, TValue>(Id, valueId, addedValue, addedType));
         }
+
+        protected internal async Task OnRemove<TCollection, TValue>(string valueId, byte[] collectionValue,
+            Type collectionType, byte[] removedValue, Type removedType)
+            where TCollection : ICollection<TValue>, new()
+        {
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedRemove<TCollection, TValue>(Id, valueId, removedValue, removedType));
+        }
         
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
