@@ -108,7 +108,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 }
 
                 //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
-                _callbackHandler.Invoke(id, Serialization.Deserialize(value, type));
+                Invoke(id, Serialization.Deserialize(value, type));
 
                 //update confirmed data
                 lock (_confirmed) _confirmed[id] = new ValueRecord(value, type, modCount);

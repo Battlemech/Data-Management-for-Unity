@@ -91,7 +91,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                 if(_mainThreadCallbacks.Invoke(tuple.Item2, tuple.Item1) > 0) continue;
                 
                 //warn user if received object didn't trigger callbacks
-                Debug.LogWarning($"Client: Received object of type {tuple.Item2} didn't trigger any callbacks!");
+                Debug.LogWarning($"Client: Object of type {tuple.Item2} didn't trigger any callbacks!");
             }
         }
     }

@@ -3,7 +3,7 @@
     public enum ThreadType
     {
         /// <summary>
-        /// The callback is executed on the receiving thread. Any callbacks of the type added to the main thread will not be triggered.
+        /// The callback is executed on a thread. Any callbacks of the type added to the main thread will not be triggered.
         /// </summary>
         ThreadedOnly,
         
@@ -13,7 +13,7 @@
         MainThread,
         
         /// <summary>
-        /// The callback is executed on the receiving thread. Additionally, after executing the callback, all callbacks of the type on Unity's main thread will be triggered.
+        /// The callback is executed on a thread. Additionally, after executing the callback, all callbacks of the type on Unity's main thread will be triggered.
         /// </summary>
         Threaded
     }

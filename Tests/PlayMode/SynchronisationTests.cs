@@ -100,6 +100,9 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             
             //init databases list
             _databases = new List<Database>() { _database0, _database1, _database2, _database3, _database4 };
+            
+            //add main thread runner to execute callbacks from the database
+            gameObject.AddComponent<MainThreadRunner>();
         }
 
         [TearDown]
@@ -301,6 +304,36 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             //make sure they are equal
             yield return ValuesEqual<Dictionary<string, int>>(id);
         }
+
+        [UnityTest]
+        public IEnumerator TestDatabaseCallbacks()
+        {
+            const string id = nameof(TestDatabaseCallbacks);
+
+            //add callbacks to all databases
+            foreach (var database in _databases)
+            {
+                //when value is modified
+                database.AddCallback<int>(id, s =>
+                {
+                    //append number to other values
+                    database.Get<string>(id + "_").Modify((data =>
+                    {
+                        if (data == null) return "Beginning";
+                        return data + s;
+                    }));
+                });
+            }
+            
+            //invoke callbacks by setting value
+            _database0.Get<int>(id).Set(3);
+            
+            //wait until value was updated
+            yield return ValuesAreEqual(id, 3, "First set");
+            
+            //wait until callbacks were invoked
+            yield return ValuesAreEqual(id + "_", "Beginning3333", "Second set");
+        }
         
         private IEnumerator ValuesEqual<T>(string id, int timeout = Options.DefaultTimeout)
         {
@@ -313,6 +346,11 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 
                 return items.AreEqual();
             }, "Values Synchronised", timeout);
+        }
+
+        private IEnumerator ValuesAreEqual<T>(string id, T expected, string name = "Test", int timeout = Options.DefaultTimeout)
+        {
+            return _databases.Select((database, index) => TestUtility.AreEqual(expected, () => database.Get<T>(id).Get(), name + $" - Database {index}", timeout)).GetEnumerator();
         }
     }
 }

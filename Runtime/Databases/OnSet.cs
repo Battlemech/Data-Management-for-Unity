@@ -47,7 +47,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
             //invoke local callbacks
-            _callbackHandler.Invoke(op.ValueId, Serialization.Deserialize(value, type));
+            _threadedCallbacks.Invoke(op.ValueId, Serialization.Deserialize(value, type));
 
             //synchronise data across multiple clients
             if (IsSynchronised) await OnLocalSynchronisedOperation(value, type, op);
