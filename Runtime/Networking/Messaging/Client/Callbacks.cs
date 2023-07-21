@@ -22,12 +22,28 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// <param name="name">Name of the callback</param>
         /// <param name="unique">True if callbacks with duplicate names must be prevented</param>
         /// <param name="removeOnError">True if the callbacks must be removed on error</param>
-        /// <param name="mainThread">True if the callback is supposed to be invoked on Unity's main thread, otherwise false</param>
+        /// <param name="type">Defines on which thread the callback will be executed</param>
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false, bool mainThread=false)
+        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false, ThreadType type = ThreadType.ThreadedOnly)
         {
-            return GetHandler(mainThread).AddCallback(typeof(T), callback, name, unique, removeOnError);
+            return type switch
+            {
+                //callback will be executed only on the receiving thread
+                ThreadType.ThreadedOnly => _threadedCallbacks.AddCallback(typeof(T), callback, name, unique, removeOnError),
+                //callback will be executed on Unity's main thread
+                ThreadType.MainThread => _mainThreadCallbacks.AddCallback(typeof(T), callback, name, unique, removeOnError),
+                //callbacks will be executed on the receiving thread, but also triggering callbacks on Unity's main thread
+                ThreadType.Threaded => _threadedCallbacks.AddCallback<T>(typeof(T), (data) =>
+                {
+                    //invoke callback on receiving thread
+                    callback.Invoke(data);
+
+                    //delegate callback to unity's main thread
+                    _receivedObjects.Enqueue(new Tuple<object, Type>(data, typeof(T)));
+                }, name, unique, removeOnError),
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown delegation type!")
+            };
         }
 
         /// <summary>

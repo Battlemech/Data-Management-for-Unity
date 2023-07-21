@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
+using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
@@ -198,19 +199,16 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 //send reply
                 session.Send(new TestReply(request));
             });
-
-            //todo: this is not triggered: Requests are processed in threads?
+            
             _client.AddCallback<TestReply>((reply =>
             {
-                Debug.Log("Client is invoking callback");
-                
                 //spawn unity game object
                 clientObject = new GameObject("Client:" + reply.Id);
                 Debug.Log(clientObject.name);
-            }), mainThread:true);
+            }), type: ThreadType.MainThread);
             
             //client sends request
-            Task<TestReply> replyTask = _client.SendRequest<TestRequest, TestReply>(new TestRequest(12, 10));
+            Task<TestReply> replyTask = _client.SendRequest<TestRequest, TestReply>(new TestRequest(12, 10), threadedOnly:false);
 
             //wait until reply was received
             yield return replyTask.AsIEnumerator();

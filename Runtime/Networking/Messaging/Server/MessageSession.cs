@@ -39,7 +39,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
             //3) Wrap serialized message with additional information about its length to ensure no partial messages are received
             return base.SendAsync(NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data))));
         }
-        
+
         /// <summary>
         /// Adds a callback, which is invoked whenever an object of the expected type is received
         /// </summary>
@@ -47,11 +47,21 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// <param name="name">Name of the callback</param>
         /// <param name="unique">True if callbacks with duplicate names must be prevented</param>
         /// <param name="removeOnError">True if the callbacks must be removed on error</param>
+        /// <param name="notifyMainThread">True if all callbacks of the type added to the server shall be invoked, otherwise false</param>
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false)
+        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false, bool notifyMainThread = false)
         {
-            return _sessionCallbacks.AddCallback(typeof(T), callback, name, unique, removeOnError);
+            return notifyMainThread ? _sessionCallbacks.AddCallback<T>(typeof(T), (value) =>
+            {
+                //invoke callback on thread
+                callback.Invoke(value);
+                
+                //notify Unity's main thread
+                _server.ReceivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, typeof(T), this));
+            }, name, unique, removeOnError)
+                //callback triggers only on receiving threads
+                : _sessionCallbacks.AddCallback(typeof(T), callback, name, unique, removeOnError);
         }
 
         /// <summary>

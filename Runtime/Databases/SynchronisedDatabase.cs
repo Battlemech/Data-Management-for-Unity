@@ -108,7 +108,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 }
 
                 //invoke callbacks. Deserializing the object again makes sure it isn't changed after update in ValueStorage
-                //todo: invoke in main thread?
                 _callbackHandler.Invoke(id, Serialization.Deserialize(value, type));
 
                 //update confirmed data
