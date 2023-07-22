@@ -21,9 +21,9 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
         /// </summary>
         private readonly Dictionary<string, Database> _databases = new Dictionary<string, Database>();
 
-        protected override void Start()
+        protected override void Awake()
         {
-            base.Start();
+            base.Awake();
             
             //update default local instance, if necessary
             if (Instance == null) Instance = this;

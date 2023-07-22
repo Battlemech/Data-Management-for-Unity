@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Data_Management_for_Unity.Runtime
+namespace Data_Management_for_Unity.Runtime.Threading
 {
     public class MainThreadRunner : MonoBehaviour
     {
-        private static readonly ConcurrentQueue<Action> MainThreadActions = new ConcurrentQueue<Action>();
-
         private static MainThreadRunner _instance;
+
+        private static readonly ManualScheduler Scheduler = new ManualScheduler();
         
         void Awake()
         {
@@ -28,10 +29,7 @@ namespace Data_Management_for_Unity.Runtime
         void Update()
         {
             //process all delegated actions
-            while (MainThreadActions.TryDequeue(out Action action))
-            {
-                action.Invoke();
-            }
+            Scheduler.ExecuteScheduledTasks();
         }
 
         void OnDestroy()
@@ -40,12 +38,15 @@ namespace Data_Management_for_Unity.Runtime
             if (_instance == this) _instance = null;
         }
 
-        public static void Delegate(Action action)
+        public static void Delegate(Task task)
         {
             if(_instance == null)
                 Debug.LogWarning("No MainThreadRunner component was setup. Make sure one is added to the scene, or delegated actions won't be executed!");
             
-            MainThreadActions.Enqueue(action);
+            //let Unity's main thread get the task
+            task.Start(Scheduler);
         }
+        
+        public static void Delegate(Action action) => Delegate(new Task(action));
     }
 }

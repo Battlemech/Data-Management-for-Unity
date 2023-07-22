@@ -1052,7 +1052,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
             if (IsConnecting || IsConnected) DisconnectAsync();
         }
         
-        protected virtual void Start()
+        protected virtual void Awake()
         {
             //make sure the client isn't
             DontDestroyOnLoad(this);
