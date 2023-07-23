@@ -38,15 +38,17 @@ namespace Data_Management_for_Unity.Runtime.Threading
             if (_instance == this) _instance = null;
         }
 
-        public static void Delegate(Task task)
+        public static T Delegate<T>(T task) where T : Task 
         {
             if(_instance == null)
                 Debug.LogWarning("No MainThreadRunner component was setup. Make sure one is added to the scene, or delegated actions won't be executed!");
             
             //let Unity's main thread get the task
             task.Start(Scheduler);
+
+            return task;
         }
         
-        public static void Delegate(Action action) => Delegate(new Task(action));
+        public static Task Delegate(Action action) => Delegate(new Task(action));
     }
 }

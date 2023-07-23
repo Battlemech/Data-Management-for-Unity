@@ -1,4 +1,8 @@
-﻿using DMP.Utility;
+﻿using System;
+using System.Threading.Tasks;
+using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Threading;
+using DMP.Utility;
 using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Objects
@@ -11,7 +15,55 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [PreventSerialization]
         private GameObject _gameObject;
         
-        public SynchronisedGameObject(string id, bool isPersistent) : base(id, isPersistent)
+        public SynchronisedGameObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
+        {
+            
+        }
+        
+        public SynchronisedGameObject(string id, bool isPersistent=true) : base(id, isPersistent)
+        {
+            
+        }
+
+        /// <summary>
+        /// Retrieves this objects instance of a gameObjects, or creates it if necessary
+        /// </summary>
+        /// <remarks>Must be executed on Unity's main thread!</remarks>
+        public GameObject GetGameObject()
+        {
+            //local instance exists
+            if (_gameObject != null) return _gameObject;
+
+            //try finding local instance
+            _gameObject = GameObject.Find(Id);
+            if (_gameObject != null) return _gameObject;
+                
+            //create gameObject
+            _gameObject = new GameObject(Id);
+                
+            //invoke "constructor"
+            OnCreated(_gameObject);
+
+            return _gameObject;
+        }
+
+        /// <summary>
+        /// Interacts with this objects instance of a game object on Unity's main thread
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public Task GetGameObject(Action<GameObject> action)
+        {
+            return MainThreadRunner.Delegate((() =>
+            {
+                action.Invoke(GetGameObject());
+            }));
+        }
+        
+        public Task<GameObject> GetGameObjectAsync() 
+            => MainThreadRunner.Delegate(new Task<GameObject>(GetGameObject));
+
+        protected virtual void OnCreated(GameObject gameObject)
         {
             
         }

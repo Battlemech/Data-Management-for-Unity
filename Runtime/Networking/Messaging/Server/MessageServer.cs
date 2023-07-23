@@ -19,7 +19,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// Sessions will deserialize received objects on a thread, saving the result here.
         /// The server will later process them on the main thread.
         /// </summary>
-        protected internal readonly ConcurrentQueue<Tuple<object, Type, MessageSession>> ReceivedObjects =
+        private readonly ConcurrentQueue<Tuple<object, Type, MessageSession>> _receivedObjects =
             new ConcurrentQueue<Tuple<object, Type, MessageSession>>();
 
         public bool Multicast<T>(T data)
@@ -104,6 +104,15 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
             return _callbackHandler.RemoveCallbacks(typeof(T), name);
         }
 
+        protected internal void OnSessionReceived(object value, Type type, MessageSession session)
+        {
+            //no callbacks to execute
+            if(_callbackHandler.GetCallbackCount(type) == 0) return;
+            
+            //main thread will process callback on next Update()
+            _receivedObjects.Enqueue(new Tuple<object, Type, MessageSession>(value, type, session));
+        }
+
         public Task<TReply[]> SendRequests<TRequest, TReply>(TRequest request, int timeout = Options.DefaultTimeout)
             where TRequest : Request where TReply : Reply
         {
@@ -121,7 +130,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         private void Update()
         {
             //process all received objects
-            while (ReceivedObjects.TryDequeue(out Tuple<object, Type, MessageSession> tuple))
+            while (_receivedObjects.TryDequeue(out Tuple<object, Type, MessageSession> tuple))
             {
                 //invoke all callbacks for received object
                 if(_callbackHandler.Invoke(tuple.Item2, tuple.Item1, tuple.Item3) > 0) continue;

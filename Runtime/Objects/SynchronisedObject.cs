@@ -1,6 +1,7 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Objects
 {
@@ -13,7 +14,19 @@ namespace Data_Management_for_Unity.Runtime.Objects
 
         public SynchronisedObject(string id, bool isPersistent)
         {
+            if (id.Contains('/'))
+                throw new ArgumentException("The / char is used for internal logic. Make sure the id never contains it!");
+            
             Id = id;
+            _database = new Database(id, isPersistent, true);
+        }
+
+        public SynchronisedObject(SynchronisedObject parent, string id, bool isPersistent = true)
+        {
+            if (id.Contains('/'))
+                throw new ArgumentException("The / char is used for internal logic. Make sure the id never contains it!");
+
+            Id = $"{parent.Id}/{id}";
             _database = new Database(id, isPersistent, true);
         }
 

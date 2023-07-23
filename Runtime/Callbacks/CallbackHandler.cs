@@ -120,7 +120,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
             lock (_callbacks)
             {
                 //no callbacks to invoke
-                if(!_callbacks.TryGetValue(key, out List<Callback> callbacks)) return 0;
+                if(!_callbacks.TryGetValue(key, out List<Callback> callbacks) || callbacks.Count == 0) return 0;
 
                 //filter callbacks with expected name
                 List<Callback> matchingCallbacks =

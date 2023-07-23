@@ -25,26 +25,24 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <param name="name">Name of the callback</param>
         /// <param name="unique">True if callbacks with duplicate names must be prevented</param>
         /// <param name="removeOnError">True if the callbacks must be removed on error</param>
+        /// <param name="invoke">True if the callback is invoked, otherwise false</param>
         /// <param name="type">Defines on which thread the callback will be executed</param>
+        /// <param name="mainThread">True if the callback will be executed on Unity's main thread, otherwise false</param>
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
         public bool AddCallback<T>(string key, Action<T> callback, string name = "", bool unique = false,
-            bool removeOnError = false, ThreadType type = ThreadType.ThreadedOnly)
+            bool removeOnError = false, bool invoke=false, bool mainThread = Options.MainThreadDefault)
         {
-            return type switch
-            {
-                ThreadType.ThreadedOnly => _threadedCallbacks.AddCallback(key, callback, name, unique, removeOnError),
-                ThreadType.MainThread => _mainThreadCallbacks.AddCallback(key, callback, name, unique, removeOnError),
-                ThreadType.Threaded => _threadedCallbacks.AddCallback<T>(key, (data) =>
-                {
-                    //invoke data on thread
-                    callback.Invoke(data);
-                    
-                    //delegate invocation of callbacks to Unity's main thread
-                    MainThreadRunner.Delegate((() => _mainThreadCallbacks.Invoke(key, data, name)));
-                }, name, unique, removeOnError),
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown delegation type!")
-            };
+            //Add callback to specified thread handler
+            bool added = GetHandler(mainThread).AddCallback(key, callback, name, unique, removeOnError);
+
+            //unique parameter of added callback couldn't be met
+            if (!added) return false;
+            
+            //invoke callback if necessary
+            if (invoke) Get<T>(key).BlockingGet(callback.Invoke);
+
+            return true;
         }
         
         /// <summary>
@@ -52,7 +50,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// </summary>
         /// <param name="key">Key of callbacks</param>
         /// <param name="name">Required name of callbacks, if any</param>
-        /// <param name="mainThread">True if the callback was added on the main thread, otherwise false</param>
+        /// <param name="mainThread">True if the callback was added to Unity's main thread, otherwise false</param>
         /// <returns>Number of callbacks matching criterion</returns>
         public int GetCallbackCount(string key, string name=null, bool mainThread=false)
         {
@@ -77,20 +75,17 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <param name="key">Key of callbacks</param>
         /// <param name="value">Value of objects to invoke callbacks with</param>
         /// <param name="name">Required name of callbacks to be invoked, if any</param>
-        /// <param name="threadedOnly">True if Unity's main thread shall not invoke callbacks if the current thread already invoked some</param>
         /// <returns>Number of invoked threaded callbacks</returns>
-        public int Invoke(string key, object value, string name = null, bool threadedOnly = true)
+        public void Invoke(string key, object value, string name = null)
         {
             //invoke callbacks on a thread
-            int invoked = _threadedCallbacks.Invoke(key, value, name);
+            _threadedCallbacks.Invoke(key, value, name);
 
-            //don't try invoking callbacks on main thread again unless specified
-            if (invoked > 0 && threadedOnly) return invoked;
+            //don't notify main thread of no callbacks for key and name exist
+            if (_mainThreadCallbacks.GetCallbackCount(key, name) == 0) return;
 
             //delegate invocation of callbacks to Unity's main thread
             MainThreadRunner.Delegate((() => _mainThreadCallbacks.Invoke(key, value, name)));
-
-            return invoked;
         }
         
         private CallbackHandler<string> GetHandler(bool mainThread)

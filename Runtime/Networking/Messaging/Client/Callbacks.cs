@@ -22,28 +22,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// <param name="name">Name of the callback</param>
         /// <param name="unique">True if callbacks with duplicate names must be prevented</param>
         /// <param name="removeOnError">True if the callbacks must be removed on error</param>
-        /// <param name="type">Defines on which thread the callback will be executed</param>
+        /// <param name="mainThread">True if the callback will be executed on Unity's main thread, otherwise false</param>
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false, ThreadType type = ThreadType.ThreadedOnly)
+        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false, bool mainThread=Options.MainThreadDefault)
         {
-            return type switch
-            {
-                //callback will be executed only on the receiving thread
-                ThreadType.ThreadedOnly => _threadedCallbacks.AddCallback(typeof(T), callback, name, unique, removeOnError),
-                //callback will be executed on Unity's main thread
-                ThreadType.MainThread => _mainThreadCallbacks.AddCallback(typeof(T), callback, name, unique, removeOnError),
-                //callbacks will be executed on the receiving thread, but also triggering callbacks on Unity's main thread
-                ThreadType.Threaded => _threadedCallbacks.AddCallback<T>(typeof(T), (data) =>
-                {
-                    //invoke callback on receiving thread
-                    callback.Invoke(data);
-
-                    //delegate callback to unity's main thread
-                    _receivedObjects.Enqueue(new Tuple<object, Type>(data, typeof(T)));
-                }, name, unique, removeOnError),
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown delegation type!")
-            };
+            return GetHandler(mainThread).AddCallback(typeof(T), callback, name, unique, removeOnError);
         }
 
         /// <summary>
@@ -52,7 +36,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// <param name="name">Required name of callbacks, if any</param>
         /// <param name="mainThread">True if the callback was added on the main thread, otherwise false</param>
         /// <returns>Number of callbacks matching criterion</returns>
-        public int GetCallbackCount<T>(string name=null, bool mainThread=false)
+        public int GetCallbackCount<T>(string name=null, bool mainThread=Options.MainThreadDefault)
         {
             return GetHandler(mainThread).GetCallbackCount(typeof(T), name);
         }
@@ -63,7 +47,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// <param name="name">Required name of callbacks, if any</param>
         /// <param name="mainThread">True if the callback was added on the main thread, otherwise false</param>
         /// <returns>Number of callbacks removed</returns>
-        public int RemoveCallbacks<T>(string name = null, bool mainThread=false)
+        public int RemoveCallbacks<T>(string name = null, bool mainThread=Options.MainThreadDefault)
         {
             return GetHandler(mainThread).RemoveCallbacks(typeof(T), name);
         }

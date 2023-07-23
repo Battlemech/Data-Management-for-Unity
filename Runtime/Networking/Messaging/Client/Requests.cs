@@ -17,13 +17,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// </summary>
         /// <param name="request">Request to send</param>
         /// <param name="timeout">Amount of ms to wait before triggering a TimeOutException</param>
-        /// <param name="threadedOnly">True if only threadedCallbacks will be triggered when receiving this reply</param>
         /// <typeparam name="TRequest">Type of request</typeparam>
         /// <typeparam name="TReply">Type of reply</typeparam>
         /// <returns>Task returning the received reply on termination</returns>
         /// <exception cref="NotConnectedException">Client isn't connected to the server</exception>
         /// <exception cref="TimedOutException">Reply from server timed out</exception>
-        public Task<TReply> SendRequest<TRequest, TReply>(TRequest request, int timeout = Options.DefaultTimeout, bool threadedOnly = true) where TRequest : Request where TReply : Reply
+        public Task<TReply> SendRequest<TRequest, TReply>(TRequest request, int timeout = Options.DefaultTimeout) where TRequest : Request where TReply : Reply
         {
             ManualResetEvent receivedEvent = new ManualResetEvent(false);
                 
@@ -44,7 +43,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
 
                 //remove callback: Reply was received
                 RemoveCallbacks<TReply>(reply.Id.ToString());
-            }), request.Id.ToString(), type: threadedOnly ? ThreadType.ThreadedOnly : ThreadType.Threaded);
+            }), request.Id.ToString(), mainThread:false);
                 
             //send the request
             if (!Send(request)) 

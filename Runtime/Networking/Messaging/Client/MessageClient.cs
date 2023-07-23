@@ -68,8 +68,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                     //deserialize received object
                     object value = message.Deserialize(out Type type);
                 
-                    //don't delegate callbacks to the main thread if they could be invoked on receiving thread
-                    if(_threadedCallbacks.Invoke(type, value) > 0) continue;
+                    //invoke all threaded callbacks
+                    _threadedCallbacks.Invoke(type, value);
+                    
+                    //don't notify Unity's main thread if no callback were added
+                    if(_mainThreadCallbacks.GetCallbackCount(type) == 0) continue;
                 
                     //save deserialized objects to be processed on main thread
                     _receivedObjects.Enqueue(new Tuple<object, Type>(value, type));

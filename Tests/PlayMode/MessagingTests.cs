@@ -102,7 +102,46 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         [UnityTest]
         public IEnumerator TestReplyUnity()
         {
-            return TestReplyUnityAsync();
+            GameObject serverObject = null;
+            GameObject clientObject = null;
+            
+            //spawn a unity game object when testRequest is received
+            _server.AddCallback<TestRequest>((request, session) =>
+            {
+                //spawn unity game object
+                serverObject = new GameObject("Server:"+request.Id);
+                Debug.Log(serverObject.name);
+                
+                //send reply
+                session.Send(new TestReply(request));
+            });
+            
+            _client.AddCallback<TestReply>((reply =>
+            {
+                Debug.Log("Triggering client callback");
+                //spawn unity game object
+                clientObject = new GameObject("Client:" + reply.Id);
+                Debug.Log(clientObject.name);
+            }), mainThread:true);
+            
+            //client sends request
+            Task<TestReply> replyTask = _client.SendRequest<TestRequest, TestReply>(new TestRequest(12, 10));
+
+            //wait until reply was received
+            yield return replyTask.AsIEnumerator();
+
+            //wait until client processed callback on main thread
+            yield return null;
+            
+            //spawn game Object once reply is received
+            GameObject onReplyObject = new GameObject("onReply:" + replyTask.Result.Id);
+            Debug.Log(onReplyObject.name);
+
+            Assert.NotNull(serverObject, "Server callback didn't executed successfully");
+            Assert.NotNull(clientObject, "Client callback didn't executed successfully");
+            Assert.NotNull(onReplyObject, "OnReply callback didn't executed successfully");
+
+            Debug.Log("All objects were spawned successfully");
         }
 
         [UnityTest]
@@ -183,50 +222,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 Debug.Log("Successfully caught exception");
             }
         }
-        
-        private IEnumerator TestReplyUnityAsync()
-        {
-            GameObject serverObject = null;
-            GameObject clientObject = null;
-            
-            //spawn a unity game object when testRequest is received
-            _server.AddCallback<TestRequest>((request, session) =>
-            {
-                //spawn unity game object
-                serverObject = new GameObject("Server:"+request.Id);
-                Debug.Log(serverObject.name);
-                
-                //send reply
-                session.Send(new TestReply(request));
-            });
-            
-            _client.AddCallback<TestReply>((reply =>
-            {
-                //spawn unity game object
-                clientObject = new GameObject("Client:" + reply.Id);
-                Debug.Log(clientObject.name);
-            }), type: ThreadType.MainThread);
-            
-            //client sends request
-            Task<TestReply> replyTask = _client.SendRequest<TestRequest, TestReply>(new TestRequest(12, 10), threadedOnly:false);
 
-            //wait until reply was received
-            yield return replyTask.AsIEnumerator();
-
-            //wait until client processed callback on main thread
-            yield return null;
-            
-            //spawn game Object once reply is received
-            GameObject onReplyObject = new GameObject("onReply:" + replyTask.Result.Id);
-            Debug.Log(onReplyObject.name);
-
-            Assert.NotNull(serverObject);
-            Assert.NotNull(clientObject);
-            Assert.NotNull(onReplyObject);
-
-            Debug.Log("All objects were spawned successfully");
-        }
-        
         private async Task RequestReplyAsync()
         {
             //register server request response
