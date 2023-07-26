@@ -53,5 +53,11 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         /// <param name="resultType">Result type</param>
         /// <returns>Result value</returns>
         public abstract byte[] OnRemote(byte[] value, Type type, out Type resultType);
+
+        /// <summary>
+        /// Checks if the operation is safe, meaning that inconsistent states will be prevented.
+        /// This is ensured by making sure up-to-date data exists on client before executing;
+        /// </summary>
+        public abstract bool IsSafeOperation();
     }
 }

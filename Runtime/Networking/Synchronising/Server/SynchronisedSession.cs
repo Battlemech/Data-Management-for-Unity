@@ -26,8 +26,8 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //create reply
                 OperationReply reply = new OperationReply(request, modCount);
                 
-                //if request was successful
-                if (reply.Success(operation.ModCount))
+                //if request was successful             //and client attempted instant value overwrite
+                if (reply.Success(operation.ModCount) && !operation.IsSafeOperation())
                 {
                     //inform other clients of new value
                     server.MulticastToOthers(new OperationMessage(operation), this);

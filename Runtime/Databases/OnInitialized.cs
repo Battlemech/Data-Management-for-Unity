@@ -17,7 +17,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <param name="onInitialized">Action to perform once value was initialized</param>
         /// <param name="mainThread">True if the action is supposed to be executed to Unity's main thread, otherwise false</param>
         /// <typeparam name="T">Type of value</typeparam>
-        public void OnInitialized<T>(string id, Action<T> onInitialized, bool mainThread=false)
+        public void OnInitialized<T>(string id, Action<T> onInitialized, bool mainThread=Options.MainThreadDefault)
         {
             ValueStorage<T> valueStorage = Get<T>(id);
             

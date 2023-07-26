@@ -7,9 +7,11 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
     public abstract class CollectionOperation<TCollection, TValue> : SynchronisedOperation
         where TCollection : ICollection<TValue>, new()
     {
-        protected CollectionOperation(string databaseId, string valueId) : base(databaseId, valueId)
+        private readonly bool _isSafeOperation;
+        
+        protected CollectionOperation(string databaseId, string valueId, bool isSafe) : base(databaseId, valueId)
         {
-            
+            _isSafeOperation = isSafe;
         }
 
         /// <summary>
@@ -44,6 +46,11 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         {
             //collection operation is the same if repeated locally or if performed on remote
             return Repeat(value, type, out resultType);
+        }
+
+        public override bool IsSafeOperation()
+        {
+            return _isSafeOperation;
         }
     }
 }

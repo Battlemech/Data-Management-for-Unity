@@ -15,7 +15,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [PreventSerialization]
         private GameObject _gameObject;
         
-        public SynchronisedGameObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
+        public SynchronisedGameObject(bool isPersistent = true) : base(isPersistent)
         {
             
         }

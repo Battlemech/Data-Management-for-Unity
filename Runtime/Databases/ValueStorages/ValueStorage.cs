@@ -91,22 +91,22 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             return Database.OnSet(Id, value, type);
         }
         
-        public Task Modify(ModifyDelegate<T> modifyDelegate)
+        public Task Modify(ModifyDelegate<T> modifyDelegate, bool safe=false)
         {
             byte[] value;
             Type type;
-            
+
             lock (Id)
             {
-                //update value
-                Data = modifyDelegate.Invoke(Data);
-                
+                //only invoke operation if inconsistent states are allowed
+                if (!safe) Data = modifyDelegate.Invoke(Data);
+
                 //save its serialized version
                 value = Serialization.Serialize(Data, out type);
             }
             
             //delegate internal logic to background to increase performance
-            return Database.OnModify(Id, value, type, modifyDelegate);
+            return Database.OnModify(Id, value, type, modifyDelegate, safe);
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// </summary>
         /// <param name="onInitialized">Action to perform once value was initialized</param>
         /// <param name="mainThread">True if the action is supposed to be delegated to unity's main thread, otherwise false</param>
-        public void OnInitialized(Action<T> onInitialized, bool mainThread=false) => Database.OnInitialized(Id, onInitialized, mainThread);
+        public void OnInitialized(Action<T> onInitialized, bool mainThread=Options.MainThreadDefault) => Database.OnInitialized(Id, onInitialized, mainThread);
         
         protected internal override void InternalSet(byte[] bytes, Type type)
         {

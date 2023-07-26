@@ -295,12 +295,14 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             //add keys
             yield return _database0.Get<Dictionary<string, int>>(id).Add(id, 1);
             yield return _database1.Get<Dictionary<string, int>>(id).Add(id + "_", 2);
+            Debug.Log("Added two entries");
             
             //make sure they are equal
             yield return ValuesEqual<Dictionary<string, int>>(id);
-            
+
             //remove a key
             yield return _database3.Get<Dictionary<string, int>>(id).RemoveKey<Dictionary<string, int>, string, int>(id);
+            Debug.Log("Removed one entry");
 
             //make sure they are equal
             yield return ValuesEqual<Dictionary<string, int>>(id);
@@ -334,6 +336,31 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             
             //wait until callbacks were invoked
             yield return ValuesAreEqual(id + "_", "Beginning3333", "Second set");
+        }
+
+        [UnityTest]
+        public IEnumerator TestSafeModify()
+        {
+            const string id = nameof(TestSafeModify);
+
+            //track amount of invoked operations
+            int invokedOperations = 0;
+            
+            //wait for all sets to complete
+            yield return Task.WhenAll(_databases.Select(((database) => database.Get<int>(id).Modify((data =>
+            {
+                //track amount of invoked operations
+                invokedOperations++;
+                Debug.Log($"Modification: {data}->{data+1}");
+                
+                return data + 1;
+            }), true))));
+            
+            //make sure values were synchronised
+            yield return ValuesAreEqual(id, 5);
+            
+            //make sure each operation was invoked only once
+            Assert.AreEqual(_databases.Count, invokedOperations);
         }
         
         private IEnumerator ValuesEqual<T>(string id, int timeout = Options.DefaultTimeout)

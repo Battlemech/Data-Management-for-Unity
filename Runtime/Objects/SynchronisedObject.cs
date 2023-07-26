@@ -12,6 +12,11 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [NonSerialized]
         private Database _database;
 
+        public SynchronisedObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
+        {
+            
+        }
+        
         public SynchronisedObject(string id, bool isPersistent)
         {
             if (id.Contains('/'))
@@ -27,7 +32,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
                 throw new ArgumentException("The / char is used for internal logic. Make sure the id never contains it!");
 
             Id = $"{parent.Id}/{id}";
-            _database = new Database(id, isPersistent, true);
+            _database = new Database(Id, isPersistent, true);
         }
 
         public Database GetDatabase()

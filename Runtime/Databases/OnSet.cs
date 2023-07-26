@@ -18,36 +18,37 @@ namespace Data_Management_for_Unity.Runtime.Databases
             await OnLocalOperation(value, type, new SynchronisedSet(Id, valueId, value, type));
         }
 
-        protected internal async Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify)
+        protected internal async Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify, bool isSafe)
         {
-            await OnLocalOperation(value, type, new SynchronisedModify<T>(Id, valueId, value, type, modify));
+            await OnLocalOperation(value, type, new SynchronisedModify<T>(Id, valueId, value, type, modify, isSafe));
         }
 
         protected internal async Task OnAdd<TCollection, TValue>(string valueId, byte[] collectionValue,
-            Type collectionType, byte[] addedValue, Type addedType)
+            Type collectionType, byte[] addedValue, Type addedType, bool isSafe)
             where TCollection : ICollection<TValue>, new()
         {
-            await OnLocalOperation(collectionValue, collectionType, new SynchronisedAdd<TCollection, TValue>(Id, valueId, addedValue, addedType));
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedAdd<TCollection, TValue>(Id, valueId, addedValue, addedType, isSafe));
         }
 
         protected internal async Task OnRemove<TCollection, TValue>(string valueId, byte[] collectionValue,
-            Type collectionType, byte[] removedValue, Type removedType)
+            Type collectionType, byte[] removedValue, Type removedType, bool isSafe)
             where TCollection : ICollection<TValue>, new()
         {
-            await OnLocalOperation(collectionValue, collectionType, new SynchronisedRemove<TCollection, TValue>(Id, valueId, removedValue, removedType));
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedRemove<TCollection, TValue>(Id, valueId, removedValue, removedType, isSafe));
         }
 
         protected internal async Task OnRemoveKey<TDictionary, TKey, TValue>(string valueId, byte[] collectionValue,
-            Type collectionType, byte[] removedValue, Type removedType)
+            Type collectionType, byte[] removedValue, Type removedType, bool isSafe)
             where TDictionary : IDictionary<TKey, TValue>, new()
         {
-            await OnLocalOperation(collectionValue, collectionType, new SynchronisedKeyRemove<TDictionary, TKey, TValue>(Id, valueId, removedValue, removedType));
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedKeyRemove<TDictionary, TKey, TValue>(Id, valueId, removedValue, removedType, isSafe));
         }
 
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
-            //invoke local callbacks
-            _threadedCallbacks.Invoke(op.ValueId, Serialization.Deserialize(value, type));
+            //unsafe operations update local value instantly
+            if(!op.IsSafeOperation())
+                Invoke(op.ValueId, Serialization.Deserialize(value, type));
 
             //synchronise data across multiple clients
             if (IsSynchronised) await OnLocalSynchronisedOperation(value, type, op);
@@ -60,19 +61,55 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //assign modCount and request operation to be executed
             OperationReply reply = await SendOperationRequest(operation);
 
-            //operation was successful. New data was confirmed by remote
+            //process successful operation
             if (reply.Success(operation.ModCount))
             {
-                //update local data confirmed by remote
-                UpdateConfirmedData(operation.ValueId, operation.ModCount, value, type);
-                
-                //save data persistently, if necessary
-                if (IsPersistent) await PersistentData.Save(Id, operation.ValueId, value, type, operation.ModCount);
+                OnSuccessfulOperation(value, type, operation);
                 return;
             }
 
+            //process failed operation
+            OnFailedOperation(operation, reply.Expected);
+        }
+
+        private async void OnSuccessfulOperation(byte[] value, Type type, SynchronisedOperation operation)
+        {
+            //if operation wasn't executed before confirmation from server
+            if (operation.IsSafeOperation())
+            {
+                //try loading up-to-date data
+                lock (_confirmed)
+                {
+                    //get up-to-date data, confirmed by server
+                    if (_confirmed.TryGetValue(operation.ValueId, out ValueRecord data) && data.ModCount == operation.ModCount - 1)
+                    {
+                        value = data.Value;
+                        type = data.Type;
+                    }
+                    //data only exists if no value was confirmed -> Use local value
+                }
+                
+                //execute operation
+                OnOperation(value, type, operation, true);
+                return;
+            }
+            
+            //update local data confirmed by remote
+            UpdateConfirmedData(operation.ValueId, operation.ModCount, value, type);
+                
+            //save data persistently, if necessary
+            if (IsPersistent) await PersistentData.Save(Id, operation.ValueId, value, type, operation.ModCount);
+        }
+        
+        /// <summary>
+        /// Processes a failed operation.
+        /// </summary>
+        /// <param name="operation">Operation which failed</param>
+        /// <param name="expected">Expected modification count from server</param>
+        private void OnFailedOperation(SynchronisedOperation operation, int expected)
+        {
             //update modCount of operation from locally expected to remotely required
-            operation.ModCount = reply.Expected;
+            operation.ModCount = expected;
             
             //enter critical area: Make sure no confirmed data is updated while later operation is enqueued
             lock (_confirmed)
@@ -80,12 +117,8 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 //if required modCount was reached locally while waiting for reply: Process delayed operation instantly
                 if (_confirmed.TryGetValue(operation.ValueId, out ValueRecord data) && data.ModCount == operation.ModCount - 1)
                 {
-                    //update data from saved value
-                    value = data.Value;
-                    type = data.Type;
-                 
                     //instantly execute operation
-                    OnOperation(value, type, operation, true);
+                    OnOperation(data.Value, data.Type, operation, true);
                 }
                 else
                 {

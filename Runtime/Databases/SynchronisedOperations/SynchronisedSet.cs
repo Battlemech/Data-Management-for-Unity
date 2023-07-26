@@ -31,5 +31,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             resultType = Type.GetType(_typeString, true);
             return _value;
         }
+
+        public override bool IsSafeOperation()
+        {
+            return false;
+        }
     }
 }

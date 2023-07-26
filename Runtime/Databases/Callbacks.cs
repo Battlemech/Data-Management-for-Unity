@@ -40,7 +40,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
             if (!added) return false;
             
             //invoke callback if necessary
-            if (invoke) Get<T>(key).BlockingGet(callback.Invoke);
+            if (invoke)
+            {
+                if (mainThread) MainThreadRunner.Delegate((() => Get<T>(key).BlockingGet(callback.Invoke)));
+                else Get<T>(key).BlockingGet(callback.Invoke);
+            }
 
             return true;
         }

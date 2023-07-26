@@ -16,14 +16,20 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         //saves value and type resulting from operation to allow synchronising result on remote
         private byte[] _value;
         private string _typeString;
+
+        //safe operations are only executed if the client is certain that it has up-to-date data
+        private readonly bool _isSafe;
         
-        public SynchronisedModify(string databaseId, string valueId, byte[] value, Type type, ModifyDelegate<T> modify) : base(databaseId, valueId)
+        public SynchronisedModify(string databaseId, string valueId, byte[] value, Type type, ModifyDelegate<T> modify, bool isSafe) : base(databaseId, valueId)
         {
             _modify = modify;
 
             //save value to allow setting it on remote
             _value = value;
             _typeString = type.AssemblyQualifiedName;
+            
+            //save "safe" attribute
+            _isSafe = isSafe;
         }
 
         public override byte[] Repeat(byte[] value, Type type, out Type resultType)
@@ -43,6 +49,11 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             //deserialize type
             resultType = Type.GetType(_typeString, true);
             return _value;
+        }
+
+        public override bool IsSafeOperation()
+        {
+            return _isSafe;
         }
     }
 }
