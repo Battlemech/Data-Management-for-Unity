@@ -5,12 +5,18 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
+using DMP.Threading;
 using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
 {
     public partial class MessageClient
     {
+        /// <summary>
+        /// Scheduler used for processing internal replies. Makes sure the replies are executed in the order in which they are received
+        /// </summary>
+        public readonly QueuedScheduler Scheduler = new QueuedScheduler();
+        
         //todo: test main thread functionality (GameObjects)
         /// <summary>
         /// Sends a request to the server.
@@ -57,9 +63,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                     throw new TimedOutException(timeout);
                 
                 return reply;
-            }), TaskCreationOptions.LongRunning);
+            }));
             
-            replyTask.Start();
+            //ensure replies are processed in the order in which they are received
+            replyTask.Start(Scheduler);
 
             return replyTask;
         }

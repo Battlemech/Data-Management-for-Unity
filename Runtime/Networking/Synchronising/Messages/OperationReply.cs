@@ -15,5 +15,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
         }
 
         public bool Success(int modCount) => modCount == Expected;
+
+        public override string ToString()
+        {
+            return $"OperationReply, expected={Expected}";
+        }
     }
 }

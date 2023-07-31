@@ -63,13 +63,10 @@ namespace Data_Management_for_Unity.Runtime.Databases
 
             //process successful operation
             if (reply.Success(operation.ModCount))
-            {
                 OnSuccessfulOperation(value, type, operation);
-                return;
-            }
-
-            //process failed operation
-            OnFailedOperation(operation, reply.Expected);
+            else
+                //process failed operation
+                OnFailedOperation(operation, reply.Expected);
         }
 
         private async void OnSuccessfulOperation(byte[] value, Type type, SynchronisedOperation operation)
@@ -86,7 +83,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
                         value = data.Value;
                         type = data.Type;
                     }
-                    //data only exists if no value was confirmed -> Use local value
+                    else
+                    {
+                        value = null;
+                        type = null;
+                    }
                 }
                 
                 //execute operation

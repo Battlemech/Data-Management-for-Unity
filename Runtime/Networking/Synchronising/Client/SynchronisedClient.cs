@@ -24,7 +24,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
         protected override void Awake()
         {
             base.Awake();
-            
+
             //update default local instance, if necessary
             if (Instance == null) Instance = this;
             

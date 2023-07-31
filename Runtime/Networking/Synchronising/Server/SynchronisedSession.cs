@@ -22,7 +22,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 
                 //client is planning to change a value
                 int modCount = server.IncrementModCount(reference);
-                
+
                 //create reply
                 OperationReply reply = new OperationReply(request, modCount);
                 

@@ -341,26 +341,35 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         [UnityTest]
         public IEnumerator TestSafeModify()
         {
+            //todo: fix
             const string id = nameof(TestSafeModify);
-
+            const int repetitionCount = 10;
+            
             //track amount of invoked operations
             int invokedOperations = 0;
             
-            //wait for all sets to complete
-            yield return Task.WhenAll(_databases.Select(((database) => database.Get<int>(id).Modify((data =>
+            //start set tasks
+            Task[] tasks = new Task[repetitionCount];
+            for (int i = 0; i < repetitionCount; i++)
             {
-                //track amount of invoked operations
-                invokedOperations++;
-                Debug.Log($"Modification: {data}->{data+1}");
+                tasks[i] = Task.WhenAll(_databases.Select(((database) => database.Get<int>(id).Modify((data =>
+                {
+                    //track amount of invoked operations
+                    invokedOperations++;
+                    Debug.Log($"Modification: {data}->{data+1}({invokedOperations}/{_databases.Count * repetitionCount})");
                 
-                return data + 1;
-            }), true))));
+                    return data + 1;
+                }), true))));
+            }
+
+            //wait for sets to complete
+            yield return Task.WhenAll(tasks);
             
             //make sure values were synchronised
-            yield return ValuesAreEqual(id, 5);
+            yield return ValuesAreEqual(id, _databases.Count * repetitionCount);
             
             //make sure each operation was invoked only once
-            Assert.AreEqual(_databases.Count, invokedOperations);
+            Assert.AreEqual(_databases.Count * repetitionCount, invokedOperations);
         }
         
         private IEnumerator ValuesEqual<T>(string id, int timeout = Options.DefaultTimeout)

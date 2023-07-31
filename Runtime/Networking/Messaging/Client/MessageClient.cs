@@ -67,7 +67,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
                 {
                     //deserialize received object
                     object value = message.Deserialize(out Type type);
-                
+
                     //invoke all threaded callbacks
                     _threadedCallbacks.Invoke(type, value);
                     
@@ -91,10 +91,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
             while (_receivedObjects.TryDequeue(out Tuple<object, Type> tuple))
             {
                 //invoke all callbacks for received object
-                if(_mainThreadCallbacks.Invoke(tuple.Item2, tuple.Item1) > 0) continue;
-                
-                //warn user if received object didn't trigger callbacks
-                Debug.LogWarning($"Client: Object of type {tuple.Item2} didn't trigger any callbacks!");
+                _mainThreadCallbacks.Invoke(tuple.Item2, tuple.Item1);
             }
         }
     }
