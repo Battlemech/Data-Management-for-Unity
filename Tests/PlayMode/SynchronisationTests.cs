@@ -341,7 +341,6 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         [UnityTest]
         public IEnumerator TestSafeModify()
         {
-            //todo: fix
             const string id = nameof(TestSafeModify);
             const int repetitionCount = 10;
             
