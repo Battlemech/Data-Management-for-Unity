@@ -44,7 +44,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             await OnLocalOperation(collectionValue, collectionType, new SynchronisedKeyRemove<TDictionary, TKey, TValue>(Id, valueId, removedValue, removedType, isSafe, onConfirmed));
         }
 
-        private async Task OnLocalOperation<T>(byte[] value, Type type, SynchronisedOperation<T> op)
+        private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
             //unsafe operations update local value instantly
             if(!op.IsSafeOperation())
@@ -56,7 +56,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             else if (IsPersistent) await PersistentData.Save(Id, op.ValueId, value, type, op.ModCount);
         }
 
-        private async Task OnLocalSynchronisedOperation<T>(byte[] value, Type type, SynchronisedOperation<T> operation)
+        private async Task OnLocalSynchronisedOperation(byte[] value, Type type, SynchronisedOperation operation)
         {
             //assign modCount and request operation to be executed
             OperationReply reply = await SendOperationRequest(operation);
@@ -69,7 +69,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 OnFailedOperation(operation, reply.Expected);
         }
 
-        private async void OnSuccessfulOperation<T>(byte[] value, Type type, SynchronisedOperation<T> operation)
+        private async void OnSuccessfulOperation(byte[] value, Type type, SynchronisedOperation operation)
         {
             //if operation wasn't executed before confirmation from server
             if (operation.IsSafeOperation())
