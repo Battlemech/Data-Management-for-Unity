@@ -30,7 +30,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
             
             //process add internally
-            return valueStorage.Database.OnAdd<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, addedValue, addedType, safe);
+            return valueStorage.Database.OnAdd<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, addedValue, addedType, safe, null);
         }
 
         public static Task Remove<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toRemove, bool safe=false)
@@ -56,7 +56,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
 
             //process remove internally
-            return valueStorage.Database.OnRemove<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe);
+            return valueStorage.Database.OnRemove<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe, null);
         }
 
         public static Task Add<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false)
@@ -88,7 +88,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
 
             //process remove internally
-            return valueStorage.Database.OnRemoveKey<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe);
+            return valueStorage.Database.OnRemoveKey<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe, null);
         }
 
         public static Task Update<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false)

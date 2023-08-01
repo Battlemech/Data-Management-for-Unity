@@ -67,7 +67,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
         [Test]
         public void TestOperationMessage()
         {
-            SynchronisedSet set = new SynchronisedSet("123", "213213", Array.Empty<byte>(), typeof(string));
+            SynchronisedSet<byte[]> set = new SynchronisedSet<byte[]>("123", "213213", Array.Empty<byte>(), typeof(string), null);
             
             Assert.AreEqual(set.GetType(), Copy(set).GetType());
         }

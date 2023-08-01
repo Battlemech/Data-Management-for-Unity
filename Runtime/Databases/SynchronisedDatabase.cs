@@ -113,8 +113,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 //update confirmed data
                 lock (_confirmed) _confirmed[id] = new ValueRecord(value, type, modCount);
                 
-                //notify peers of new value
-                if(local) Client.Send(new OperationMessage(operation));
+                if (local)
+                {
+                    //notify peers of new value
+                    Client.Send(new OperationMessage(operation));
+                    
+                    //local operations may have a callback waiting to be executed on confirmation
+                    operation.OnConfirmed(value, type);
+                }
 
                 //stop executing operations if no more delayed exist
                 if (!TryDequeueDelayedOperation(id, modCount + 1, out operation)) return;

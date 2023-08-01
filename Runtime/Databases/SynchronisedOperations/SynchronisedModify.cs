@@ -8,11 +8,11 @@ using DMP.Utility;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    public class SynchronisedModify<T> : SynchronisedOperation
+    public class SynchronisedModify<T> : SynchronisedOperation<T>
     {
         [PreventSerialization]
         private readonly ModifyDelegate<T> _modify;
-        
+
         //saves value and type resulting from operation to allow synchronising result on remote
         private byte[] _value;
         private string _typeString;
@@ -20,7 +20,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         //safe operations are only executed if the client is certain that it has up-to-date data
         private readonly bool _isSafe;
         
-        public SynchronisedModify(string databaseId, string valueId, byte[] value, Type type, ModifyDelegate<T> modify, bool isSafe) : base(databaseId, valueId)
+        public SynchronisedModify(string databaseId, string valueId, byte[] value, Type type, ModifyDelegate<T> modify, bool isSafe, Action<T> onConfirmed) : base(databaseId, valueId, onConfirmed)
         {
             _modify = modify;
 
