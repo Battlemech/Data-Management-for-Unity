@@ -6,13 +6,13 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    public class SynchronisedSet : SynchronisedOperation
+    public class SynchronisedSet<T> : SynchronisedOperation<T>
     {
         //saves value and type resulting from operation to allow synchronising result on remote
         private readonly byte[] _value;
         private readonly string _typeString;
         
-        public SynchronisedSet(string databaseId, string valueId, byte[] value, Type type) : base(databaseId, valueId)
+        public SynchronisedSet(string databaseId, string valueId, byte[] value, Type type, Action<T> onConfirmed) : base(databaseId, valueId, onConfirmed)
         {
             _value = value;
             _typeString = type.AssemblyQualifiedName;

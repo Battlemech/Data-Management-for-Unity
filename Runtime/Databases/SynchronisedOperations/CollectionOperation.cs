@@ -4,12 +4,12 @@ using Data_Management_for_Unity.Runtime.Serializer;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    public abstract class CollectionOperation<TCollection, TValue> : SynchronisedOperation
+    public abstract class CollectionOperation<TCollection, TValue> : SynchronisedOperation<TCollection>
         where TCollection : ICollection<TValue>, new()
     {
         private readonly bool _isSafeOperation;
         
-        protected CollectionOperation(string databaseId, string valueId, bool isSafe) : base(databaseId, valueId)
+        protected CollectionOperation(string databaseId, string valueId, bool isSafe, Action<TCollection> onConfirmed) : base(databaseId, valueId, onConfirmed)
         {
             _isSafeOperation = isSafe;
         }

@@ -7,7 +7,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
 {
     public static class Utility
     {
-        public static Task Add<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toAdd, bool safe=false)
+        public static Task Add<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toAdd, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : ICollection<TValue>, new()
         {
             //serialize added value
@@ -30,10 +30,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
             
             //process add internally
-            return valueStorage.Database.OnAdd<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, addedValue, addedType, safe);
+            return valueStorage.Database.OnAdd<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, addedValue, addedType, safe, onConfirmed);
         }
 
-        public static Task Remove<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toRemove, bool safe=false)
+        public static Task Remove<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toRemove, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : ICollection<TValue>, new()
         {
             //serialize removed value
@@ -56,16 +56,16 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
 
             //process remove internally
-            return valueStorage.Database.OnRemove<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe);
+            return valueStorage.Database.OnRemove<TCollection, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe, onConfirmed);
         }
 
-        public static Task Add<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false)
+        public static Task Add<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : IDictionary<TKey, TValue>, new()
         {
-            return valueStorage.Add(new KeyValuePair<TKey, TValue>(key, value), safe);
+            return valueStorage.Add(new KeyValuePair<TKey, TValue>(key, value), safe, onConfirmed);
         }
 
-        public static Task RemoveKey<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey toRemove, bool safe=false)
+        public static Task RemoveKey<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey toRemove, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : IDictionary<TKey, TValue>, new()
         {
             //serialize removed key
@@ -88,10 +88,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
 
             //process remove internally
-            return valueStorage.Database.OnRemoveKey<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe);
+            return valueStorage.Database.OnRemoveKey<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe, onConfirmed);
         }
 
-        public static Task Update<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false)
+        public static Task Update<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : IDictionary<TKey, TValue>, new()
         {
             throw new NotImplementedException();

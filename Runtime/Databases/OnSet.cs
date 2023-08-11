@@ -13,35 +13,35 @@ namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
-        protected internal async Task OnSet(string valueId, byte[] value, Type type)
+        protected internal async Task OnSet<T>(string valueId, byte[] value, Type type, Action<T> onConfirmed)
         {
-            await OnLocalOperation(value, type, new SynchronisedSet(Id, valueId, value, type));
+            await OnLocalOperation(value, type, new SynchronisedSet<T>(Id, valueId, value, type, onConfirmed));
         }
 
-        protected internal async Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify, bool isSafe)
+        protected internal async Task OnModify<T>(string valueId, byte[] value, Type type, ModifyDelegate<T> modify, bool isSafe, Action<T> onConfirmed)
         {
-            await OnLocalOperation(value, type, new SynchronisedModify<T>(Id, valueId, value, type, modify, isSafe));
+            await OnLocalOperation(value, type, new SynchronisedModify<T>(Id, valueId, value, type, modify, isSafe, onConfirmed));
         }
 
         protected internal async Task OnAdd<TCollection, TValue>(string valueId, byte[] collectionValue,
-            Type collectionType, byte[] addedValue, Type addedType, bool isSafe)
+            Type collectionType, byte[] addedValue, Type addedType, bool isSafe, Action<TCollection> onConfirmed)
             where TCollection : ICollection<TValue>, new()
         {
-            await OnLocalOperation(collectionValue, collectionType, new SynchronisedAdd<TCollection, TValue>(Id, valueId, addedValue, addedType, isSafe));
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedAdd<TCollection, TValue>(Id, valueId, addedValue, addedType, isSafe, onConfirmed));
         }
 
         protected internal async Task OnRemove<TCollection, TValue>(string valueId, byte[] collectionValue,
-            Type collectionType, byte[] removedValue, Type removedType, bool isSafe)
+            Type collectionType, byte[] removedValue, Type removedType, bool isSafe, Action<TCollection> onConfirmed)
             where TCollection : ICollection<TValue>, new()
         {
-            await OnLocalOperation(collectionValue, collectionType, new SynchronisedRemove<TCollection, TValue>(Id, valueId, removedValue, removedType, isSafe));
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedRemove<TCollection, TValue>(Id, valueId, removedValue, removedType, isSafe, onConfirmed));
         }
 
         protected internal async Task OnRemoveKey<TDictionary, TKey, TValue>(string valueId, byte[] collectionValue,
-            Type collectionType, byte[] removedValue, Type removedType, bool isSafe)
+            Type collectionType, byte[] removedValue, Type removedType, bool isSafe, Action<TDictionary> onConfirmed)
             where TDictionary : IDictionary<TKey, TValue>, new()
         {
-            await OnLocalOperation(collectionValue, collectionType, new SynchronisedKeyRemove<TDictionary, TKey, TValue>(Id, valueId, removedValue, removedType, isSafe));
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedKeyRemove<TDictionary, TKey, TValue>(Id, valueId, removedValue, removedType, isSafe, onConfirmed));
         }
 
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
@@ -90,14 +90,17 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     }
                 }
                 
-                //execute operation
+                //execute operation, invoking OnConfirmed in the process
                 OnOperation(value, type, operation, true);
                 return;
             }
             
             //update local data confirmed by remote
             UpdateConfirmedData(operation.ValueId, operation.ModCount, value, type);
-                
+            
+            //operation was confirmed by remote
+            operation.OnConfirmed(value, type);
+            
             //save data persistently, if necessary
             if (IsPersistent) await PersistentData.Save(Id, operation.ValueId, value, type, operation.ModCount);
         }

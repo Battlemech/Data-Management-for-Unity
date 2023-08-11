@@ -11,7 +11,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         private readonly byte[] _addedValue;
         private readonly string _addedTypeString;
         
-        public SynchronisedAdd(string databaseId, string valueId, byte[] addedValue, Type addedType, bool isSafe) : base(databaseId, valueId, isSafe)
+        public SynchronisedAdd(string databaseId, string valueId, byte[] addedValue, Type addedType, bool isSafe, Action<TCollection> onConfirmed) : base(databaseId, valueId, isSafe, onConfirmed)
         {
             _addedValue = addedValue;
             _addedTypeString = addedType.AssemblyQualifiedName;

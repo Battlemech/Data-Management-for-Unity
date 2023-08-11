@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Runtime.Threading;
@@ -77,8 +78,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// Overwrites the current value and synchronises the result in the network
         /// </summary>
         /// <param name="data">New value</param>
+        /// <param name="onConfirmed">Action executed once the new value was confirmed remotely. Executed on a thread</param>
         /// <returns>Internal task synchronising values and saving data persistently</returns>
-        public Task Set(T data)
+        public Task Set(T data, Action<T> onConfirmed = null)
         {
             byte[] value;
             Type type;
@@ -93,9 +95,23 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
 
             //delegate internal logic to background to increase performance
-            return Database.OnSet(Id, value, type);
+            return Database.OnSet(Id, value, type, onConfirmed);
         }
-        
+
+        /// <summary>
+        /// Overwrites the current value and synchronises the result in the network
+        /// </summary>
+        /// <param name="data">New value</param>
+        /// <param name="onConfirmed">Action executed once the new value was confirmed remotely</param>
+        /// <param name="mainThread">True if the onConfirmed action is executed on Unity's main thread</param>
+        /// <returns>Internal task synchronising values and saving data persistently</returns>
+        public Task Set(T data, Action<T> onConfirmed, bool mainThread)
+        {
+            return mainThread
+                ? Set(data, obj => MainThreadRunner.Delegate(() => onConfirmed.Invoke(obj)))
+                : Set(data, onConfirmed);
+        }
+
         /// <summary>
         /// Modifies the current value and synchronises the result in the network.
         /// </summary>
@@ -105,8 +121,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// An unsafe operation assumes up-to-date data exists locally and instantly performs the operation, executing the operation a second time if the local data wasn't synchronised with the server.
         /// For performance, usage of safe operations is discouraged unless temporary inconsistent states want to be avoided or delegates need to be executed exactly once.
         /// </param>
+        /// <param name="onConfirmed">Action executed once the new value was confirmed remotely. Executed on a thread</param>
+        /// <param name="mainThread">True if the onConfirmed action is executed on Unity's main thread</param>
         /// <returns>Internal task synchronising values and saving data persistently</returns>
-        public Task Modify(ModifyDelegate<T> modifyDelegate, bool safe=false)
+        public Task Modify(ModifyDelegate<T> modifyDelegate, bool safe=false, Action<T> onConfirmed = null, bool mainThread=false)
         {
             byte[] value;
             Type type;
@@ -121,7 +139,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
 
             //delegate internal logic to background to increase performance
-            return Database.OnModify(Id, value, type, modifyDelegate, safe);
+            return Database.OnModify(Id, value, type, modifyDelegate, safe, 
+                //when main thread delegation was requested
+                onConfirmed != null && mainThread ?
+                    //delegate invocation of action on main thread
+                    obj => MainThreadRunner.Delegate((() => onConfirmed.Invoke(obj)))
+                    //default: execute callback on receiving thread
+                    : onConfirmed);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         private readonly byte[] _removedValue;
         private readonly string _removedTypeString;
         
-        public SynchronisedKeyRemove(string databaseId, string valueId, byte[] removedValue, Type removedType, bool isSafe) : base(databaseId, valueId, isSafe)
+        public SynchronisedKeyRemove(string databaseId, string valueId, byte[] removedValue, Type removedType, bool isSafe, Action<TDictionary> onConfirmed) : base(databaseId, valueId, isSafe, onConfirmed)
         {
             _removedValue = removedValue;
             _removedTypeString = removedType.AssemblyQualifiedName;
