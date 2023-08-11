@@ -122,8 +122,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// For performance, usage of safe operations is discouraged unless temporary inconsistent states want to be avoided or delegates need to be executed exactly once.
         /// </param>
         /// <param name="onConfirmed">Action executed once the new value was confirmed remotely. Executed on a thread</param>
+        /// <param name="mainThread">True if the onConfirmed action is executed on Unity's main thread</param>
         /// <returns>Internal task synchronising values and saving data persistently</returns>
-        public Task Modify(ModifyDelegate<T> modifyDelegate, bool safe=false, Action<T> onConfirmed = null)
+        public Task Modify(ModifyDelegate<T> modifyDelegate, bool safe=false, Action<T> onConfirmed = null, bool mainThread=false)
         {
             byte[] value;
             Type type;
@@ -138,26 +139,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             }
 
             //delegate internal logic to background to increase performance
-            return Database.OnModify(Id, value, type, modifyDelegate, safe, onConfirmed);
-        }
-
-        /// <summary>
-        /// Modifies the current value and synchronises the result in the network.
-        /// </summary>
-        /// <param name="modifyDelegate">Operation to perform on up-to-date data</param>
-        /// <param name="onConfirmed">Action executed once the new value was confirmed remotely</param>
-        /// <param name="mainThread">True if the onConfirmed action is executed on Unity's main thread</param>
-        /// <param name="safe">
-        /// A safe operation requests up-to-date data from server and performs the operation after.
-        /// An unsafe operation assumes up-to-date data exists locally and instantly performs the operation, executing the operation a second time if the local data wasn't synchronised with the server.
-        /// For performance, usage of safe operations is discouraged unless temporary inconsistent states want to be avoided or delegates need to be executed exactly once.
-        /// </param>
-        /// <returns>Internal task synchronising values and saving data persistently</returns>
-        public Task Modify(ModifyDelegate<T> modifyDelegate, Action<T> onConfirmed = null, bool mainThread = false, bool safe = false)
-        {
-            return mainThread
-                ? Modify(modifyDelegate, safe, onConfirmed == null ? null : obj => MainThreadRunner.Delegate((() => onConfirmed.Invoke(obj))))
-                : Modify(modifyDelegate, safe, onConfirmed);
+            return Database.OnModify(Id, value, type, modifyDelegate, safe, 
+                //when main thread delegation was requested
+                onConfirmed != null && mainThread ?
+                    //delegate invocation of action on main thread
+                    obj => MainThreadRunner.Delegate((() => onConfirmed.Invoke(obj)))
+                    //default: execute callback on receiving thread
+                    : onConfirmed);
         }
 
         /// <summary>
