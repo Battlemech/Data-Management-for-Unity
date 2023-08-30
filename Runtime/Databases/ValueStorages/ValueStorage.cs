@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Serializer;
@@ -149,11 +150,50 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         }
 
         /// <summary>
+        /// Modifies the current value and synchronises the result in the network.
+        /// </summary>
+        /// <param name="modifyDelegate">Operation to perform on up-to-date data</param>
+        /// <param name="safe">
+        /// A safe operation requests up-to-date data from server and performs the operation after.
+        /// An unsafe operation assumes up-to-date data exists locally and instantly performs the operation, executing the operation a second time if the local data wasn't synchronised with the server.
+        /// For performance, usage of safe operations is discouraged unless temporary inconsistent states want to be avoided or delegates need to be executed exactly once.
+        /// </param>
+        /// <returns>Internal task synchronising values and saving data persistently</returns>
+        public Task<T> ModifyAsync(ModifyDelegate<T> modifyDelegate, bool safe=false)
+        {
+            //store result of modification action
+            T result = default;
+            ManualResetEvent confirmedResult = new ManualResetEvent(false);
+            
+            //modify value
+            Modify(modifyDelegate, safe, r =>
+            {
+                //update result
+                result = r;
+                
+                //notify waiting thread that result was confirmed by remote 
+                confirmedResult.Set();
+            }, false);
+
+            //start waiting for result to be confirmed
+            Task<T> onConfirmationTask = new Task<T>((() =>
+            {
+                //wait until result is confirmed
+                confirmedResult.WaitOne();
+                
+                return result;
+            }), TaskCreationOptions.LongRunning);
+            onConfirmationTask.Start();
+
+            return onConfirmationTask;
+        }
+
+        /// <summary>
         /// Invokes an action exactly one time as soon as the value isn't null or default 
         /// </summary>
         /// <param name="onInitialized">Action to perform once value was initialized</param>
         /// <param name="mainThread">True if the action is supposed to be delegated to unity's main thread, otherwise false</param>
-        public void OnInitialized(Action<T> onInitialized, bool mainThread=Options.MainThreadDefault) => Database.OnInitialized(Id, onInitialized, mainThread);
+        public void OnInitialized(Action<T> onInitialized, bool mainThread=true) => Database.OnInitialized(Id, onInitialized, mainThread);
         
         protected internal override void InternalSet(byte[] bytes, Type type)
         {

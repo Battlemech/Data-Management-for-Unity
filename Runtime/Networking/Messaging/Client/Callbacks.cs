@@ -25,7 +25,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// <param name="mainThread">True if the callback will be executed on Unity's main thread, otherwise false</param>
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
-        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false, bool mainThread=Options.MainThreadDefault)
+        public bool AddCallback<T>(Action<T> callback, string name = "", bool unique = false, bool removeOnError = false, bool mainThread=false)
         {
             return GetHandler(mainThread).AddCallback(typeof(T), callback, name, unique, removeOnError);
         }
@@ -36,7 +36,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// <param name="name">Required name of callbacks, if any</param>
         /// <param name="mainThread">True if the callback was added on the main thread, otherwise false</param>
         /// <returns>Number of callbacks matching criterion</returns>
-        public int GetCallbackCount<T>(string name=null, bool mainThread=Options.MainThreadDefault)
+        public int GetCallbackCount<T>(string name=null, bool mainThread=false)
         {
             return GetHandler(mainThread).GetCallbackCount(typeof(T), name);
         }
@@ -47,7 +47,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client
         /// <param name="name">Required name of callbacks, if any</param>
         /// <param name="mainThread">True if the callback was added on the main thread, otherwise false</param>
         /// <returns>Number of callbacks removed</returns>
-        public int RemoveCallbacks<T>(string name = null, bool mainThread=Options.MainThreadDefault)
+        public int RemoveCallbacks<T>(string name = null, bool mainThread=false)
         {
             return GetHandler(mainThread).RemoveCallbacks(typeof(T), name);
         }

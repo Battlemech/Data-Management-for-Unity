@@ -31,7 +31,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
         public bool AddCallback<T>(string key, Action<T> callback, string name = "", bool unique = false,
-            bool removeOnError = false, bool invoke=false, bool mainThread = Options.MainThreadDefault)
+            bool removeOnError = false, bool invoke=false, bool mainThread = false)
         {
             //Add callback to specified thread handler
             bool added = GetHandler(mainThread).AddCallback(key, callback, name, unique, removeOnError);

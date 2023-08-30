@@ -370,7 +370,25 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             //make sure each operation was invoked only once
             Assert.AreEqual(_databases.Count * repetitionCount, invokedOperations);
         }
-        
+
+        [UnityTest]
+        public IEnumerator TestAsyncModify()
+        {
+            const string id = nameof(TestAsyncModify);
+
+            yield return TestAsyncModifyAsync(id);
+        }
+
+        private async Task TestAsyncModifyAsync(string id)
+        {
+            const int expected = 25;
+            
+            int result = await _database0.Get<int>(id).ModifyAsync((data => data + expected));
+            Debug.Log($"Confirmed result: {result}");
+            
+            Assert.AreEqual(expected, result);
+        } 
+
         private IEnumerator ValuesEqual<T>(string id, int timeout = Options.DefaultTimeout)
         {
             //make sure value is synchronised in other databases
