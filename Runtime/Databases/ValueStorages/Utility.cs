@@ -91,6 +91,21 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             return valueStorage.Database.OnRemoveKey<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, removedValue, removedType, safe, onConfirmed);
         }
 
+        public static bool TryGetValue<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, out TValue value)
+            where TCollection : IDictionary<TKey, TValue>
+        {
+            //allow value to be modified in lambda
+            TValue result = default;
+            
+            //try getting value
+            bool success = valueStorage.BlockingGet((collection => collection != null && collection.TryGetValue(key, out result)));
+
+            //save result in out parameter
+            value = result;
+
+            return success;
+        }
+        
         public static Task Update<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : IDictionary<TKey, TValue>, new()
         {

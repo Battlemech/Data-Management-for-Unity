@@ -5,34 +5,22 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Objects
 {
-    public class SynchronisedObject
+    public abstract class SynchronisedObject
     {
         public readonly string Id;
         
         [NonSerialized]
         private Database _database;
 
-        public SynchronisedObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
+        protected SynchronisedObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
         {
             
         }
-        
-        public SynchronisedObject(string id, bool isPersistent)
+
+        protected SynchronisedObject(string id, bool isPersistent)
         {
-            if (id.Contains('/'))
-                throw new ArgumentException("The / char is used for internal logic. Make sure the id never contains it!");
-            
             Id = id;
             _database = new Database(id, isPersistent, true);
-        }
-
-        public SynchronisedObject(SynchronisedObject parent, string id, bool isPersistent = true)
-        {
-            if (id.Contains('/'))
-                throw new ArgumentException("The / char is used for internal logic. Make sure the id never contains it!");
-
-            Id = $"{parent.Id}/{id}";
-            _database = new Database(Id, isPersistent, true);
         }
 
         public Database GetDatabase()
@@ -45,6 +33,15 @@ namespace Data_Management_for_Unity.Runtime.Objects
             _database = SynchronisedClient.Instance.GetDatabase(Id, true);
 
             return _database;
+        }
+
+        public void Delete()
+        {
+            //start deletion process
+            GetDatabase().Delete();
+            
+            //clear local reference
+            _database = null;
         }
     }
 }

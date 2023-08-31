@@ -59,9 +59,11 @@ namespace Data_Management_for_Unity.Runtime.Objects
                 action.Invoke(GetGameObject());
             }));
         }
-        
-        public Task<GameObject> GetGameObjectAsync() 
-            => MainThreadRunner.Delegate(new Task<GameObject>(GetGameObject));
+
+        public Task GetComponent<T>(Action<T> action) where T : Component
+        {
+            return GetGameObject((o => action.Invoke(o.GetComponent<T>())));
+        }
 
         protected virtual void OnCreated(GameObject gameObject)
         {
