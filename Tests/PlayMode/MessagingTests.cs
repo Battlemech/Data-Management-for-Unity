@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
@@ -236,9 +237,18 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             TestRequest request = new TestRequest(123123, 233);
             Stopwatch waitTime = Stopwatch.StartNew();
 
-            TestReply reply = await _client.SendRequest<TestRequest, TestReply>(request);
-            Debug.Log($"RTT: {waitTime.ElapsedMilliseconds} ms");
-            
+            TestReply reply;
+            try
+            {
+                reply = await _client.SendRequest<TestRequest, TestReply>(request);
+                Debug.Log($"RTT: {waitTime.ElapsedMilliseconds} ms");
+            }
+            catch (TimedOutException)
+            {
+                Assert.Fail("Initial request timed out!");
+                return;
+            }
+
             Assert.AreEqual(request.A + request.B, reply.Added);
             Assert.AreEqual(request.A * request.B, reply.Multiplied);
             
@@ -251,14 +261,21 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 await _client.SendRequest<TestRequest, TestReply>(request, 1000);
                 Assert.Fail("Failed to raise expected exception");
             }
-            catch (TimedOutException)
+            catch (TimedOutException e)
             {
+                //make sure unity doesn't cause test to fail after exception is caught
+                //todo: figure out what exactly is expected
+                LogAssert.Expect(LogType.Exception, new Regex(".{0,}TimedOutException.{0,}"));
+
                 //successfully caught expected exception
                 waitTime.Stop();
                 Debug.Log($"Raised TimedOutException after: {waitTime.ElapsedMilliseconds} ms!");
             }
             
             Assert.GreaterOrEqual(waitTime.ElapsedMilliseconds, 1000);
+                
+            //return to avoid exception being thrown
+            return;
         }
         
         private IEnumerator TestSend<T>(T expected, int count = 100000)

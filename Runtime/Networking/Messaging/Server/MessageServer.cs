@@ -21,7 +21,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// </summary>
         private readonly ConcurrentQueue<Tuple<object, Type, MessageSession>> _receivedObjects =
             new ConcurrentQueue<Tuple<object, Type, MessageSession>>();
-
+        
         public bool Multicast<T>(T data)
         {
             return base.Multicast(NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data))));
