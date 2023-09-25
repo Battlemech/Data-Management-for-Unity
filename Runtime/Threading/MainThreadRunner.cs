@@ -9,7 +9,7 @@ namespace Data_Management_for_Unity.Runtime.Threading
     {
         private static MainThreadRunner _instance;
 
-        private static readonly ManualScheduler Scheduler = new ManualScheduler();
+        public static readonly ManualScheduler UnityThreadScheduler = new ManualScheduler();
         
         void Awake()
         {
@@ -29,7 +29,7 @@ namespace Data_Management_for_Unity.Runtime.Threading
         void Update()
         {
             //process all delegated actions
-            Scheduler.ExecuteScheduledTasks();
+            UnityThreadScheduler.ExecuteScheduledTasks();
         }
 
         void OnDestroy()
@@ -44,7 +44,7 @@ namespace Data_Management_for_Unity.Runtime.Threading
                 Debug.LogWarning("No MainThreadRunner component was setup. Make sure one is added to the scene, or delegated actions won't be executed!");
             
             //let Unity's main thread get the task
-            task.Start(Scheduler);
+            task.Start(UnityThreadScheduler);
 
             return task;
         }

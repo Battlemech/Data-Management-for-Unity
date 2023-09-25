@@ -60,6 +60,17 @@ namespace Data_Management_for_Unity.Runtime.Objects
             }));
         }
 
+        public bool ExistsLocally()
+        {
+            //local game object was already retrieved
+            if (_gameObject != null) return true;
+            
+            //try finding local instance
+            _gameObject = GameObject.Find(Id);
+
+            return _gameObject != null;
+        }
+
         public Task GetComponent<T>(Action<T> action) where T : Component
         {
             return GetGameObject((o => action.Invoke(o.GetComponent<T>())));
