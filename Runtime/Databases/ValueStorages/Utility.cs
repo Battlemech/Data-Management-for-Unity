@@ -126,6 +126,8 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             valueStorage.BlockingGet((collection =>
             {
+                if(collection == null) return;
+                
                 foreach (var value in collection)
                 {
                     element.Invoke(value);
