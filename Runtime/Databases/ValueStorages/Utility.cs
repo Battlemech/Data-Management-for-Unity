@@ -117,5 +117,20 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             return valueStorage.BlockingGet((values => values.Contains(value)));
         }
+        
+        /// <summary>
+        /// Iterate through all elements of the collection
+        /// </summary>
+        public static void ForEach<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, Action<TValue> element)
+            where TCollection : ICollection<TValue>, new()
+        {
+            valueStorage.BlockingGet((collection =>
+            {
+                foreach (var value in collection)
+                {
+                    element.Invoke(value);
+                }
+            }));
+        }
     }
 }
