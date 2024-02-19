@@ -1,6 +1,7 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
+using DMP.Utility;
 using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Objects
@@ -9,7 +10,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
     {
         public readonly string Id;
         
-        [NonSerialized]
+        [PreventSerialization]
         private Database _database;
 
         protected SynchronisedObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
