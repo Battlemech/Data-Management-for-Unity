@@ -9,6 +9,7 @@ using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence;
 using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
@@ -41,7 +42,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         private void OnSynchronisationEnabled()
         {
             //set a reference to synchronised client, if necessary
-            if (Client.Equals(null)) Client = SynchronisedClient.Instance;
+            if (Client == null) Client = SynchronisedClient.Instance;
             
             //add database to list of local databases
             Client.AddDatabase(this);
