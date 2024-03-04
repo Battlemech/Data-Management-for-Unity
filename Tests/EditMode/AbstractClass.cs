@@ -6,23 +6,29 @@ namespace Data_Management_for_Unity.Tests.EditMode
     [Union(1, typeof(AbstractClass2))]
     public abstract class AbstractClass
     {
-        
+        [Key(0)]
+        public readonly bool Test;
+
+        protected AbstractClass(bool test)
+        {
+            Test = test;
+        }
     }
 
     [MessagePackObject]
     public class AbstractClass1 : AbstractClass
     {
-        [Key(0)]
+        [Key(1)]
         public readonly string Name;
 
-        public AbstractClass1(string name)
+        public AbstractClass1(bool b, string name) : base(b)
         {
             Name = name;
         }
 
         protected bool Equals(AbstractClass1 other)
         {
-            return Name == other.Name;
+            return Name == other.Name && Test == other.Test;
         }
 
         public override bool Equals(object obj)
@@ -42,17 +48,17 @@ namespace Data_Management_for_Unity.Tests.EditMode
     [MessagePackObject]
     public class AbstractClass2 : AbstractClass
     {
-        [Key(0)]
+        [Key(1)]
         public readonly int Id;
 
-        public AbstractClass2(int id)
+        public AbstractClass2(bool b, int id) : base(b)
         {
             Id = id;
         }
 
         protected bool Equals(AbstractClass2 other)
         {
-            return Id == other.Id;
+            return Id == other.Id && Test == other.Test;
         }
 
         public override bool Equals(object obj)

@@ -80,7 +80,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
         [Test]
         public void TestAbstractClass()
         {
-            AbstractClass2 abstractClass2 = new AbstractClass2(3);
+            AbstractClass2 abstractClass2 = new AbstractClass2(false, 3);
             
             Assert.AreEqual(abstractClass2, Copy(abstractClass2));
         }
@@ -89,8 +89,8 @@ namespace Data_Management_for_Unity.Tests.EditMode
         public void TestAbstractQueue()
         {
             List<AbstractClass> list = new List<AbstractClass>();
-            list.Add(new AbstractClass1("name"));
-            list.Add(new AbstractClass2(1));
+            list.Add(new AbstractClass1( false, "name"));
+            list.Add(new AbstractClass2(true, 1));
 
             List<AbstractClass> copy = Copy(list);
             
