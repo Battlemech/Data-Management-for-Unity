@@ -44,5 +44,22 @@ namespace Data_Management_for_Unity.Runtime.Objects
             //clear local reference
             _database = null;
         }
+
+        protected bool Equals(SynchronisedObject other)
+        {
+            return Id == other.Id;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj is SynchronisedObject other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Id != null ? Id.GetHashCode() : 0);
+        }
     }
 }

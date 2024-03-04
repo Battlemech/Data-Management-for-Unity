@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
@@ -70,6 +71,30 @@ namespace Data_Management_for_Unity.Tests.EditMode
             SynchronisedSet<byte[]> set = new SynchronisedSet<byte[]>("123", "213213", Array.Empty<byte>(), typeof(string), null);
             
             Assert.AreEqual(set.GetType(), Copy(set).GetType());
+        }
+
+        [Test]
+        public void TestAbstractClass()
+        {
+            AbstractClass2 abstractClass2 = new AbstractClass2(3);
+            
+            Assert.AreEqual(abstractClass2, Copy(abstractClass2));
+        }
+
+        [Test]
+        public void TestAbstractQueue()
+        {
+            List<AbstractClass> list = new List<AbstractClass>();
+            list.Add(new AbstractClass1("name"));
+            list.Add(new AbstractClass2(1));
+
+            List<AbstractClass> copy = Copy(list);
+            
+            Assert.AreEqual(list.Count, copy.Count);
+            for (int i = 0; i < list.Count; i++)
+            {
+                Assert.AreEqual(list[i], copy[i]);
+            }
         }
 
         /// <summary>

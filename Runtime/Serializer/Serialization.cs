@@ -50,10 +50,5 @@ namespace Data_Management_for_Unity.Runtime.Serializer
         {
             return type == null ? default : Serializer.Deserialize(type, bytes);
         }
-
-        public static T Copy<T>(T o)
-        {
-            return Serializer.Copy(o);
-        }
     }
 }

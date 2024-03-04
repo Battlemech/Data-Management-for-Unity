@@ -46,18 +46,31 @@ namespace Data_Management_for_Unity.Runtime.Databases
 
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
-            //unsafe operations update local value instantly
-            if(!op.IsSafeOperation())
-                Invoke(op.ValueId, Serialization.Deserialize(value, type));
-
-            //synchronise data across multiple clients
-            if (IsSynchronised) await OnLocalSynchronisedOperation(value, type, op);
-            //persistent data is updated after values were confirmed by remote. If not synchronised: Update instantly
-            else if (IsPersistent) await PersistentData.Save(Id, op.ValueId, value, type, op.ModCount);
+            try
+            {
+                //unsafe operations update local value instantly
+                if (!op.IsSafeOperation())
+                {
+                    Invoke(op.ValueId, Serialization.Deserialize(value, type));
+                }
+            
+                //synchronise data across multiple clients
+                if (IsSynchronised) await OnLocalSynchronisedOperation(value, type, op);
+                //persistent data is updated after values were confirmed by remote. If not synchronised: Update instantly
+                else if (IsPersistent) await PersistentData.Save(Id, op.ValueId, value, type, op.ModCount);
+            }
+            catch (Exception e)
+            {
+                //make sure to log exception if task isn't awaited
+                Debug.LogException(e);
+            }
         }
 
         private async Task OnLocalSynchronisedOperation(byte[] value, Type type, SynchronisedOperation operation)
         {
+            //make sure the client is connected //todo: synchronise
+            if(!Client.IsConnected) return;
+            
             //assign modCount and request operation to be executed
             OperationReply reply = await SendOperationRequest(operation);
 

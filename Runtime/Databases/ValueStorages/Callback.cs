@@ -30,7 +30,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// <returns>Number of callbacks matching criterion</returns>
         public int GetCallbackCount(string name=null, bool mainThread=false)
         {
-            return Database.GetCallbackCount(Id, name);
+            return Database.GetCallbackCount(Id, name, mainThread);
         }
         
         /// <summary>
