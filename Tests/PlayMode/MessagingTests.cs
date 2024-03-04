@@ -261,7 +261,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 await _client.SendRequest<TestRequest, TestReply>(request, 1000);
                 Assert.Fail("Failed to raise expected exception");
             }
-            catch (TimedOutException e)
+            catch (TimedOutException)
             {
                 //make sure unity doesn't cause test to fail after exception is caught
                 //todo: figure out what exactly is expected
