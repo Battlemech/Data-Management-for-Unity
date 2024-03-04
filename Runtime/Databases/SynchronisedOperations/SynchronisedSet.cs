@@ -26,7 +26,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public SynchronisedSet(string databaseId, string valueId) : base(databaseId, valueId, null)
         {
             //todo: read data from serialized object
-            //throw new NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override byte[] Repeat(byte[] value, Type type, out Type resultType)

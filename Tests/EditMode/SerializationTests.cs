@@ -74,6 +74,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             SynchronisedSet<byte[]> set = new SynchronisedSet<byte[]>("123", "213213", Array.Empty<byte>(), typeof(string), null);
             
             Assert.AreEqual(set.GetType(), Copy(set).GetType());
+            Assert.AreEqual(set.DatabaseId, Copy(set).DatabaseId);
         }
 
         [Test]
