@@ -1,12 +1,19 @@
 ﻿using System;
 using MessagePack;
+using MessagePack.Resolvers;
 
 namespace Data_Management_for_Unity.Runtime.Serializer
 {
     public static class SerializationPCK
     {
+        static SerializationPCK()
+        {
+
+        }
+        
         public static byte[] Serialize<T>(T value)
         {
+            //return MessagePackSerializer.Serialize(value, ContractlessStandardResolver.Options);
             return MessagePackSerializer.Serialize(value);
         }
 

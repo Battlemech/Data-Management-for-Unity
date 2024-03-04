@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using MessagePack;
+using MessagePack.Formatters;
 using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    public class SynchronisedSet<T> : SynchronisedOperation<T>
+    [MessagePackObject(true)]
+    public class SynchronisedSet<T> : SynchronisedOperation<T>, IMessagePackFormatter<SynchronisedOperation>
     {
         //saves value and type resulting from operation to allow synchronising result on remote
         private readonly byte[] _value;
@@ -17,6 +20,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         {
             _value = value;
             _typeString = type.AssemblyQualifiedName;
+        }
+
+        [SerializationConstructor]
+        public SynchronisedSet(string databaseId, string valueId) : base(databaseId, valueId, null)
+        {
+            //todo: read data from serialized object
+            throw new NotImplementedException();
         }
 
         public override byte[] Repeat(byte[] value, Type type, out Type resultType)
@@ -36,6 +46,16 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public override bool IsSafeOperation()
         {
             return false;
+        }
+
+        public void Serialize(ref MessagePackWriter writer, SynchronisedOperation value, MessagePackSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SynchronisedOperation Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        {
+            throw new NotImplementedException();
         }
     }
 }
