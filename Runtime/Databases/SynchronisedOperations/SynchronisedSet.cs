@@ -7,13 +7,10 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    [MessagePackObject]
     public class SynchronisedSet<T> : SynchronisedOperation<T>
     {
         //saves value and type resulting from operation to allow synchronising result on remote
-        [Key(0)]
         private readonly byte[] _value;
-        [Key(1)]
         private readonly string _typeString;
         
         public SynchronisedSet(string databaseId, string valueId, byte[] value, Type type, Action<T> onConfirmed) : base(databaseId, valueId, onConfirmed)
