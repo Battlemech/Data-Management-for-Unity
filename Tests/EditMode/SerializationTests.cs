@@ -5,6 +5,7 @@ using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using Data_Management_for_Unity.Runtime.Serializer;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Tests.EditMode
 {
@@ -18,6 +19,8 @@ namespace Data_Management_for_Unity.Tests.EditMode
 
             Assert.AreEqual(test, Copy(test));
             Assert.AreEqual(null, Copy<string>(null));
+            
+            Debug.Log(test + " - " + Copy(test));
         }
 
         [Test]
@@ -97,12 +100,19 @@ namespace Data_Management_for_Unity.Tests.EditMode
             }
         }
 
+        [Test]
+        public void TestNull()
+        {
+            throw new NotImplementedException();
+        }
+
+
         /// <summary>
-        ///     Given an object, tries serializing and deserializing it, returning a copy
+        /// Given an object, tries serializing and deserializing it, returning a copy
         /// </summary>
         public T Copy<T>(T data)
         {
-            return Serialization.Deserialize<T>(Serialization.Serialize(data));
+            return SerializationPCK.Deserialize<T>(SerializationPCK.Serialize(data));
         }
     }
 }

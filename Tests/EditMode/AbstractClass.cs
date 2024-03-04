@@ -1,12 +1,18 @@
-﻿namespace Data_Management_for_Unity.Tests.EditMode
+﻿using MessagePack;
+
+namespace Data_Management_for_Unity.Tests.EditMode
 {
+    [Union(0, typeof(AbstractClass1))]
+    [Union(1, typeof(AbstractClass2))]
     public abstract class AbstractClass
     {
         
     }
 
+    [MessagePackObject]
     public class AbstractClass1 : AbstractClass
     {
+        [Key(0)]
         public readonly string Name;
 
         public AbstractClass1(string name)
@@ -33,8 +39,10 @@
         }
     }
 
+    [MessagePackObject]
     public class AbstractClass2 : AbstractClass
     {
+        [Key(0)]
         public readonly int Id;
 
         public AbstractClass2(int id)
