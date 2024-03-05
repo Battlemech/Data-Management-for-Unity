@@ -22,6 +22,11 @@ namespace Data_Management_for_Unity.Runtime.Serializer
             return MessagePackSerializer.Serialize(value);
         }
 
+        public static byte[] Serialize(object o, Type type)
+        {
+            return MessagePackSerializer.Serialize(type, o);
+        }
+
         public static object Deserialize(ReadOnlyMemory<byte> bytes, Type type)
         {
             return MessagePackSerializer.Deserialize(type, bytes);

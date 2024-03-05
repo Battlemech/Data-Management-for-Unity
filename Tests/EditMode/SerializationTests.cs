@@ -107,6 +107,23 @@ namespace Data_Management_for_Unity.Tests.EditMode
             Assert.AreEqual(null, Copy<object>(null));
         }
 
+        [Test]
+        public void TestSerializedObject()
+        {
+            foreach (var o in new List<object>(){"123", 123, new List<string>(){"1", "2", "3"}, false, ""})
+            {
+                Assert.AreEqual(o, CopyAndPack(o, o.GetType()));
+            }
+        }
+
+        private object CopyAndPack(object o, Type t)
+        {
+            SerializedObject so = new SerializedObject(o, t);
+            object copy = so.Deserialize(out Type type);
+            Assert.AreEqual(o.GetType(), type);
+            return copy;
+        }
+
 
         /// <summary>
         /// Given an object, tries serializing and deserializing it, returning a copy

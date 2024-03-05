@@ -3,52 +3,38 @@ using MessagePack;
 
 namespace Data_Management_for_Unity.Runtime.Serializer
 {
-    public struct SerializedObject
+    public readonly struct SerializedObject
     {
         //serialized object
-        public readonly ReadOnlyMemory<byte> Bytes;
-        public readonly string TypeAsString;
-        
-        //deserialize type, if necessary
-        public Type Type => _type ??= Type.GetType(TypeAsString, true);
-        private Type _type;
+        private readonly byte[] _bytes;
+        private readonly string _typeAsString;
         
         public SerializedObject(object toSerialize)
         {
-            //no object was passed
-            if (toSerialize == null)
-            {
-                Bytes = null;
-                TypeAsString = null;
-                _type = null;
-                return;
-            }
+            if (toSerialize == null) throw new ArgumentException("Can't extract type of null object!");
+
+            Type type = toSerialize.GetType();
             
-            //save type
-            _type = toSerialize.GetType();
-            TypeAsString = _type.AssemblyQualifiedName;
-
-            //todo: directly write into buffer
-            Bytes = MessagePackSerializer.Serialize(toSerialize,
-                MessagePack.Resolvers.ContractlessStandardResolver.Options);
+            //serialize type
+            _typeAsString = type.AssemblyQualifiedName;
+            
+            //serialize object
+            _bytes = SerializationPCK.Serialize(toSerialize, type);
         }
 
-        public object Deserialize()
+        public SerializedObject(object toSerialize, Type type)
         {
-            return _type == null ? null : MessagePackSerializer.Deserialize(Type, Bytes);
+            //serialize type
+            _typeAsString = type.AssemblyQualifiedName;
+            
+            //serialize object
+            _bytes = SerializationPCK.Serialize(toSerialize, type);
         }
 
-        public T Deserialize<T>()
+        public object Deserialize(out Type type)
         {
-            object o = Deserialize();
-
-            return o switch
-            {
-                T expected => expected,
-                null => default,
-                _ => throw new ArgumentException("Expected type of " + o.GetType() + 
-                                                 ", but got " + typeof(T) + " instead!")
-            };
+            type = Type.GetType(_typeAsString, true);
+            return SerializationPCK.Deserialize(_bytes, type);
         }
     }
 }
