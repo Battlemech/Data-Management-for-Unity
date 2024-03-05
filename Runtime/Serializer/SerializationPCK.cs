@@ -8,12 +8,23 @@ namespace Data_Management_for_Unity.Runtime.Serializer
     {
         static SerializationPCK()
         {
+            //allow serializing private values per default
+            //MessagePackSerializer.DefaultOptions = StandardResolverAllowPrivate.Options;
+            MessagePackSerializer.DefaultOptions = MessagePackSerializerOptions.Standard.WithResolver(DynamicObjectResolverAllowPrivate.Instance);
 
+            var resolver = CompositeResolver.Create(
+                DynamicObjectResolverAllowPrivate.Instance,
+                StandardResolverAllowPrivate.Instance,
+                StandardResolver.Instance
+            );
+
+            var options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
+
+            MessagePackSerializer.DefaultOptions = options;
         }
         
         public static byte[] Serialize<T>(T value)
         {
-            //return MessagePackSerializer.Serialize(value, ContractlessStandardResolver.Options);
             return MessagePackSerializer.Serialize(value);
         }
 

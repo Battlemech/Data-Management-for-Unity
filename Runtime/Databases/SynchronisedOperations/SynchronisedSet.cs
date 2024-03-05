@@ -9,11 +9,13 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
-    [MessagePackObject(true)]
+    [MessagePackObject]
     public class SynchronisedSet<T> : SynchronisedOperation<T>
     {
         //saves value and type resulting from operation to allow synchronising result on remote
+        [Key(3)]
         private readonly byte[] _value;
+        [Key(4)] 
         private readonly string _typeString;
         
         public SynchronisedSet(string databaseId, string valueId, byte[] value, Type type, Action<T> onConfirmed) : base(databaseId, valueId, onConfirmed)
@@ -23,10 +25,11 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         }
 
         [SerializationConstructor]
-        public SynchronisedSet(string databaseId, string valueId) : base(databaseId, valueId, null)
+        public SynchronisedSet(string databaseId, string valueId, int modCount, byte[] value, string typeString) : base(databaseId, valueId, null)
         {
-            //todo: read data from serialized object
-            throw new NotImplementedException();
+            ModCount = modCount;
+            _value = value;
+            _typeString = typeString;
         }
 
         public override byte[] Repeat(byte[] value, Type type, out Type resultType)

@@ -10,21 +10,25 @@ using UnityEngine.UI;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
+    [MessagePackObject]
     public abstract class SynchronisedOperation
     {
         /// <summary>
         /// Id of the database the operation was performed on
         /// </summary>
+        [Key(0)]
         public readonly string DatabaseId;
 
         /// <summary>
         /// Id of the value the operation was performed on
         /// </summary>
+        [Key(1)]
         public readonly string ValueId;
         
         /// <summary>
         /// Expected modificationCount, used to synchronise order of operations
         /// </summary>
+        [Key(2)]
         public int ModCount;
 
         protected SynchronisedOperation(string databaseId, string valueId)
@@ -78,7 +82,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         /// <summary>
         /// Action is invoked once operation was confirmed
         /// </summary>
-        [PreventSerialization]
+        [IgnoreMember]
         private readonly Action<T> _onConfirmed;
 
         protected SynchronisedOperation(string databaseId, string valueId, Action<T> onConfirmed) : base(databaseId, valueId)
