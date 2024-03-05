@@ -104,7 +104,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
         [Test]
         public void TestNull()
         {
-            throw new NotImplementedException();
+            Assert.AreEqual(null, Copy<object>(null));
         }
 
 

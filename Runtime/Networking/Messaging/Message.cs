@@ -17,7 +17,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging
         public object Deserialize(out Type type)
         {
             type = Type.GetType(_serializedType, true);
-            return Serialization.Deserialize(_value, type);
+            return SerializationPCK.Deserialize(_value, type);
         }
 
         public static Message Create<T>(T data)
@@ -26,7 +26,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging
 
             Type type = data.GetType();
             
-            return new Message(type.AssemblyQualifiedName, Serialization.Serialize(type, data));
+            return new Message(type.AssemblyQualifiedName, SerializationPCK.Serialize(data));
         }
     }
 }
