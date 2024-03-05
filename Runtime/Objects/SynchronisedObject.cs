@@ -1,16 +1,17 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
-using DMP.Utility;
-using UnityEngine;
+using MessagePack;
 
 namespace Data_Management_for_Unity.Runtime.Objects
 {
+    [MessagePackObject]
     public abstract class SynchronisedObject
     {
+        [Key(0)]
         public readonly string Id;
         
-        [PreventSerialization]
+        [IgnoreMember]
         private Database _database;
 
         protected SynchronisedObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)

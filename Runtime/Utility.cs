@@ -53,12 +53,12 @@ namespace Data_Management_for_Unity.Runtime
         
         public static byte[] InvokeSafe<T>(this ModifyDelegate<T> modify, byte[] value, Type type, out Type resultType)
         {
-            object current = Serialization.Deserialize(value, type);
+            object current = SerializationPCK.Deserialize(value, type);
 
             return current switch
             {
-                T data => Serialization.Serialize(modify.Invoke(data), out resultType),
-                null => Serialization.Serialize(modify.Invoke(default), out resultType),
+                T data => SerializationPCK.Serialize(modify.Invoke(data), out resultType),
+                null => SerializationPCK.Serialize(modify.Invoke(default), out resultType),
                 _ => throw new ArgumentException($"Expected {typeof(T)}, but got {current.GetType()}")
             };
         }

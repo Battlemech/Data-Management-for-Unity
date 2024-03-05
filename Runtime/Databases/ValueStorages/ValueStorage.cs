@@ -92,7 +92,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 Data = data;
                 
                 //save its serialized version
-                value = Serialization.Serialize(data, out type);
+                value = SerializationPCK.Serialize(data, out type);
             }
 
             //delegate internal logic to background to increase performance
@@ -136,7 +136,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 if (!safe) Data = modifyDelegate.Invoke(Data);
 
                 //save its serialized version
-                value = Serialization.Serialize(Data, out type);
+                value = SerializationPCK.Serialize(Data, out type);
             }
 
             //delegate internal logic to background to increase performance
@@ -197,7 +197,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         
         protected internal override void InternalSet(byte[] bytes, Type type)
         {
-            object value = Serialization.Deserialize(bytes, type);
+            object value = SerializationPCK.Deserialize(bytes, type);
             
             switch (value)
             {
@@ -216,7 +216,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             lock (Id)
             {
-                return Serialization.Serialize(Data, out type);
+                return SerializationPCK.Serialize(Data, out type);
             }
         }
 

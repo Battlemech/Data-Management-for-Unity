@@ -20,7 +20,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         protected override TCollection PerformAction(TCollection collection)
         {
             //deserialize value to add
-            object deserialized = Serialization.Deserialize(_addedValue, Type.GetType(_addedTypeString, true));
+            object deserialized = SerializationPCK.Deserialize(_addedValue, Type.GetType(_addedTypeString, true));
             
             //make sure object to add is of expected type
             if (deserialized is not TValue value)

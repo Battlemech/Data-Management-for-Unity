@@ -19,10 +19,5 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             Type = type;
             ModCount = modCount;
         }
-
-        public object DeserializeObject()
-        {
-            return Serialization.Deserialize(Value, Type);
-        }
     }
 }

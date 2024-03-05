@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Threading;
-using DMP.Utility;
+using MessagePack;
 using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Objects
 {
+    [MessagePackObject]
     public class SynchronisedGameObject : SynchronisedObject
     {
         /// <summary>
         /// Local instance of game object
         /// </summary>
-        [PreventSerialization]
+        [IgnoreMember]
         private GameObject _gameObject;
         
         public SynchronisedGameObject(bool isPersistent = true) : base(isPersistent)

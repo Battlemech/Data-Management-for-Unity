@@ -22,6 +22,12 @@ namespace Data_Management_for_Unity.Runtime.Serializer
             return MessagePackSerializer.Serialize(value);
         }
 
+        public static byte[] Serialize(object o, out Type type)
+        {
+            type = o?.GetType();
+            return Serialize(o, type);
+        }
+        
         public static byte[] Serialize(object o, Type type)
         {
             return MessagePackSerializer.Serialize(type, o);
@@ -29,12 +35,18 @@ namespace Data_Management_for_Unity.Runtime.Serializer
 
         public static object Deserialize(ReadOnlyMemory<byte> bytes, Type type)
         {
-            return MessagePackSerializer.Deserialize(type, bytes);
+            return type == null ? default : MessagePackSerializer.Deserialize(type, bytes);
         }
 
         public static T Deserialize<T>(ReadOnlyMemory<byte> bytes)
         {
             return MessagePackSerializer.Deserialize<T>(bytes);
         }
+        
+        public static T Deserialize<T>(byte[] bytes)
+        {
+            return Deserialize<T>(new ReadOnlyMemory<byte>(bytes));
+        }
+
     }
 }

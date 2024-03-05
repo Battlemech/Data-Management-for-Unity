@@ -11,7 +11,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             where TCollection : ICollection<TValue>, new()
         {
             //serialize added value
-            byte[] addedValue = Serialization.Serialize(toAdd, out Type addedType);
+            byte[] addedValue = SerializationPCK.Serialize(toAdd, out Type addedType);
 
             //serialize entire collection
             byte[] collectionValue;
@@ -26,7 +26,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 valueStorage.Data.Add(toAdd);
 
                 //serialize collection
-                collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
+                collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
             }
             
             //process add internally
@@ -37,7 +37,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             where TCollection : ICollection<TValue>, new()
         {
             //serialize removed value
-            byte[] removedValue = Serialization.Serialize(toRemove, out Type removedType);
+            byte[] removedValue = SerializationPCK.Serialize(toRemove, out Type removedType);
 
             //serialize entire collection
             byte[] collectionValue;
@@ -52,7 +52,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 valueStorage.Data.Remove(toRemove);
 
                 //serialize collection
-                collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
+                collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
             }
 
             //process remove internally
@@ -69,7 +69,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             where TCollection : IDictionary<TKey, TValue>, new()
         {
             //serialize removed key
-            byte[] removedValue = Serialization.Serialize(toRemove, out Type removedType);
+            byte[] removedValue = SerializationPCK.Serialize(toRemove, out Type removedType);
 
             //serialize entire collection
             byte[] collectionValue;
@@ -84,7 +84,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 valueStorage.Data.Remove(toRemove);
 
                 //serialize collection
-                collectionValue = Serialization.Serialize(valueStorage.Data, out collectionType);
+                collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
             }
 
             //process remove internally

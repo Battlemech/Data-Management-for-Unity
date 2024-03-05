@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using Data_Management_for_Unity.Runtime.Networking;
-using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Serializer;
-using DMP.Utility;
 using MessagePack;
-using MessagePack.Formatters;
-using UnityEngine.UI;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
@@ -77,6 +72,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public abstract void OnConfirmed(byte[] value, Type type);
     }
 
+    [MessagePackObject]
     public abstract class SynchronisedOperation<T> : SynchronisedOperation
     {
         /// <summary>
@@ -96,7 +92,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             if(_onConfirmed == null) return;
 
             //deserialize confirmed value
-            object confirmed = Serialization.Deserialize(value, type);
+            object confirmed = SerializationPCK.Deserialize(value, type);
             
             //invoke onConfirmed, depending on deserialized value
             switch (confirmed)

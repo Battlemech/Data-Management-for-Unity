@@ -39,7 +39,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             var expected = "123456789,10,11, and so on";
 
             //message
-            var message = Message.Create(expected);
+            var message = new SerializedObject(expected);
 
             Assert.AreEqual(expected, message.Deserialize(out var type));
             Assert.AreEqual(expected.GetType(), type);
@@ -50,8 +50,8 @@ namespace Data_Management_for_Unity.Tests.EditMode
         {
             try
             {
-                Message.Create<string>(null);
-                Assert.Fail("Didn't catch expected exception");
+                SerializedObject o = new SerializedObject(null);
+                Assert.IsNull(o, "Didn't catch expected exception");
             }
             catch (ArgumentNullException)
             {
