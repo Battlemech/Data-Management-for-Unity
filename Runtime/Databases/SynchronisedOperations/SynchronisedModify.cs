@@ -18,6 +18,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         private string _typeString;
 
         //safe operations are only executed if the client is certain that it has up-to-date data
+        [Key(5)]
         private readonly bool _isSafe;
         
         public SynchronisedModify(string databaseId, string valueId, byte[] value, Type type, ModifyDelegate<T> modify, bool isSafe, Action<T> onConfirmed) 
@@ -34,12 +35,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         }
 
         [SerializationConstructor]
-        public SynchronisedModify(string databaseId, string valueId, int modCount, byte[] value, string typeString) :
+        protected SynchronisedModify(string databaseId, string valueId, int modCount, byte[] value, string typeString, bool isSafe):
             base(databaseId, valueId, null)
         {
             ModCount = modCount;
             _value = value;
             _typeString = typeString;
+            _isSafe = isSafe;
         }
 
         public override byte[] Repeat(byte[] value, Type type, out Type resultType)
