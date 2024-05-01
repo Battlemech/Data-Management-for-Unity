@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Serializer;
 using NUnit.Framework;
-using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Tests.EditMode
 {
@@ -129,6 +130,35 @@ namespace Data_Management_for_Unity.Tests.EditMode
             {
                 Assert.AreEqual(o, CopyAndPack(o, o.GetType()));
             }
+        }
+
+        [Test]
+        public void TestPerformance()
+        {
+            int count = 10000;
+            int stringLength = 512;
+            
+            //generate a random string
+            string randomString = "";
+            for (int i = 0; i < stringLength; i++)
+            {
+                randomString += (char) (UnityEngine.Random.Range(0, 255));
+            }
+            Debug.Log("Random string: " + randomString);
+            
+            //start timer
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            
+            for (int i = 0; i < count; i++)
+            {
+                Assert.AreEqual(randomString, Copy(randomString));
+            }
+            
+            //stop timer
+            stopwatch.Stop();
+            
+            //log strings per ms
+            Debug.Log("Chars per ms: " + count * stringLength / stopwatch.ElapsedMilliseconds);
         }
 
         private object CopyAndPack(object o, Type t)
