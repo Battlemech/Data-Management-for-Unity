@@ -9,6 +9,8 @@ namespace Data_Management_for_Unity.Runtime.Serializer
 {
     public class AbstractUnionlessFormatter<T> : IMessagePackFormatter<T>
     {
+        public static readonly AbstractUnionlessFormatter<T> Instance = new AbstractUnionlessFormatter<T>();
+        
         public void Serialize(ref MessagePackWriter writer, T value, MessagePackSerializerOptions options)
         {
             if (value == null)
@@ -36,9 +38,6 @@ namespace Data_Management_for_Unity.Runtime.Serializer
 
             //read type
             string typeName = reader.ReadString();
-            
-            //ensure type was read
-            if (string.IsNullOrEmpty(typeName)) throw new Exception("Failed to read type of " + typeof(T));
             
             //extract type
             Type type = Type.GetType(typeName, true);

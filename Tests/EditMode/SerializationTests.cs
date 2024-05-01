@@ -151,14 +151,24 @@ namespace Data_Management_for_Unity.Tests.EditMode
             
             for (int i = 0; i < count; i++)
             {
-                Assert.AreEqual(randomString, Copy(randomString));
+                Assert.AreEqual(randomString, Copy(randomString)); //1 object
+                TestNull(); //1 object
+                TestAbstractClass(); //1 object 
+                TestAbstractQueue(); //2 objects
+                TestMessage(); //1 object
+                TestOperationMessage(); //2 objects
+                TestOperationRequest(); //2 objects
             }
             
             //stop timer
             stopwatch.Stop();
             
-            //log strings per ms
-            Debug.Log("Chars per ms: " + count * stringLength / stopwatch.ElapsedMilliseconds);
+            const int objectsPerSerialization = 10;
+            
+            //calculate amount of objects serialized per millisecond
+            float objectsPerMillisecond = (float)(count * objectsPerSerialization) / stopwatch.ElapsedMilliseconds;
+            
+            Debug.Log($"Serialized {count * objectsPerSerialization} objects in {stopwatch.ElapsedMilliseconds}ms, {objectsPerMillisecond} objects/ms");
         }
 
         private object CopyAndPack(object o, Type t)
