@@ -25,25 +25,25 @@ namespace Data_Management_for_Unity.Runtime.Serializer
                 return (IMessagePackFormatter<T>)formatter;
             }
 
-            // If the formatter is not in the cache, create it
-            if (type.IsAbstract && !type.GetCustomAttributes(typeof(UnionAttribute)).Any())
-            {
-                /*
-                 * abstract classes lacking the union attribute probably can't be tagged with it, since their children have a generic type
-                 * -> serialize their actual type and use the standard formatter
-                 */
-                
-                formatter = AbstractUnionlessFormatter<T>.Instance;
-            }
-            else
-            {
-                formatter = StandardResolverAllowPrivate.Instance.GetFormatter<T>();
-            }
-
+            // Create the formatter
+            formatter = CreateFormatter<T>(type);
+            
             // Add the formatter to the cache
             formatters.TryAdd(type, formatter);
 
             return (IMessagePackFormatter<T>)formatter;
+        }
+
+        private IMessagePackFormatter CreateFormatter<T>(Type type)
+        {
+            //abstract classes lacking the union attribute probably can't be tagged with it, since their children have a generic type.
+            //-> serialize their actual type and use the standard formatter
+            if (type.IsAbstract && !type.GetCustomAttributes(typeof(UnionAttribute)).Any())
+            {
+                return AbstractUnionlessFormatter<T>.Instance;
+            }
+            
+            return StandardResolverAllowPrivate.Instance.GetFormatter<T>();
         }
     }
 }
