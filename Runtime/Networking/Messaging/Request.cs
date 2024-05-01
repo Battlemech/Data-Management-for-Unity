@@ -26,9 +26,15 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging
         [Key(0)]
         public readonly Guid Id;
         
-        public Reply(Request request)
+        protected Reply(Request request)
         {
             Id = request.Id;
+        }
+
+        [SerializationConstructor]
+        protected Reply(Guid id)
+        {
+            Id = id;
         }
     }
 }

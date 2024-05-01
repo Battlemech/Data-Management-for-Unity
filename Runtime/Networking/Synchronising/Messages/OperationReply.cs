@@ -1,4 +1,5 @@
-﻿using Data_Management_for_Unity.Runtime.Networking.Messaging;
+﻿using System;
+using Data_Management_for_Unity.Runtime.Networking.Messaging;
 using MessagePack;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
@@ -13,6 +14,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
         public readonly int Expected;
         
         public OperationReply(OperationRequest request, int expected) : base(request)
+        {
+            Expected = expected;
+        }
+        
+        [SerializationConstructor]
+        protected OperationReply(Guid id, int expected) : base(id)
         {
             Expected = expected;
         }
