@@ -10,10 +10,16 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
     public class OperationRequest : Request
     {
         //serialize operation since it is an abstract class
-        [Key(0)]
+        [Key(1)]
         public readonly SynchronisedOperation Operation;
 
         public OperationRequest(SynchronisedOperation operation)
+        {
+            Operation = operation;
+        }
+        
+        [SerializationConstructor]
+        protected OperationRequest(Guid id, SynchronisedOperation operation) : base(id)
         {
             Operation = operation;
         }

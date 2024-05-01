@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Serializer;
 using NUnit.Framework;
 using UnityEngine;
@@ -72,9 +73,23 @@ namespace Data_Management_for_Unity.Tests.EditMode
         public void TestOperationMessage()
         {
             SynchronisedSet<byte[]> set = new SynchronisedSet<byte[]>("123", "213213", Array.Empty<byte>(), typeof(string), null);
+            SynchronisedOperation generic = new SynchronisedSet<byte[]>("1234", "212343213", Array.Empty<byte>(), typeof(int), null);
             
             Assert.AreEqual(set.GetType(), Copy(set).GetType());
             Assert.AreEqual(set.DatabaseId, Copy(set).DatabaseId);
+            
+            Assert.AreEqual(generic.GetType(), Copy(generic).GetType());
+            Assert.AreEqual(generic.DatabaseId, Copy(generic).DatabaseId);
+        }
+
+        [Test]
+        public void TestOperationRequest()
+        {
+            OperationRequest request = new OperationRequest(new SynchronisedSet<byte[]>("123", "213213", Array.Empty<byte>(), typeof(string), null));
+            
+            Assert.AreEqual(request.GetType(), Copy(request).GetType());
+            Assert.AreEqual(request.Operation.GetType(), Copy(request).Operation.GetType());
+            Assert.AreEqual(request.Id, Copy(request).Id);
         }
 
         [Test]
@@ -130,7 +145,9 @@ namespace Data_Management_for_Unity.Tests.EditMode
         /// </summary>
         public T Copy<T>(T data)
         {
-            return SerializationPCK.Deserialize<T>(SerializationPCK.Serialize(data));
+            if (data == null) return default;
+            Type type = data?.GetType();
+            return (T) SerializationPCK.Deserialize(SerializationPCK.Serialize(data, type), type);
         }
     }
 }

@@ -76,7 +76,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
     public abstract class SynchronisedOperation<T> : SynchronisedOperation
     {
         /// <summary>
-        /// Action is invoked once operation was confirmed
+        /// Action is invoked locally once operation was confirmed
         /// </summary>
         [IgnoreMember]
         private readonly Action<T> _onConfirmed;

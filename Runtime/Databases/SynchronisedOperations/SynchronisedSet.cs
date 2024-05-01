@@ -25,7 +25,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         }
 
         [SerializationConstructor]
-        public SynchronisedSet(string databaseId, string valueId, int modCount, byte[] value, string typeString) : base(databaseId, valueId, null)
+        protected SynchronisedSet(string databaseId, string valueId, int modCount, byte[] value, string typeString) : base(databaseId, valueId, null)
         {
             ModCount = modCount;
             _value = value;
