@@ -376,7 +376,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         {
             const string id = nameof(TestAsyncModify);
 
-            yield return TestAsyncModifyAsync(id);
+            yield return TestAsyncModifyAsync(id).AsIEnumerator();
         }
 
         private async Task TestAsyncModifyAsync(string id)
