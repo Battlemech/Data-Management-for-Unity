@@ -147,10 +147,13 @@ namespace Data_Management_for_Unity.Tests.EditMode
             Debug.Log("Random string: " + randomString);
             
             //start timer
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            Stopwatch stopwatch = new Stopwatch();
             
             for (int i = 0; i < count; i++)
             {
+                //start timer after first iteration to allow caching
+                if(i == 1) stopwatch.Start();
+                
                 Assert.AreEqual(randomString, Copy(randomString)); //1 object
                 TestNull(); //1 object
                 TestAbstractClass(); //1 object 
@@ -168,7 +171,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             //calculate amount of objects serialized per millisecond
             float objectsPerMillisecond = (float)(count * objectsPerSerialization) / stopwatch.ElapsedMilliseconds;
             
-            Debug.Log($"Serialized {count * objectsPerSerialization} objects in {stopwatch.ElapsedMilliseconds}ms, {objectsPerMillisecond} objects/ms");
+            Debug.Log($"Serialized {count * objectsPerSerialization} objects in {stopwatch.ElapsedMilliseconds}ms, {objectsPerMillisecond} objects/ms w. assertions");
         }
 
         private object CopyAndPack(object o, Type t)
