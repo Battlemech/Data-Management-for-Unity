@@ -1,7 +1,9 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Databases;
+using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Persistence;
 using NUnit.Framework;
 using UnityEngine;
@@ -38,6 +40,31 @@ namespace Data_Management_for_Unity.Tests.EditMode
                 
                 //update value
                 await database.Get<int>(id).Set(i + 1);
+            }
+        }
+
+        [Test]
+        public void TestListPersistence()
+        {
+            const string id = nameof(TestListPersistence);
+            const int addCount = 100;
+            
+            //clear old data
+            PersistentData.DeleteDatabase(id);
+            
+            //create database
+            Database database = new Database(id, true);
+
+            for (int i = 0; i < addCount; i++)
+            {
+                //make sure value was loaded correctly
+                for (int j = 0; j < i; j++)
+                {
+                    Assert.Contains(j, database.Get<List<int>>(id).Get(), "Value not loaded");
+                }
+                
+                //add i to list
+                database.Get<List<int>>(id).Add(i);
             }
         }
     }
