@@ -11,7 +11,7 @@ namespace Data_Management_for_Unity.Runtime.Serializer
         {
             //allow serializing private values per default
             MessagePackSerializer.DefaultOptions = MessagePackSerializerOptions.Standard
-                .WithResolver(AbstractUnionlessResolver.Instance);
+                .WithResolver(DMPResolver.Instance);
         }
 
         public static byte[] Serialize<T>(T o)

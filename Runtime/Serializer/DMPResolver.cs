@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using Data_Management_for_Unity.Runtime.Objects;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -9,9 +10,9 @@ using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Serializer
 {
-    public class AbstractUnionlessResolver : IFormatterResolver
+    public class DMPResolver : IFormatterResolver
     {
-        public static readonly AbstractUnionlessResolver Instance = new AbstractUnionlessResolver();
+        public static readonly DMPResolver Instance = new DMPResolver();
 
         private readonly ConcurrentDictionary<Type, object> formatters = new ConcurrentDictionary<Type, object>();
 
@@ -36,6 +37,12 @@ namespace Data_Management_for_Unity.Runtime.Serializer
 
         private IMessagePackFormatter CreateFormatter<T>(Type type)
         {
+            //check if the type is a synchronised object -> its data is automatically synchronised, only the ID needs to be serialized
+            if (typeof(SynchronisedObject).IsAssignableFrom(type))
+            {
+                return SynchronisedObjectFormatter<T>.Instance;
+            }
+            
             //abstract classes lacking the union attribute probably can't be tagged with it, since their children have a generic type.
             //-> serialize their actual type and use the standard formatter
             if (type.IsAbstract && !type.GetCustomAttributes(typeof(UnionAttribute)).Any())

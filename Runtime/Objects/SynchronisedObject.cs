@@ -5,6 +5,10 @@ using MessagePack;
 
 namespace Data_Management_for_Unity.Runtime.Objects
 {
+    /// <summary>
+    /// Synchronised its values automatically between clients. All of its properties must be ValueStorages,
+    /// remaining ones are ignored by the serializer.
+    /// </summary>
     [MessagePackObject]
     public abstract class SynchronisedObject
     {
@@ -25,7 +29,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
             _database = new Database(id, isPersistent, true);
         }
 
-        public Database GetDatabase()
+        protected Database GetDatabase()
         {
             if (_database != null) return _database;
 
