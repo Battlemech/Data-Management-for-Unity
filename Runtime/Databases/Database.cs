@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Persistence;
 using DMP.Threading;
 
@@ -17,10 +18,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// </summary>
         private readonly Dictionary<string, ValueStorage> _values = new Dictionary<string, ValueStorage>();
 
-        public Database(string id, bool isPersistent=false, bool isSynchronised=false)
+        public Database(string id, bool isPersistent=false, bool isSynchronised=false, SynchronisedClient client=null)
         {
             Id = id;
             IsPersistent = isPersistent;
+            
+            //assign client (if any) before configuring synchronisation
+            Client = client;
             IsSynchronised = isSynchronised;
         }
 

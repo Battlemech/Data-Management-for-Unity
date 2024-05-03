@@ -5,7 +5,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "DMP",
-        "MessagePack.Annotations"
+        "MessagePack.Annotations",
+        "DMPPlayMode"
     ],
     "includePlatforms": [
         "Editor"

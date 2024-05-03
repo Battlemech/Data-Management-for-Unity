@@ -4,9 +4,13 @@ using System.Diagnostics;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using Data_Management_for_Unity.Runtime.Objects;
 using Data_Management_for_Unity.Runtime.Serializer;
+using Data_Management_for_Unity.Tests.PlayMode;
 using NUnit.Framework;
+using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Tests.EditMode
@@ -186,10 +190,10 @@ namespace Data_Management_for_Unity.Tests.EditMode
         /// <summary>
         /// Given an object, tries serializing and deserializing it, returning a copy
         /// </summary>
-        public T Copy<T>(T data)
+        public static T Copy<T>(T data)
         {
             if (data == null) return default;
-            Type type = data?.GetType();
+            Type type = data.GetType();
             return (T) SerializationPCK.Deserialize(SerializationPCK.Serialize(data, type), type);
         }
     }

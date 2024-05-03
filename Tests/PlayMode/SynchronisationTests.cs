@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,6 +9,7 @@ using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
+using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Runtime.Threading;
 using NUnit.Framework;
 using UnityEngine;
@@ -377,6 +379,38 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             const string id = nameof(TestAsyncModify);
 
             yield return TestAsyncModifyAsync(id).AsIEnumerator();
+        }
+        
+        [UnityTest]
+        public IEnumerator TestSynchronisedObject()
+        {
+            yield return TestSynchronisedObjectAsync().AsIEnumerator();
+        }
+
+        public async Task TestSynchronisedObjectAsync()
+        {
+            TestSynchronisedObject so = new TestSynchronisedObject("name", 1, 0.5f);
+
+            await so.SetTask;
+            
+            //id must be equal
+            Assert.AreEqual(so.Id, Copy(so).Id);
+            //name is synchronised
+            Assert.AreEqual(so.Name.Get(), Copy(so).Name.Get());
+            
+            //other values should not be synchronised
+            Assert.AreNotEqual(so.Happiness, Copy(so).Happiness, "No values should be copied!");
+            Assert.AreNotEqual(so.NoValueStorage, Copy(so).NoValueStorage, "No values should be copied!");
+        }
+        
+        /// <summary>
+        /// Given an object, tries serializing and deserializing it, returning a copy
+        /// </summary>
+        public static T Copy<T>(T data)
+        {
+            if (data == null) return default;
+            Type type = data.GetType();
+            return (T) SerializationPCK.Deserialize(SerializationPCK.Serialize(data, type), type);
         }
 
         private async Task TestAsyncModifyAsync(string id)

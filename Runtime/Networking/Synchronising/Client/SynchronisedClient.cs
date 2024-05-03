@@ -75,7 +75,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
                 
                 //create new database referenced by remote
                 //(it will automatically be added to local list of databases)
-                database = new Database(id, isPersistent:PersistentData.DoesDatabaseExists(id), isSynchronised:isSynchronised);
+                database = new Database(id, isPersistent:PersistentData.DoesDatabaseExists(id), isSynchronised:isSynchronised, client:this);
 
                 //return new database
                 return database;
