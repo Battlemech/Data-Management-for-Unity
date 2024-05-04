@@ -28,16 +28,23 @@ namespace Data_Management_for_Unity.Runtime.Persistence
                 while (reader.Read())
                 {
                     //deserialize object
-                    savedObjects.Add(new PersistentObject(databaseId, reader.GetString(0), reader[1] as byte[], Type.GetType(reader.GetString(2), true), reader.GetInt32(3)));
+                    savedObjects.Add(new PersistentObject(databaseId, reader.GetString(0), reader[1] as byte[],
+                        Type.GetType(reader.GetString(2), true), reader.GetInt32(3)));
                 }
             }
             catch (SqliteException e)
             {
+                Debug.LogWarning(e);
+
                 //table didn't exist
                 if (e.Message.Contains($"no such table: {databaseId}")) return false;
-                
+
                 //other exception
                 throw;
+            }
+            finally
+            {
+                connection.Close();
             }
             
             //data was retrieved successfully

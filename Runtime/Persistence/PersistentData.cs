@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Mono.Data.Sqlite;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Persistence
 {
@@ -17,6 +19,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
 
         public static void CreateDatabase(string databaseId)
         {
+            Debug.Log($"Created database: {databaseId}");
             ExecuteCommand($"create table if not exists '{databaseId}'(id MESSAGE_TEXT PRIMARY KEY, value BLOB, type MESSAGE_TEXT, modCount INTEGER)");
         }
 
@@ -33,7 +36,13 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             //execute lookup
             using SqliteDataReader reader = command.ExecuteReader();
             //if reader can read at least one column, table exists
-            return reader.Read();
+            
+            bool exists = reader.Read();
+            
+            Debug.Log("Database exists: " + exists + " " + databaseId);
+            
+            connection.Close();
+            return exists;
         }
 
         public static void DeleteDatabase(string databaseId)
@@ -55,5 +64,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             command.ExecuteNonQuery();
             connection.Close();
         }
+
+        
     }
 }

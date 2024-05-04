@@ -5,6 +5,7 @@ using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Persistence;
+using Data_Management_for_Unity.Runtime.Serializer;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -40,6 +41,13 @@ namespace Data_Management_for_Unity.Tests.EditMode
                 
                 //update value
                 await database.Get<int>(id).Set(i + 1);
+                
+                //make sure database saved value correctly
+                Assert.AreEqual(i + 1, database.Get<int>(id).Get(), "Value not saved in database");
+                
+                Assert.IsTrue(PersistentData.TryLoadDatabase(id, out List<PersistentObject> savedObjects), "Database not saved");
+                Assert.AreEqual(1, savedObjects.Count, "Wrong amount of values saved");
+                Assert.AreEqual(i + 1, SerializationPCK.Deserialize<int>(savedObjects[0].Value), "Wrong value saved");
             }
         }
 
