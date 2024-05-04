@@ -21,7 +21,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
         public Database(string id, bool isPersistent=false, bool isSynchronised=false, SynchronisedClient client=null)
         {
             Id = id;
-            IsPersistent = isPersistent;
+            
+            //synchronously configure persistence
+            Task<bool> persistenceTask = Task.Run((() => ConfigurePersistence(isPersistent).Wait(Options.DefaultTimeout)));
+            
+            //wait for persistence to be configured
+            bool success = persistenceTask.Wait(Options.DefaultTimeout);
+            if (!success) throw new TimeoutException("Failed to configure persistence");
+            
             
             //assign client (if any) before configuring synchronisation
             Client = client;

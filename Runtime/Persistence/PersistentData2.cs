@@ -43,7 +43,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             lock (TaskQueue)
             {
                 //start processing tasks if not already running
-                DatabaseProcessingTask ??= StartProcessing();
+                DatabaseProcessingTask ??= Task.Run(StartProcessing);
             }
             
             return tcs.Task;

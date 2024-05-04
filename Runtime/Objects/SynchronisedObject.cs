@@ -15,6 +15,9 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [Key(0)]
         public readonly string Id;
         
+        [Key(1)]
+        public readonly bool IsPersistent;
+        
         [IgnoreMember]
         private Database _database;
 
@@ -26,6 +29,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
         protected SynchronisedObject(string id, bool isPersistent)
         {
             Id = id;
+            IsPersistent = isPersistent;
             _database = new Database(id, isPersistent, true);
         }
 

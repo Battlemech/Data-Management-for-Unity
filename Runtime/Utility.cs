@@ -25,6 +25,7 @@ namespace Data_Management_for_Unity.Runtime
 
             if (task.IsFaulted)
             {
+                Debug.LogException(task.Exception);
                 ExceptionDispatchInfo.Capture(task.Exception).Throw();
             }
         }
@@ -39,6 +40,7 @@ namespace Data_Management_for_Unity.Runtime
 
             if (task.IsFaulted)
             {
+                Debug.LogException(task.Exception);
                 ExceptionDispatchInfo.Capture(task.Exception).Throw();
             }
 

@@ -30,7 +30,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             const int setCount = 100;
             
             //clear old data
-            PersistentData.DeleteDatabase(id);
+            await PersistentData2.DeleteDatabase(id);
 
             for (int i = 0; i < setCount; i++)
             {
@@ -44,8 +44,9 @@ namespace Data_Management_for_Unity.Tests.EditMode
                 
                 //make sure database saved value correctly
                 Assert.AreEqual(i + 1, database.Get<int>(id).Get(), "Value not saved in database");
-                
-                Assert.IsTrue(PersistentData.TryLoadDatabase(id, out List<PersistentObject> savedObjects), "Database not saved");
+
+                List<PersistentObject> savedObjects = await PersistentData2.Load(id);
+                Assert.NotNull(savedObjects, "Database not saved");
                 Assert.AreEqual(1, savedObjects.Count, "Wrong amount of values saved");
                 Assert.AreEqual(i + 1, SerializationPCK.Deserialize<int>(savedObjects[0].Value), "Wrong value saved");
             }
@@ -58,7 +59,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
             const int addCount = 100;
             
             //clear old data
-            PersistentData.DeleteDatabase(id);
+            PersistentData2.DeleteDatabase(id);
             
             //create database
             Database database = new Database(id, true);
@@ -74,6 +75,22 @@ namespace Data_Management_for_Unity.Tests.EditMode
                 //add i to list
                 database.Get<List<int>>(id).Add(i);
             }
+        }
+
+        [UnityTest]
+        public IEnumerator TestConfigurePersistence()
+        {
+            return TestConfigurePersistenceAsync().AsIEnumerator();
+        }
+
+        private async Task TestConfigurePersistenceAsync()
+        {
+            Database database = new Database(nameof(TestConfigurePersistenceAsync));
+            Assert.IsFalse(database.IsPersistent, "Database is persistent");
+            
+            await database.ConfigurePersistence(true);
+            
+            Assert.IsTrue(database.IsPersistent, "Database is not persistent");
         }
     }
 }

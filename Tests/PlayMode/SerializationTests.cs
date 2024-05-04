@@ -25,34 +25,40 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         
         private async Task TestSynchronisedObjectListPersistenceAsync()
         {
-            //clear old data
-            if (PersistentData.TryLoadDatabase("local", out List<PersistentObject> old))
+            const string localId = "local";
+            const string subId = "sub";
+            
+            List<PersistentObject> saved = await PersistentData2.Load(localId);
+
+            //if no objects were loaded, it must mean no database exists
+            if (saved == null)
             {
-                Debug.Log($"Old saved data: {old.Count}");
-                PersistentData.DeleteDatabase("local");
+                Assert.IsFalse(await PersistentData2.DoesDatabaseExists(localId));
             }
             else
             {
-                Debug.Log("No old saved data");
-                Assert.IsFalse(PersistentData.DoesDatabaseExists("local"));
+                //clear old data
+                await PersistentData2.DeleteDatabase(localId);
             }
             
-            TestSynchronisedObject so = new TestSynchronisedObject("123D", 3, 0.5f);
+            TestSynchronisedObject so = new TestSynchronisedObject(subId, 3, 0.5f);
             
             //wait for data to be set
             await so.SetTask;
             
             //ensure persistent data of it exists
-            Assert.IsTrue(PersistentData.TryLoadDatabase(so.Id, out _), "Database not saved");
+            Assert.NotNull(PersistentData2.Load(so.Id), "Database not saved");
 
-            Database localData = new Database("local", isPersistent: true);
+            //save synchronised object to local database
+            Database localData = new Database(localId, isPersistent: true);
             await localData.Get<TestSynchronisedObject>(so.Id).Set(so);
             
-            Assert.IsTrue(PersistentData.TryLoadDatabase(localData.Id, out _), "Local database not saved");
+            Assert.NotNull(PersistentData2.Load(localData.Id), "Local database not saved");
             
             //ensure local data of it exists
-            Assert.IsTrue(PersistentData.TryLoadDatabase(localData.Id, out List<PersistentObject> savedObjects));
-            Assert.AreEqual(1, savedObjects.Count, "Wrong amount of values saved");
+            saved = await PersistentData2.Load(localData.Id);
+            Assert.NotNull(saved, "Local database not saved");
+            Assert.AreEqual(1, saved.Count, "Wrong amount of values saved");
         }
     }
 }

@@ -1,45 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Persistence;
 using Data_Management_for_Unity.Runtime.Serializer;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
-        public bool IsPersistent
-        {
-            get => _isPersistent;
-            set
-            {
-                //no change required
-                if(value == _isPersistent) return;
-                
-                //invoke logic depending on new state
-                if(value) OnPersistenceEnabled();
-                else OnPersistenceDisabled();
-                
-                _isPersistent = value;
-            }
-        }
-
-        private bool _isPersistent;
+        public bool IsPersistent { get; private set; }
 
         /// <summary>
         /// Dict of values which could not be loaded to a value storage successfully
         /// </summary>
         private readonly Dictionary<string, PersistentObject> _toLoad = new Dictionary<string, PersistentObject>();
 
-        private void OnPersistenceEnabled()
+        public async Task ConfigurePersistence(bool active)
         {
+            //no changes required
+            if(IsPersistent == active) return;
+            
+            if(active) await OnPersistenceEnabled();
+            else OnPersistenceDisabled();
+            
+            //update flag
+            IsPersistent = active;
+        }
+        
+        private async Task OnPersistenceEnabled()
+        {
+            bool dataExists = await PersistentData2.DoesDatabaseExists(Id);
+
             //create database in SQLite if it doesn't exist
-            if (!PersistentData.TryLoadDatabase(Id, out List<PersistentObject> savedObjects))
+            if (!dataExists)
             {
-                //database didn't exist in SQL. Create it
-                PersistentData.CreateDatabase(Id);
+                await PersistentData2.CreateDatabase(Id);
                 return;
             }
+            
+            //load data from SQLite
+            List<PersistentObject> savedObjects = await PersistentData2.Load(Id);
             
             //lock database to avoid changes by other threads, e.g. synchronisation
             lock (_values)
@@ -71,7 +74,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         private void OnPersistenceDisabled()
         {
             //delete old data
-            PersistentData.DeleteDatabase(Id);
+            PersistentData2.DeleteDatabase(Id);
         }
     }
 }

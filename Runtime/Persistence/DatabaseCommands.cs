@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Mono.Data.Sqlite;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Persistence
 {
@@ -9,6 +10,16 @@ namespace Data_Management_for_Unity.Runtime.Persistence
         public static Task CreateDatabase(string databaseId)
         {
             return CreateCommand($"create table if not exists '{databaseId}'(id MESSAGE_TEXT PRIMARY KEY, value BLOB, type MESSAGE_TEXT, modCount INTEGER)", true);
+        }
+        
+        public static bool DoesDatabaseExistsSync(string databaseId)
+        {
+            //wait for lookup
+            Task<bool> lookup = DoesDatabaseExists(databaseId);
+            lookup.Wait();
+            
+            //return result
+            return lookup.Result;
         }
         
         public static Task<bool> DoesDatabaseExists(string databaseId)
@@ -29,9 +40,9 @@ namespace Data_Management_for_Unity.Runtime.Persistence
             return CreateCommand($"drop table if exists '{databaseId}'", true);
         }
         
-        private static async Task CreateCommand(string commandString, bool execute = false)
+        private static Task CreateCommand(string commandString, bool execute = false)
         {
-            await CreateCommand(commandString,  async _ => Task.CompletedTask, execute);
+            return CreateCommand(commandString,   _ => Task.FromResult(Task.CompletedTask), execute);
         }
         
         private static async Task<T> CreateCommand<T>(string commandString, Func<SqliteCommand, Task<T>> onCommand, bool execute = false)
