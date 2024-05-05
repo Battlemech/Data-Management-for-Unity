@@ -74,7 +74,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
                 //return existing database
                 if (_databases.TryGetValue(id, out Database database)) return database;
 
-                bool existsLocally = PersistentData2.DoesDatabaseExistsSync(id);
+                bool existsLocally = PersistentData.DoesDatabaseExists(id);
                 
                 //create new database referenced by remote
                 //(it will automatically be added to local list of databases)

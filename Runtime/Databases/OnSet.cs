@@ -57,7 +57,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 //synchronise data across multiple clients
                 if (IsSynchronised) await OnLocalSynchronisedOperation(value, type, op);
                 //persistent data is updated after values were confirmed by remote. If not synchronised: Update instantly
-                else if (IsPersistent) await PersistentData2.Save(Id, op.ValueId, value, type, op.ModCount);
+                else if (IsPersistent) await PersistentData.Save(Id, op.ValueId, value, type, op.ModCount);
             }
             catch (Exception e)
             {
@@ -115,7 +115,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             operation.OnConfirmed(value, type);
             
             //save data persistently, if necessary
-            if (IsPersistent) await PersistentData2.Save(Id, operation.ValueId, value, type, operation.ModCount);
+            if (IsPersistent) await PersistentData.Save(Id, operation.ValueId, value, type, operation.ModCount);
         }
         
         /// <summary>

@@ -12,6 +12,7 @@ using Data_Management_for_Unity.Runtime.Networking.Messaging.Client;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Server;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
+using MessagePack;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -184,8 +185,10 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(messageCount, () => received);
         }
 
+        [MessagePackObject]
         public struct TestMessage
         {
+            [Key(0)]
             public readonly int Id;
 
             public TestMessage(int id)

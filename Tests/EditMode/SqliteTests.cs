@@ -14,29 +14,24 @@ namespace Data_Management_for_Unity.Tests.EditMode
 {
     public class SqliteTests
     {
-        [UnityTest]
-        public IEnumerator TableCreation()
-        {
-            return TableCreationAsync().AsIEnumerator();
-        }
-        
-        public async Task TableCreationAsync()
+        [Test]
+        public void TableCreation()
         {
             const string id = "SimpleTestTable";
 
             //clear data
-            await PersistentData2.DeleteDatabase(id);
+            PersistentData.DeleteDatabase(id);
             
             //make sure table doesn't exist
-            Assert.IsFalse(await PersistentData2.DoesDatabaseExists(id));
+            Assert.IsFalse(PersistentData.DoesDatabaseExists(id));
             
             //create table
-            await PersistentData2.CreateDatabase(id);
-            Assert.IsTrue(await PersistentData2.DoesDatabaseExists(id));
+            PersistentData.CreateDatabase(id);
+            Assert.IsTrue(PersistentData.DoesDatabaseExists(id));
             
             //delete table
-            await PersistentData2.DeleteDatabase(id);
-            Assert.IsFalse(await PersistentData2.DoesDatabaseExists(id));
+            PersistentData.DeleteDatabase(id);
+            Assert.IsFalse(PersistentData.DoesDatabaseExists(id));
         }
 
         [UnityTest]
@@ -57,10 +52,10 @@ namespace Data_Management_for_Unity.Tests.EditMode
             int modCount = 123;
             
             //clear old data
-            await PersistentData2.DeleteDatabase(id);
+            PersistentData.DeleteDatabase(id);
             
             //create table
-            await PersistentData2.CreateDatabase(id);
+            PersistentData.CreateDatabase(id);
             
             //wait for data to be saved
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -68,20 +63,20 @@ namespace Data_Management_for_Unity.Tests.EditMode
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < saveCount; i++)
             {
-                tasks.Add(PersistentData2.Save(id, i.ToString(), value, type, modCount));    
+                tasks.Add(PersistentData.Save(id, i.ToString(), value, type, modCount));    
             }
             
             Debug.Log($"Delegated persistently saving {saveCount} values after {stopwatch.ElapsedMilliseconds} ms");
             await Task.WhenAll(tasks);
             Debug.Log($"Delegated tasks saved {saveCount} values after {stopwatch.ElapsedMilliseconds} ms");
 
-            Assert.IsNull(PersistentData2.DatabaseProcessingTask);
+            Assert.IsNull(PersistentData.TransactionTask, "Persistent data transactions are done");
             
             //make sure they were saved
             stopwatch.Restart();
             
             //load data
-            List<PersistentObject> savedObjects = await PersistentData2.Load(id);
+            List<PersistentObject> savedObjects = PersistentData.Load(id);
             Assert.NotNull(savedObjects);
             
             Debug.Log($"Loading {saveCount} values took: {stopwatch.ElapsedMilliseconds} ms");

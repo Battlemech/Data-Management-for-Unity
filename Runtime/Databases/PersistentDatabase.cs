@@ -11,38 +11,42 @@ namespace Data_Management_for_Unity.Runtime.Databases
 {
     public partial class Database
     {
-        public bool IsPersistent { get; private set; }
+        public bool IsPersistent
+        {
+            get => _isPersistent;
+            set
+            {
+                //no changes required
+                if(IsPersistent == value) return;
+            
+                if(value) OnPersistenceEnabled();
+                else OnPersistenceDisabled();
+            
+                //update flag
+                _isPersistent = value;
+            }
+        }
+
+        private bool _isPersistent;
 
         /// <summary>
         /// Dict of values which could not be loaded to a value storage successfully
         /// </summary>
         private readonly Dictionary<string, PersistentObject> _toLoad = new Dictionary<string, PersistentObject>();
-
-        public async Task ConfigurePersistence(bool active)
-        {
-            //no changes required
-            if(IsPersistent == active) return;
-            
-            if(active) await OnPersistenceEnabled();
-            else OnPersistenceDisabled();
-            
-            //update flag
-            IsPersistent = active;
-        }
         
-        private async Task OnPersistenceEnabled()
+        private void OnPersistenceEnabled()
         {
-            bool dataExists = await PersistentData2.DoesDatabaseExists(Id);
+            bool dataExists = PersistentData.DoesDatabaseExists(Id);
 
             //create database in SQLite if it doesn't exist
             if (!dataExists)
             {
-                await PersistentData2.CreateDatabase(Id);
+                PersistentData.CreateDatabase(Id);
                 return;
             }
             
             //load data from SQLite
-            List<PersistentObject> savedObjects = await PersistentData2.Load(Id);
+            List<PersistentObject> savedObjects = PersistentData.Load(Id);
             
             //lock database to avoid changes by other threads, e.g. synchronisation
             lock (_values)
@@ -74,7 +78,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         private void OnPersistenceDisabled()
         {
             //delete old data
-            PersistentData2.DeleteDatabase(Id);
+            PersistentData.DeleteDatabase(Id);
         }
     }
 }

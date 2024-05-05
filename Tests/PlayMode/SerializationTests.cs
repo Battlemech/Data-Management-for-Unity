@@ -28,17 +28,17 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             const string localId = "local";
             const string subId = "sub";
             
-            List<PersistentObject> saved = await PersistentData2.Load(localId);
+            List<PersistentObject> saved = PersistentData.Load(localId);
 
             //if no objects were loaded, it must mean no database exists
             if (saved == null)
             {
-                Assert.IsFalse(await PersistentData2.DoesDatabaseExists(localId));
+                Assert.IsFalse(PersistentData.DoesDatabaseExists(localId));
             }
             else
             {
                 //clear old data
-                await PersistentData2.DeleteDatabase(localId);
+                PersistentData.DeleteDatabase(localId);
             }
             
             TestSynchronisedObject so = new TestSynchronisedObject(subId, 3, 0.5f);
@@ -47,16 +47,16 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             await so.SetTask;
             
             //ensure persistent data of it exists
-            Assert.NotNull(PersistentData2.Load(so.Id), "Database not saved");
+            Assert.NotNull(PersistentData.Load(so.Id), "Database not saved");
 
             //save synchronised object to local database
             Database localData = new Database(localId, isPersistent: true);
             await localData.Get<TestSynchronisedObject>(so.Id).Set(so);
             
-            Assert.NotNull(PersistentData2.Load(localData.Id), "Local database not saved");
+            Assert.NotNull(PersistentData.Load(localData.Id), "Local database not saved");
             
             //ensure local data of it exists
-            saved = await PersistentData2.Load(localData.Id);
+            saved = PersistentData.Load(localData.Id);
             Assert.NotNull(saved, "Local database not saved");
             Assert.AreEqual(1, saved.Count, "Wrong amount of values saved");
         }
