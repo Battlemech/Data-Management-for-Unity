@@ -36,6 +36,14 @@ public class NetworkEventSystem : MonoBehaviour
         
         //find server in scene
         server ??= FindObjectOfType<UnityServer>();
+
+        if (client == null || server == null)
+        {
+            Debug.LogWarning("NetworkEventSystem: Client or Server not found in scene. Are you testing locally?");
+            return;
+        }
+            
+            
         
         //link events
         LinkEvents();

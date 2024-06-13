@@ -10,15 +10,15 @@ namespace Data_Management_for_Unity.Runtime.Networking.Unity
     /// </summary>
     public abstract class AbstractUnityServer<T> : SynchronisedServer where T : SynchronisedSession
     {
-        public UnityEvent OnStartingEvent = new UnityEvent();
-        public UnityEvent OnStartedEvent = new UnityEvent();
-        public UnityEvent OnStoppingEvent = new UnityEvent();
-        public UnityEvent OnStoppedEvent = new UnityEvent();
-        public UnityEvent<T> OnConnectingEvent = new UnityEvent<T>();
-        public UnityEvent<T> OnConnectedEvent = new UnityEvent<T>();
-        public UnityEvent<T> OnDisconnectingEvent = new UnityEvent<T>();
-        public UnityEvent<T> OnDisconnectedEvent = new UnityEvent<T>();
-        public UnityEvent<SocketError> OnErrorEvent = new UnityEvent<SocketError>();
+        public UnityEvent OnStartingEvent;
+        public UnityEvent OnStartedEvent;
+        public UnityEvent OnStoppingEvent;
+        public UnityEvent OnStoppedEvent;
+        public UnityEvent<T> OnConnectingEvent;
+        public UnityEvent<T> OnConnectedEvent;
+        public UnityEvent<T> OnDisconnectingEvent;
+        public UnityEvent<T> OnDisconnectedEvent;
+        public UnityEvent<SocketError> OnErrorEvent;
         
         protected override void OnStarting()
         {
