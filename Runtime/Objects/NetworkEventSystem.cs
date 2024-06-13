@@ -42,8 +42,6 @@ public class NetworkEventSystem : MonoBehaviour
             Debug.LogWarning("NetworkEventSystem: Client or Server not found in scene. Are you testing locally?");
             return;
         }
-            
-            
         
         //link events
         LinkEvents();
