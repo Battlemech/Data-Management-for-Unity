@@ -10,6 +10,7 @@ using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEngine;
+using UnityEngine.Events;
 using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Runtime
@@ -63,6 +64,22 @@ namespace Data_Management_for_Unity.Runtime
                 null => SerializationPCK.Serialize(modify.Invoke(default), out resultType),
                 _ => throw new ArgumentException($"Expected {typeof(T)}, but got {current.GetType()}")
             };
+        }
+
+        public static Action<T> AsAction<T>(this Func<T, Task> asyncAction)
+        {
+            return obj => asyncAction.Invoke(obj).ContinueWith(task =>
+            {
+                if (task.IsFaulted) Debug.LogError(task.Exception);
+            });
+        }
+        
+        public static UnityAction AsUnityAction(this Func<Task> asyncTask)
+        {
+            return () => asyncTask.Invoke().ContinueWith(task =>
+            {
+                if (task.IsFaulted) Debug.LogError(task.Exception);
+            });
         }
     }
 }

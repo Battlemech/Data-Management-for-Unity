@@ -57,6 +57,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             //delegate operation to main thread if necessary
             if (mainThread)
             {
+                //prevent infinite loops
                 MainThreadRunner.Delegate((() => BlockingGet(safeOperation, false)));
                 return;
             }
@@ -194,6 +195,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// <param name="onInitialized">Action to perform once value was initialized</param>
         /// <param name="mainThread">True if the action is supposed to be delegated to unity's main thread, otherwise false</param>
         public void OnInitialized(Action<T> onInitialized, bool mainThread=true) => Database.OnInitialized(Id, onInitialized, mainThread);
+
+        public void OnInitialized(Func<T, Task> onInitialized, bool mainThread=true)
+            => OnInitialized(onInitialized.AsAction(), mainThread);
         
         protected internal override void InternalSet(byte[] bytes, Type type)
         {
