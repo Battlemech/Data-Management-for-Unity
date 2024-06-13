@@ -8,7 +8,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Unity
     /// <summary>
     /// Wrapper class, exposing internal events to Unity's event system
     /// </summary>
-    public abstract class AbstractUnityServer<T> : SynchronisedServer where T : TcpSession
+    public abstract class AbstractUnityServer<T> : SynchronisedServer where T : SynchronisedSession
     {
         public UnityEvent OnStartingEvent;
         public UnityEvent OnStartedEvent;
