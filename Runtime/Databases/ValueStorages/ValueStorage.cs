@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Runtime.Threading;
-using UnityEditor.VersionControl;
-using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
 namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
