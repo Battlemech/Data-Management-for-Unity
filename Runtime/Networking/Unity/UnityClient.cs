@@ -8,10 +8,10 @@ namespace Data_Management_for_Unity.Runtime.Networking.Unity
     /// </summary>
     public class UnityClient : SynchronisedClient
     {
-        public UnityEvent OnConnectingEvent;
-        public UnityEvent OnConnectedEvent;
-        public UnityEvent OnDisconnectingEvent;
-        public UnityEvent OnDisconnectedEvent;
+        public UnityEvent OnConnectingEvent = new UnityEvent();
+        public UnityEvent OnConnectedEvent = new UnityEvent();
+        public UnityEvent OnDisconnectingEvent = new UnityEvent();
+        public UnityEvent OnDisconnectedEvent = new UnityEvent();
         
         protected override void OnConnecting()
         {
