@@ -18,6 +18,9 @@ namespace Data_Management_for_Unity.Tests.EditMode
         public void TableCreation()
         {
             const string id = "SimpleTestTable";
+
+            //clear data
+            PersistentData.DeleteDatabase(id);
             
             //make sure table doesn't exist
             Assert.IsFalse(PersistentData.DoesDatabaseExists(id));
@@ -67,12 +70,15 @@ namespace Data_Management_for_Unity.Tests.EditMode
             await Task.WhenAll(tasks);
             Debug.Log($"Delegated tasks saved {saveCount} values after {stopwatch.ElapsedMilliseconds} ms");
 
-            Assert.AreEqual(0, PersistentData.EnqueuedData);
-            Assert.IsNull(PersistentData.SavingData);
+            Assert.IsNull(PersistentData.TransactionTask, "Persistent data transactions are done");
             
             //make sure they were saved
             stopwatch.Restart();
-            Assert.IsTrue(PersistentData.TryLoadDatabase(id, out List<PersistentObject> savedObjects));
+            
+            //load data
+            List<PersistentObject> savedObjects = PersistentData.Load(id);
+            Assert.NotNull(savedObjects);
+            
             Debug.Log($"Loading {saveCount} values took: {stopwatch.ElapsedMilliseconds} ms");
             Assert.AreEqual(saveCount, savedObjects.Count);
 

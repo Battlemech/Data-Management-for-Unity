@@ -51,7 +51,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 //unsafe operations update local value instantly
                 if (!op.IsSafeOperation())
                 {
-                    Invoke(op.ValueId, Serialization.Deserialize(value, type));
+                    Invoke(op.ValueId, SerializationPCK.Deserialize(value, type));
                 }
             
                 //synchronise data across multiple clients

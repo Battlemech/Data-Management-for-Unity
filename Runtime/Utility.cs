@@ -10,6 +10,7 @@ using Data_Management_for_Unity.Runtime.Databases.Structs;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Serializer;
 using UnityEngine;
+using UnityEngine.Events;
 using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Runtime
@@ -25,6 +26,7 @@ namespace Data_Management_for_Unity.Runtime
 
             if (task.IsFaulted)
             {
+                Debug.LogException(task.Exception);
                 ExceptionDispatchInfo.Capture(task.Exception).Throw();
             }
         }
@@ -39,6 +41,7 @@ namespace Data_Management_for_Unity.Runtime
 
             if (task.IsFaulted)
             {
+                Debug.LogException(task.Exception);
                 ExceptionDispatchInfo.Capture(task.Exception).Throw();
             }
 
@@ -53,14 +56,30 @@ namespace Data_Management_for_Unity.Runtime
         
         public static byte[] InvokeSafe<T>(this ModifyDelegate<T> modify, byte[] value, Type type, out Type resultType)
         {
-            object current = Serialization.Deserialize(value, type);
+            object current = SerializationPCK.Deserialize(value, type);
 
             return current switch
             {
-                T data => Serialization.Serialize(modify.Invoke(data), out resultType),
-                null => Serialization.Serialize(modify.Invoke(default), out resultType),
+                T data => SerializationPCK.Serialize(modify.Invoke(data), out resultType),
+                null => SerializationPCK.Serialize(modify.Invoke(default), out resultType),
                 _ => throw new ArgumentException($"Expected {typeof(T)}, but got {current.GetType()}")
             };
+        }
+
+        public static Action<T> AsAction<T>(this Func<T, Task> asyncAction)
+        {
+            return obj => asyncAction.Invoke(obj).ContinueWith(task =>
+            {
+                if (task.IsFaulted) Debug.LogError(task.Exception);
+            });
+        }
+        
+        public static UnityAction AsUnityAction(this Func<Task> asyncTask)
+        {
+            return () => asyncTask.Invoke().ContinueWith(task =>
+            {
+                if (task.IsFaulted) Debug.LogError(task.Exception);
+            });
         }
     }
 }

@@ -1,27 +1,29 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Networking;
-using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Serializer;
-using DMP.Utility;
-using UnityEngine.UI;
+using MessagePack;
 
 namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 {
+    [MessagePackObject]
     public abstract class SynchronisedOperation
     {
         /// <summary>
         /// Id of the database the operation was performed on
         /// </summary>
+        [Key(0)]
         public readonly string DatabaseId;
 
         /// <summary>
         /// Id of the value the operation was performed on
         /// </summary>
+        [Key(1)]
         public readonly string ValueId;
         
         /// <summary>
         /// Expected modificationCount, used to synchronise order of operations
         /// </summary>
+        [Key(2)]
         public int ModCount;
 
         protected SynchronisedOperation(string databaseId, string valueId)
@@ -70,12 +72,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public abstract void OnConfirmed(byte[] value, Type type);
     }
 
+    [MessagePackObject]
     public abstract class SynchronisedOperation<T> : SynchronisedOperation
     {
         /// <summary>
-        /// Action is invoked once operation was confirmed
+        /// Action is invoked locally once operation was confirmed
         /// </summary>
-        [PreventSerialization]
+        [IgnoreMember]
         private readonly Action<T> _onConfirmed;
 
         protected SynchronisedOperation(string databaseId, string valueId, Action<T> onConfirmed) : base(databaseId, valueId)
@@ -89,7 +92,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             if(_onConfirmed == null) return;
 
             //deserialize confirmed value
-            object confirmed = Serialization.Deserialize(value, type);
+            object confirmed = SerializationPCK.Deserialize(value, type);
             
             //invoke onConfirmed, depending on deserialized value
             switch (confirmed)

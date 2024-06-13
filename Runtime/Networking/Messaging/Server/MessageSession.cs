@@ -32,12 +32,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         /// Send data to the client (asynchronous)
         /// </summary>
         /// <returns>'true' if the data was successfully sent, 'false' if the client is not connected</returns>
-        public bool Send<T>(T data)
+        public bool Send(object data)
         {
             //1) Wrap data in message
             //2) Serialize message as bytes
             //3) Wrap serialized message with additional information about its length to ensure no partial messages are received
-            return base.SendAsync(NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data))));
+            return base.SendAsync(NetworkSerializer.Serialize(SerializationPCK.Serialize(new SerializedObject(data))));
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
             try
             {
                 //deserialize received bytes, unpacking information about expected length.
-                foreach (var message in _networkSerializer.Deserialize(buffer, offset, size).Select(Serialization.Deserialize<Message>))
+                foreach (var message in _networkSerializer.Deserialize(buffer, offset, size).Select(SerializationPCK.Deserialize<SerializedObject>))
                 {
                     //deserialize received object
                     object value = message.Deserialize(out Type type);

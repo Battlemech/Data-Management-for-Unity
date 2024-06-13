@@ -1,16 +1,24 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
-using DMP.Utility;
-using UnityEngine;
+using MessagePack;
 
 namespace Data_Management_for_Unity.Runtime.Objects
 {
+    /// <summary>
+    /// Synchronised its values automatically between clients. All of its properties must be ValueStorages,
+    /// remaining ones are ignored by the serializer.
+    /// </summary>
+    [MessagePackObject]
     public abstract class SynchronisedObject
     {
+        [Key(0)]
         public readonly string Id;
         
-        [PreventSerialization]
+        [Key(1)]
+        public readonly bool IsPersistent;
+        
+        [IgnoreMember]
         private Database _database;
 
         protected SynchronisedObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
@@ -21,10 +29,11 @@ namespace Data_Management_for_Unity.Runtime.Objects
         protected SynchronisedObject(string id, bool isPersistent)
         {
             Id = id;
+            IsPersistent = isPersistent;
             _database = new Database(id, isPersistent, true);
         }
 
-        public Database GetDatabase()
+        protected Database GetDatabase()
         {
             if (_database != null) return _database;
 

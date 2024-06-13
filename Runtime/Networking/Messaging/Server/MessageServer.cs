@@ -22,20 +22,20 @@ namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Server
         private readonly ConcurrentQueue<Tuple<object, Type, MessageSession>> _receivedObjects =
             new ConcurrentQueue<Tuple<object, Type, MessageSession>>();
         
-        public bool Multicast<T>(T data)
+        public bool Multicast(object data)
         {
-            return base.Multicast(NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data))));
+            return base.Multicast(NetworkSerializer.Serialize(SerializationPCK.Serialize(new SerializedObject(data))));
         }
 
         /// <summary>
         /// Multicasts the object to all sessions except the specified one
         /// </summary>
-        public bool MulticastToOthers<T>(T data, MessageSession session)
+        public bool MulticastToOthers(object data, MessageSession session)
         {
             if (!IsStarted) return false;
             
             //serialize value which needs to be sent
-            byte[] toSend = NetworkSerializer.Serialize(Serialization.Serialize(Message.Create(data)));
+            byte[] toSend = NetworkSerializer.Serialize(SerializationPCK.Serialize(new SerializedObject(data)));
 
             //loop through all sessions
             foreach (var messageSession in Sessions.Values.Cast<MessageSession>())

@@ -57,6 +57,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             //delegate operation to main thread if necessary
             if (mainThread)
             {
+                //prevent infinite loops
                 MainThreadRunner.Delegate((() => BlockingGet(safeOperation, false)));
                 return;
             }
@@ -92,7 +93,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 Data = data;
                 
                 //save its serialized version
-                value = Serialization.Serialize(data, out type);
+                value = SerializationPCK.Serialize(data, out type);
             }
 
             //delegate internal logic to background to increase performance
@@ -136,7 +137,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 if (!safe) Data = modifyDelegate.Invoke(Data);
 
                 //save its serialized version
-                value = Serialization.Serialize(Data, out type);
+                value = SerializationPCK.Serialize(Data, out type);
             }
 
             //delegate internal logic to background to increase performance
@@ -194,10 +195,13 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// <param name="onInitialized">Action to perform once value was initialized</param>
         /// <param name="mainThread">True if the action is supposed to be delegated to unity's main thread, otherwise false</param>
         public void OnInitialized(Action<T> onInitialized, bool mainThread=true) => Database.OnInitialized(Id, onInitialized, mainThread);
+
+        public void OnInitialized(Func<T, Task> onInitialized, bool mainThread=true)
+            => OnInitialized(onInitialized.AsAction(), mainThread);
         
         protected internal override void InternalSet(byte[] bytes, Type type)
         {
-            object value = Serialization.Deserialize(bytes, type);
+            object value = SerializationPCK.Deserialize(bytes, type);
             
             switch (value)
             {
@@ -216,7 +220,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         {
             lock (Id)
             {
-                return Serialization.Serialize(Data, out type);
+                return SerializationPCK.Serialize(Data, out type);
             }
         }
 

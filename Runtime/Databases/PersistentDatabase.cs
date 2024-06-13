@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Persistence;
 using Data_Management_for_Unity.Runtime.Serializer;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
@@ -13,13 +16,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
             get => _isPersistent;
             set
             {
-                //no change required
-                if(value == _isPersistent) return;
-                
-                //invoke logic depending on new state
+                //no changes required
+                if(IsPersistent == value) return;
+            
                 if(value) OnPersistenceEnabled();
                 else OnPersistenceDisabled();
-                
+            
+                //update flag
                 _isPersistent = value;
             }
         }
@@ -30,16 +33,20 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// Dict of values which could not be loaded to a value storage successfully
         /// </summary>
         private readonly Dictionary<string, PersistentObject> _toLoad = new Dictionary<string, PersistentObject>();
-
+        
         private void OnPersistenceEnabled()
         {
+            bool dataExists = PersistentData.DoesDatabaseExists(Id);
+
             //create database in SQLite if it doesn't exist
-            if (!PersistentData.TryLoadDatabase(Id, out List<PersistentObject> savedObjects))
+            if (!dataExists)
             {
-                //database didn't exist in SQL. Create it
                 PersistentData.CreateDatabase(Id);
                 return;
             }
+            
+            //load data from SQLite
+            List<PersistentObject> savedObjects = PersistentData.Load(Id);
             
             //lock database to avoid changes by other threads, e.g. synchronisation
             lock (_values)

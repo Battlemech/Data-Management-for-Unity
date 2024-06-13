@@ -17,7 +17,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             AddCallback<OperationRequest>(((request) =>
             {
                 //extract operation for easier reference
-                SynchronisedOperation operation = request.GetOperation();
+                SynchronisedOperation operation = request.Operation;
                 ValueReference reference = operation.GetReference();
                 
                 //client is planning to change a value
@@ -46,7 +46,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             AddCallback<OperationMessage>(((message) =>
             {
                 //extract operation for easier access
-                SynchronisedOperation operation = message.GetOperation();
+                SynchronisedOperation operation = message.Operation;
 
                 //if delayed set was expected
                 if (DequeueDelayedSet(operation.GetReference(), operation.ModCount))
