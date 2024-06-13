@@ -26,7 +26,9 @@ public class NetworkEventSystem : MonoBehaviour
     public UnityEvent OnServerStoppedEvent;
     public UnityEvent<SocketError> OnServerErrorEvent;
     
-    // Start is called before the first frame update
+    public bool IsConnected => client.IsConnected;
+    public bool IsHosting => server.IsStarted;
+    
     void Start()
     {
         //find client in scene
