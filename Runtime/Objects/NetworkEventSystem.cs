@@ -29,7 +29,8 @@ public class NetworkEventSystem : MonoBehaviour
     public bool IsConnected => client.IsConnected;
     public bool IsHosting => server.IsStarted;
     
-    void Start()
+    //call before Start() to allow other start scripts to access events
+    void Awake()
     {
         //find client in scene
         client ??= FindObjectOfType<UnityClient>();
