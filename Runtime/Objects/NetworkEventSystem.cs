@@ -14,17 +14,17 @@ public class NetworkEventSystem : MonoBehaviour
     public UnityServer server;
     
     //forward client events
-    public UnityEvent OnClientConnectingEvent;
-    public UnityEvent OnClientConnectedEvent;
-    public UnityEvent OnClientDisconnectingEvent ;
-    public UnityEvent OnClientDisconnectedEvent;
+    public UnityEvent OnClientConnectingEvent = new UnityEvent();
+    public UnityEvent OnClientConnectedEvent = new UnityEvent();
+    public UnityEvent OnClientDisconnectingEvent = new UnityEvent();
+    public UnityEvent OnClientDisconnectedEvent = new UnityEvent();
     
     //forward server events
-    public UnityEvent OnServerStartingEvent;
-    public UnityEvent OnServerStartedEvent;
-    public UnityEvent OnServerStoppingEvent;
-    public UnityEvent OnServerStoppedEvent;
-    public UnityEvent<SocketError> OnServerErrorEvent;
+    public UnityEvent OnServerStartingEvent = new UnityEvent();
+    public UnityEvent OnServerStartedEvent = new UnityEvent();
+    public UnityEvent OnServerStoppingEvent = new UnityEvent();
+    public UnityEvent OnServerStoppedEvent = new UnityEvent();
+    public UnityEvent<SocketError> OnServerErrorEvent = new UnityEvent<SocketError>();
     
     public bool IsConnected => client.IsConnected;
     public bool IsHosting => server.IsStarted;
