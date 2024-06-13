@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
 using Data_Management_for_Unity.Runtime.Networking.Unity;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,10 +9,12 @@ using UnityEngine.Events;
 /// Thus, they exists in different scenes, but their events can only be accessed via code.
 /// This class allows accessing it via Unity's event system.
 /// </summary>
-public class NetworkEventSystem : MonoBehaviour
+public class AbstractNetworkEventSystem<TSession, TServer> : MonoBehaviour
+    where TSession : SynchronisedSession
+    where TServer : AbstractUnityServer<TSession>
 {
     public UnityClient client;
-    public UnityServer server;
+    public TServer server;
     
     //forward client events
     public UnityEvent OnClientConnectingEvent; 
@@ -24,6 +27,10 @@ public class NetworkEventSystem : MonoBehaviour
     public UnityEvent OnServerStartedEvent;
     public UnityEvent OnServerStoppingEvent;
     public UnityEvent OnServerStoppedEvent;
+    public UnityEvent<TSession> OnRemoteConnectingEvent;
+    public UnityEvent<TSession> OnRemoteConnectedEvent;
+    public UnityEvent<TSession> OnRemoteDisconnectingEvent;
+    public UnityEvent<TSession> OnRemoteDisconnectedEvent;
     public UnityEvent<SocketError> OnServerErrorEvent;
     
     public bool IsConnected => client.IsConnected;
@@ -36,7 +43,7 @@ public class NetworkEventSystem : MonoBehaviour
         client ??= FindObjectOfType<UnityClient>();
         
         //find server in scene
-        server ??= FindObjectOfType<UnityServer>();
+        server ??= FindObjectOfType<TServer>();
 
         if (client == null || server == null)
         {
@@ -61,6 +68,10 @@ public class NetworkEventSystem : MonoBehaviour
         server.OnStartedEvent.AddListener(() => OnServerStartedEvent.Invoke());
         server.OnStoppedEvent.AddListener(() => OnServerStoppedEvent.Invoke());
         server.OnStoppingEvent.AddListener(() => OnServerStoppingEvent.Invoke());
+        server.OnConnectingEvent.AddListener((session) => OnRemoteConnectingEvent.Invoke(session));
+        server.OnConnectedEvent.AddListener((session) => OnRemoteConnectedEvent.Invoke(session));
+        server.OnDisconnectingEvent.AddListener((session) => OnRemoteDisconnectingEvent.Invoke(session));
+        server.OnDisconnectedEvent.AddListener((session) => OnRemoteDisconnectedEvent.Invoke(session));
         server.OnErrorEvent.AddListener((error) => OnServerErrorEvent.Invoke(error));
     }
 }
