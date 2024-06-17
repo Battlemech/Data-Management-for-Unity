@@ -23,55 +23,55 @@ namespace Data_Management_for_Unity.Runtime.Networking.Unity
         protected override void OnStarting()
         {
             base.OnStarting();
-            OnStartingEvent.Invoke();
+            OnStartingEvent?.Invoke();
         }
         
         protected override void OnStarted()
         {
             base.OnStarted();
-            OnStartedEvent.Invoke();
+            OnStartedEvent?.Invoke();
         }
         
         protected override void OnStopping()
         {
             base.OnStopping();
-            OnStoppingEvent.Invoke();
+            OnStoppingEvent?.Invoke();
         }
 
         protected override void OnStopped()
         {
             base.OnStopped();
-            OnStoppedEvent.Invoke();
+            OnStoppedEvent?.Invoke();
         }
 
         protected override void OnConnecting(TcpSession session)
         {
             base.OnConnecting(session);
-            OnConnectingEvent.Invoke((T) session);
+            OnConnectingEvent?.Invoke((T) session);
         }
 
         protected override void OnConnected(TcpSession session)
         {
             base.OnConnected(session);
-            OnConnectedEvent.Invoke((T) session);
+            OnConnectedEvent?.Invoke((T) session);
         }
         
         protected override void OnDisconnecting(TcpSession session)
         {
             base.OnDisconnecting(session);
-            OnDisconnectingEvent.Invoke((T) session);
+            OnDisconnectingEvent?.Invoke((T) session);
         }
         
         protected override void OnDisconnected(TcpSession session)
         {
             base.OnDisconnected(session);
-            OnDisconnectedEvent.Invoke((T) session);
+            OnDisconnectedEvent?.Invoke((T) session);
         }
         
         protected override void OnError(SocketError error)
         {
             base.OnError(error);
-            OnErrorEvent.Invoke(error);
+            OnErrorEvent?.Invoke(error);
         }
     }
 }

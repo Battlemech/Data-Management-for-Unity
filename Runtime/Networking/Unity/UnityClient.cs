@@ -16,25 +16,25 @@ namespace Data_Management_for_Unity.Runtime.Networking.Unity
         protected override void OnConnecting()
         {
             base.OnConnecting();
-            OnConnectingEvent.Invoke();
+            OnConnectingEvent?.Invoke();
         }
 
         protected override void OnConnected()
         {
             base.OnConnected();
-            OnConnectedEvent.Invoke();
+            OnConnectedEvent?.Invoke();
         }
 
         protected override void OnDisconnecting()
         {
             base.OnDisconnecting();
-            OnDisconnectingEvent.Invoke();
+            OnDisconnectingEvent?.Invoke();
         }
 
         protected override void OnDisconnected()
         {
             base.OnDisconnected();
-            OnDisconnectedEvent.Invoke();
+            OnDisconnectedEvent?.Invoke();
         }
     }
     
