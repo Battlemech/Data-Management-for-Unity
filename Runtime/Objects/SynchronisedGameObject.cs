@@ -15,14 +15,16 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [IgnoreMember]
         private GameObject _gameObject;
         
-        public SynchronisedGameObject(bool isPersistent = true) : base(isPersistent)
+        public SynchronisedGameObject(bool isPersistent = true, bool createGameObject = true) : base(isPersistent)
         {
-            
+            //automatically creates the game object in the current scene
+            if(createGameObject) GetGameObject();
         }
         
-        public SynchronisedGameObject(string id, bool isPersistent=true) : base(id, isPersistent)
+        public SynchronisedGameObject(string id, bool isPersistent=true, bool createGameObject = true) : base(id, isPersistent)
         {
-            
+            //automatically creates the game object in the current scene
+            if(createGameObject) GetGameObject();
         }
 
         /// <summary>
