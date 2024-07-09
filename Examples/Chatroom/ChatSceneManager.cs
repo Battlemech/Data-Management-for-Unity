@@ -42,7 +42,7 @@ public class ChatSceneManager : MonoBehaviour
             messageObjects.Enqueue(messageObject);
             
             //remove oldest message if there are too many
-            if (messageObjects.Count > 15)
+            if (messageObjects.Count > 20)
             {
                 Destroy(messageObjects.Dequeue());
             }
