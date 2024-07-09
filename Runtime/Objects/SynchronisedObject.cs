@@ -21,16 +21,20 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [IgnoreMember]
         private Database _database;
 
-        protected SynchronisedObject(bool isPersistent = true) : this(Guid.NewGuid().ToString(), isPersistent)
+        //new objects with random ids never exist before
+        protected SynchronisedObject(bool isPersistent = false) : this(Guid.NewGuid().ToString(), isPersistent, false)
         {
             
         }
 
-        protected SynchronisedObject(string id, bool isPersistent)
+        
+        protected SynchronisedObject(string id, bool isPersistent, bool getExisting)
         {
             Id = id;
             IsPersistent = isPersistent;
-            _database = new Database(id, isPersistent, true);
+            _database = getExisting 
+                ? SynchronisedClient.Instance.GetDatabase(Id, true)
+                : new Database(id, isPersistent, true);
         }
 
         protected Database GetDatabase()

@@ -15,12 +15,12 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [IgnoreMember]
         private GameObject _gameObject;
         
-        public SynchronisedGameObject(bool isPersistent = true) : base(isPersistent)
+        public SynchronisedGameObject(bool isPersistent = false) : base(isPersistent)
         {
             
         }
         
-        public SynchronisedGameObject(string id, bool isPersistent=true) : base(id, isPersistent)
+        public SynchronisedGameObject(string id, bool isPersistent=false, bool getExisting=true) : base(id, isPersistent, getExisting)
         {
             
         }

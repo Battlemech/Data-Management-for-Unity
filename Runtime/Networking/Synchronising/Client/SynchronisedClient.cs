@@ -67,7 +67,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
             }
         }
         
-        public Database GetDatabase(string id, bool isSynchronised = true)
+        public Database GetDatabase(string id, bool isSynchronised = true, bool? isPersistent = null)
         {
             lock (_databases)
             {
@@ -75,10 +75,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Client
                 if (_databases.TryGetValue(id, out Database database)) return database;
 
                 bool existsLocally = PersistentData.DoesDatabaseExists(id);
+                bool createPersistently = isPersistent ?? existsLocally;
                 
                 //create new database referenced by remote
                 //(it will automatically be added to local list of databases)
-                database = new Database(id, isPersistent:existsLocally, isSynchronised:isSynchronised, client:this);
+                database = new Database(id, isPersistent:createPersistently, isSynchronised:isSynchronised, client:this);
 
                 //return new database
                 return database;

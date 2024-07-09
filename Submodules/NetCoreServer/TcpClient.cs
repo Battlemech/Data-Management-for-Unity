@@ -483,7 +483,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="buffer">Buffer to send</param>
         /// <returns>Size of sent data</returns>
-        protected virtual long Send(byte[] buffer)
+        private long Send(byte[] buffer)
         {
             return Send(buffer.AsSpan());
         }
@@ -495,7 +495,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// <param name="offset">Buffer offset</param>
         /// <param name="size">Buffer size</param>
         /// <returns>Size of sent data</returns>
-        protected virtual long Send(byte[] buffer, long offset, long size)
+        private long Send(byte[] buffer, long offset, long size)
         {
             return Send(buffer.AsSpan((int)offset, (int)size));
         }
@@ -505,7 +505,7 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         /// </summary>
         /// <param name="buffer">Buffer to send as a span of bytes</param>
         /// <returns>Size of sent data</returns>
-        protected virtual long Send(ReadOnlySpan<byte> buffer)
+        private long Send(ReadOnlySpan<byte> buffer)
         {
             if (!IsConnected)
                 return 0;
