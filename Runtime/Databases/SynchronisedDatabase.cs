@@ -31,7 +31,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 
                 //invoke logic depending on new state
                 if (value) OnSynchronisationEnabled();
-                else OnSynchronisationDisabled();
 
                 //update local value
                 _isSynchronised = value;
@@ -47,9 +46,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //At least one client must be available
             if (Client == null)
                 throw new Exception("Database must be managed by a local SynchronisedClient to be synchronised!");
-            
-            //add database to list of local databases
-            Client.AddDatabase(this);
 
             //synchronise values
             lock (_values)
@@ -59,12 +55,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     throw new NotImplementedException();
                 }
             }
-        }
-
-        private void OnSynchronisationDisabled()
-        {
-            //remove database from list of local databases
-            Client.RemoveDatabase(this);
         }
 
         protected internal void OnRemoteOperation(SynchronisedOperation operation)

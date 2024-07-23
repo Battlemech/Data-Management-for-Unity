@@ -61,6 +61,13 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             _client3.Constructor(_server.Address, _server.Port);
             _client4.Constructor(_server.Address, _server.Port);
             
+            //simulate remote database instances
+            _client0.DBManager = new DatabaseManager();
+            _client1.DBManager = new DatabaseManager();
+            _client2.DBManager = new DatabaseManager();
+            _client3.DBManager = new DatabaseManager();
+            _client4.DBManager = new DatabaseManager();
+            
             //create databases
             string id = nameof(SynchronisationTests) + _server.Port;
             _database0 = new Database(id);
@@ -392,6 +399,9 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             TestSynchronisedObject so = new TestSynchronisedObject("name", 1, 0.5f);
 
             await so.SetTask;
+
+            TestSynchronisedObject copy = Copy(so);
+            copy.ManualLoadDatabase(_client3);
             
             //id must be equal
             Assert.AreEqual(so.Id, Copy(so).Id);

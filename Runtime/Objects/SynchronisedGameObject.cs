@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Data_Management_for_Unity.Runtime.Objects
 {
     [MessagePackObject]
-    public class SynchronisedGameObject : SynchronisedObject
+    public class SynchronisedGameObject : DatabaseReference
     {
         /// <summary>
         /// Local instance of game object
@@ -15,14 +15,14 @@ namespace Data_Management_for_Unity.Runtime.Objects
         [IgnoreMember]
         private GameObject _gameObject;
         
-        public SynchronisedGameObject(bool isPersistent = false) : base(isPersistent)
+        public SynchronisedGameObject(bool isPersistent = false, bool initialize = true) : base(isPersistent)
         {
-            
+
         }
-        
-        public SynchronisedGameObject(string id, bool isPersistent=false, bool getExisting=true) : base(id, isPersistent, getExisting)
+
+        public SynchronisedGameObject(string id, bool isPersistent, bool initialize) : base(id, isPersistent, true)
         {
-            
+
         }
 
         /// <summary>

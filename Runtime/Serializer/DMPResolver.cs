@@ -37,10 +37,10 @@ namespace Data_Management_for_Unity.Runtime.Serializer
 
         private IMessagePackFormatter CreateFormatter<T>(Type type)
         {
-            //check if the type is a synchronised object -> its data is automatically synchronised, only the ID needs to be serialized
-            if (typeof(SynchronisedObject).IsAssignableFrom(type))
+            //check if the type is a DatabaseReference -> its data is automatically synchronised, only the ID needs to be serialized
+            if (typeof(DatabaseReference).IsAssignableFrom(type))
             {
-                return SynchronisedObjectFormatter<T>.Instance;
+                return DatabaseReferenceFormatter<T>.Instance;
             }
             
             //abstract classes lacking the union attribute probably can't be tagged with it, since their children have a generic type.
