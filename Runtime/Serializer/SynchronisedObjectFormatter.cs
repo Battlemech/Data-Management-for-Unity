@@ -17,15 +17,18 @@ namespace Data_Management_for_Unity.Runtime.Serializer
                 throw new InvalidCastException($"Can only serialize SynchronisedObjects, not {typeof(T)!}");
             
             writer.Write(so.Id);
+            writer.Write(so.IsPersistent);
         }
 
         public T Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             //create instance
-            T obj = (T) FormatterServices.GetUninitializedObject(typeof(T));
+            Type type = typeof(T);
+            T obj = (T) FormatterServices.GetUninitializedObject(type);
             
-            //manually update id, as it is read-only
-            typeof(SynchronisedObject).GetField("Id").SetValue(obj, reader.ReadString());
+            //manually update values, as they are read-only
+            type.GetField("Id").SetValue(obj, reader.ReadString());
+            type.GetField("IsPersistent").SetValue(obj, reader.ReadBoolean());
 
             return obj;
         }

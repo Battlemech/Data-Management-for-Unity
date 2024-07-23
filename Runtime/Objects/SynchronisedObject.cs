@@ -44,7 +44,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
             if (SynchronisedClient.Instance == null)
                 throw new InvalidOperationException("Synchronised object must be managed by a local SynchronisedClient");
 
-            _database = SynchronisedClient.Instance.GetDatabase(Id, true);
+            _database = SynchronisedClient.Instance.GetDatabase(Id, true, IsPersistent);
 
             return _database;
         }
