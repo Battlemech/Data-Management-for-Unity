@@ -64,7 +64,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
         /// Manually loads the database object for a referenced client.
         /// Primarily used to simulate synchronisation of database objects from multiple synchronised clients
         /// </summary>
-        public void ManualLoadDatabase(SynchronisedClient client)
+        public void OverwriteDatabase(SynchronisedClient client)
         {
             _database = client.GetDatabase(Id, IsSynchronised, IsPersistent);
         }

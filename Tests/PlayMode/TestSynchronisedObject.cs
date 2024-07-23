@@ -4,7 +4,7 @@ using Data_Management_for_Unity.Runtime.Objects;
 
 namespace Data_Management_for_Unity.Tests.PlayMode
 {
-    public class TestSynchronisedObject : SynchronisedObject
+    public class TestSynchronisedObject : DatabaseReference
     {
         public ValueStorage<string> Name => GetDatabase().Get<string>(nameof(Name));
 

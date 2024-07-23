@@ -401,12 +401,12 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             await so.SetTask;
 
             TestSynchronisedObject copy = Copy(so);
-            copy.ManualLoadDatabase(_client3);
+            copy.OverwriteDatabase(_client3);
             
             //id must be equal
             Assert.AreEqual(so.Id, Copy(so).Id);
             //name is synchronised
-            Assert.AreEqual(so.Name.Get(), Copy(so).Name.Get());
+            Assert.AreEqual(so.Name.Get(), copy.Name.Get());
             
             //other values should not be synchronised
             Assert.AreNotEqual(so.Happiness, Copy(so).Happiness, "No values should be copied!");
