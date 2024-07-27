@@ -1,5 +1,6 @@
 ﻿using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
 using Data_Management_for_Unity.Runtime.Networking.Unity;
+using Data_Management_for_Unity.Runtime.Networking.Unity.Server;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Utility
 {
@@ -7,7 +8,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Utility
     /// Default implementation of the network event system.
     /// For more info, check the description of the base class.
     /// </summary>
-    public class NetworkEventSystem : AbstractNetworkEventSystem<SynchronisedSession, UnityServer>
+    public class NetworkEventSystem : AbstractNetworkEventSystem<UnitySession, UnityServer>
     {
         
     }

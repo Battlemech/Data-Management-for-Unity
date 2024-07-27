@@ -389,7 +389,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 
         public async Task TestSynchronisedObjectAsync()
         {
-            TestSynchronisedObject so = new TestSynchronisedObject("name", 1, 0.5f);
+            TestDatabaseReference so = new TestDatabaseReference("name", 1, 0.5f);
 
             await so.SetTask;
             

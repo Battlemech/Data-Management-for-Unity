@@ -1,6 +1,6 @@
 ﻿using Mono.Data.Sqlite;
 
-namespace Data_Management_for_Unity.Runtime.Persistence
+namespace Data_Management_for_Unity.Runtime.Persistence3
 {
     public partial class PersistentData
     {

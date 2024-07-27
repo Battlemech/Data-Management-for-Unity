@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Scheduler = System.Threading.Tasks.TaskScheduler;
 
-namespace DMP.Threading
+namespace Data_Management_for_Unity.Runtime.Threading
 {
     public class QueuedScheduler : Scheduler
     {

@@ -1,7 +1,6 @@
 ﻿using System;
-using Data_Management_for_Unity.Runtime.Serializer;
 
-namespace Data_Management_for_Unity.Runtime.Persistence
+namespace Data_Management_for_Unity.Runtime.Persistence3
 {
     public readonly struct PersistentObject
     {
