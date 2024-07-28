@@ -36,6 +36,8 @@ namespace Data_Management_for_Unity.Runtime.Objects.GameObjects
             if(deleteChildOnDestroy) _dbRef.Delete();
         }
 
+        protected internal abstract void UnsafeInit(GameObjectManager manager);
+
         /// <summary>
         /// Retrieves the database of the DMPBehavior, allowing to synchronise and persistently save data, assuming the options have been enabled
         /// </summary>
@@ -61,7 +63,15 @@ namespace Data_Management_for_Unity.Runtime.Objects.GameObjects
             _parent = parent;
             OnInitialized(parent);
         }
-        
+
+        protected internal override void UnsafeInit(GameObjectManager manager)
+        {
+            if (!(manager is T parent))
+                throw new ArgumentException($"Can't initialize component of type {GetType().Name} with manager of type {manager.GetType().Name}!");
+                
+            Init(parent);
+        }
+
         protected virtual void OnInitialized(T parent){}
         
         public T GetParent()
