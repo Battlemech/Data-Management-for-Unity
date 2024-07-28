@@ -403,6 +403,22 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             Assert.AreNotEqual(so.NoValueStorage, Copy(so).NoValueStorage, "No values should be copied!");
         }
         
+        
+        [UnityTest]
+        public IEnumerator TestGameObjectReference()
+        {
+            //game object is automatically created
+            TestObjectManager manager = new TestObjectManager();
+            
+            //make sure game object was created
+            yield return TestUtility.AreEqual(true, () => manager.GetGameObject() != null, "Game object created");
+            
+            //make sure monoBehaviour and its callbacks were created
+            yield return TestUtility.AreEqual(TestObjectManager.InitialHp, () => manager.Hp.Get(), "Hp set in manager");
+            yield return TestUtility.AreEqual(true, () => manager.GetGameObject().GetComponent<TestDMPBehavior>() != null, "monoBehaviour initialized");
+            yield return TestUtility.AreEqual(TestObjectManager.InitialHp, () => manager.GetGameObject().GetComponent<TestDMPBehavior>().LocalHpValue, "Hp set in monoBehaviour");
+        }
+        
         /// <summary>
         /// Given an object, tries serializing and deserializing it, returning a copy
         /// </summary>

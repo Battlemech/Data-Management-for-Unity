@@ -39,17 +39,17 @@ namespace Data_Management_for_Unity.Runtime.Serializer
 
         private IMessagePackFormatter CreateFormatter<T>(Type type)
         {
-            //database references contain many valueStorages, which are ignored during serialization
-            if (typeof(DatabaseReference).IsAssignableFrom(type))
-            {
-                return DatabaseReferenceFormatter<T>.Instance;
-            }
-            
             //abstract classes lacking the union attribute probably can't be tagged with it, since their children have a generic type.
             //-> serialize their actual type and use the standard formatter
             if (type.IsAbstract && !type.GetCustomAttributes(typeof(UnionAttribute)).Any())
             {
                 return AbstractUnionlessFormatter<T>.Instance;
+            }
+            
+            //database references contain many valueStorages, which are ignored during serialization
+            if (typeof(DatabaseReference).IsAssignableFrom(type))
+            {
+                return DatabaseReferenceFormatter<T>.Instance;
             }
             
             return StandardResolverAllowPrivate.Instance.GetFormatter<T>();
