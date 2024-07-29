@@ -23,7 +23,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 
         protected override async void LocalConstructor(GameObject gameObject)
         {
-            //call base function
+            //add base components
             base.LocalConstructor(gameObject);
             
             //set initial hp
