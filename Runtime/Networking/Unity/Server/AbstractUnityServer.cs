@@ -3,12 +3,12 @@ using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
 using Data_Management_for_Unity.Submodules.NetCoreServer;
 using UnityEngine.Events;
 
-namespace Data_Management_for_Unity.Runtime.Networking.Unity
+namespace Data_Management_for_Unity.Runtime.Networking.Unity.Server
 {
     /// <summary>
     /// Wrapper class, exposing internal events to Unity's event system
     /// </summary>
-    public abstract class AbstractUnityServer<T> : SynchronisedServer where T : SynchronisedSession
+    public abstract class AbstractUnityServer<T> : SynchronisedServer where T : UnitySession
     {
         public UnityEvent OnStartingEvent;
         public UnityEvent OnStartedEvent;
@@ -19,7 +19,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Unity
         public UnityEvent<T> OnDisconnectingEvent;
         public UnityEvent<T> OnDisconnectedEvent;
         public UnityEvent<SocketError> OnErrorEvent;
-        
+
         protected override void OnStarting()
         {
             base.OnStarting();
@@ -73,5 +73,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Unity
             base.OnError(error);
             OnErrorEvent?.Invoke(error);
         }
+
+        protected abstract override TcpSession CreateSession();
     }
 }

@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Networking.Messaging.Exceptions;
-using DMP.Threading;
+using Data_Management_for_Unity.Runtime.Threading;
 using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Messaging.Client

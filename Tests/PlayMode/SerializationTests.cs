@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
-using Data_Management_for_Unity.Runtime.Persistence;
+using Data_Management_for_Unity.Runtime.Persistence3;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -41,7 +41,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 PersistentData.DeleteDatabase(localId);
             }
             
-            TestSynchronisedObject so = new TestSynchronisedObject(subId, 3, 0.5f);
+            TestDatabaseReference so = new TestDatabaseReference(subId, 3, 0.5f);
             
             //wait for data to be set
             await so.SetTask;
@@ -51,7 +51,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 
             //save synchronised object to local database
             Database localData = new Database(localId, isPersistent: true);
-            await localData.Get<TestSynchronisedObject>(so.Id).Set(so);
+            await localData.Get<TestDatabaseReference>(so.Id).Set(so);
             
             Assert.NotNull(PersistentData.Load(localData.Id), "Local database not saved");
             

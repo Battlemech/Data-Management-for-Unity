@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Objects;
+using Data_Management_for_Unity.Runtime.Serializer.Resolvers;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -37,17 +39,17 @@ namespace Data_Management_for_Unity.Runtime.Serializer
 
         private IMessagePackFormatter CreateFormatter<T>(Type type)
         {
-            //check if the type is a synchronised object -> its data is automatically synchronised, only the ID needs to be serialized
-            if (typeof(SynchronisedObject).IsAssignableFrom(type))
-            {
-                return SynchronisedObjectFormatter<T>.Instance;
-            }
-            
             //abstract classes lacking the union attribute probably can't be tagged with it, since their children have a generic type.
             //-> serialize their actual type and use the standard formatter
             if (type.IsAbstract && !type.GetCustomAttributes(typeof(UnionAttribute)).Any())
             {
                 return AbstractUnionlessFormatter<T>.Instance;
+            }
+            
+            //database references contain many valueStorages, which are ignored during serialization
+            if (typeof(DatabaseReference).IsAssignableFrom(type))
+            {
+                return DatabaseReferenceFormatter<T>.Instance;
             }
             
             return StandardResolverAllowPrivate.Instance.GetFormatter<T>();

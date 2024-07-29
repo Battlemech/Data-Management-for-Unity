@@ -389,7 +389,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
 
         public async Task TestSynchronisedObjectAsync()
         {
-            TestSynchronisedObject so = new TestSynchronisedObject("name", 1, 0.5f);
+            TestDatabaseReference so = new TestDatabaseReference("name", 1, 0.5f);
 
             await so.SetTask;
             
@@ -401,6 +401,22 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             //other values should not be synchronised
             Assert.AreNotEqual(so.Happiness, Copy(so).Happiness, "No values should be copied!");
             Assert.AreNotEqual(so.NoValueStorage, Copy(so).NoValueStorage, "No values should be copied!");
+        }
+        
+        
+        [UnityTest]
+        public IEnumerator TestGameObjectReference()
+        {
+            //game object is automatically created
+            TestObjectManager manager = new TestObjectManager();
+            
+            //make sure game object was created
+            yield return TestUtility.AreEqual(true, () => manager.GetGameObject() != null, "Game object created");
+            
+            //make sure monoBehaviour and its callbacks were created
+            yield return TestUtility.AreEqual(TestObjectManager.InitialHp, () => manager.Hp.Get(), "Hp set in manager");
+            yield return TestUtility.AreEqual(true, () => manager.GetGameObject().GetComponent<TestDMPBehavior>() != null, "monoBehaviour initialized");
+            yield return TestUtility.AreEqual(TestObjectManager.InitialHp, () => manager.GetGameObject().GetComponent<TestDMPBehavior>().LocalHpValue, "Hp set in monoBehaviour");
         }
         
         /// <summary>

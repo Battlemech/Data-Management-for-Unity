@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Data_Management_for_Unity.Examples.Chatroom;
 using Data_Management_for_Unity.Runtime.Networking.Unity;
+using Data_Management_for_Unity.Runtime.Networking.Unity.Client;
 using UnityEngine;
 using UnityEngine.Events;
 
