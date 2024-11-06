@@ -69,5 +69,10 @@ namespace Data_Management_for_Unity.Runtime.Objects
         {
             return (Id != null ? Id.GetHashCode() : 0);
         }
+        
+        public int RemoveCallbacks(string name=null, bool mainThread=true)
+        {
+            return GetDatabase().RemoveCallbacks(name, mainThread);
+        }
     }
 }

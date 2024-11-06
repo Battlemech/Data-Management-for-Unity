@@ -198,6 +198,8 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         public void OnInitialized(Func<T, Task> onInitialized, bool mainThread=true)
             => OnInitialized(onInitialized.AsAction(), mainThread);
         
+        public Task<T> OnInitialized(bool mainThread=true) => Database.OnInitialized<T>(Id, mainThread);
+        
         protected internal override void InternalSet(byte[] bytes, Type type)
         {
             object value = SerializationPCK.Deserialize(bytes, type);

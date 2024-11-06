@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Codice.Client.BaseCommands;
 using Debug = UnityEngine.Debug;
 
 namespace Data_Management_for_Unity.Runtime.Callbacks
@@ -86,7 +87,7 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
         }
 
         /// <summary>
-        /// Removes callbacks.
+        /// Removes callbacks of the specified key.
         /// </summary>
         /// <param name="key">Key of callbacks</param>
         /// <param name="name">Required name of callbacks, if any</param>
@@ -105,6 +106,20 @@ namespace Data_Management_for_Unity.Runtime.Callbacks
                 int count = callbacks.Count;
                 callbacks.Clear();
                 return count;
+            }
+        }
+
+        /// <summary>
+        /// Removes all callbacks.
+        /// </summary>
+        /// <param name="name">Required name of callbacks, if any</param>
+        /// <returns>Number of callbacks removed</returns>
+        public int RemoveCallbacks(string name = null)
+        {
+            lock (_callbacks)
+            {
+                //remove all callbacks with specified name, if any
+                return _callbacks.Keys.Sum(key => RemoveCallbacks(key, name));
             }
         }
 

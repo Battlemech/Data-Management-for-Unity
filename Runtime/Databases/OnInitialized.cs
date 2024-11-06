@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
 
@@ -35,6 +36,18 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     if (TryInvoke(obj, onInitialized)) valueStorage.RemoveCallbacks(callbackName);
                 }), callbackName, mainThread:mainThread); 
             }, mainThread);
+        }
+
+        public Task<T> OnInitialized<T>(string id, bool mainThread = false)
+        {
+            TaskCompletionSource<T> tsc = new TaskCompletionSource<T>();
+            
+            OnInitialized<T>(id, (value) =>
+            {
+                tsc.SetResult(value);
+            }, mainThread);
+            
+            return tsc.Task;
         }
 
         private static bool TryInvoke<T>(T obj, Action<T> onInitialized)

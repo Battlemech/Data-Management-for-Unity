@@ -17,7 +17,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// <param name="mainThread">True if the callback will be executed on Unity's main thread, otherwise false</param>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
         public bool AddCallback(Action<T> callback, string name = "", bool unique = false,
-            bool removeOnError = false, bool invoke = false, bool mainThread = false)
+            bool removeOnError = false, bool invoke = true, bool mainThread = true)
         {
             return Database.AddCallback(Id, callback, name, unique, removeOnError, invoke, mainThread);
         }

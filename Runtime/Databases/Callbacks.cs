@@ -31,7 +31,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <typeparam name="T">Expected type of object in callback</typeparam>
         /// <returns>True if the callback was added, false if the unique parameter could not be met</returns>
         public bool AddCallback<T>(string key, Action<T> callback, string name = "", bool unique = false,
-            bool removeOnError = false, bool invoke=false, bool mainThread = false)
+            bool removeOnError = false, bool invoke=false, bool mainThread=true)
         {
             //Add callback to specified thread handler
             bool added = GetHandler(mainThread).AddCallback(key, callback, name, unique, removeOnError);
@@ -56,7 +56,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <param name="name">Required name of callbacks, if any</param>
         /// <param name="mainThread">True if the callback was added to Unity's main thread, otherwise false</param>
         /// <returns>Number of callbacks matching criterion</returns>
-        public int GetCallbackCount(string key, string name=null, bool mainThread=false)
+        public int GetCallbackCount(string key, string name=null, bool mainThread=true)
         {
             return GetHandler(mainThread).GetCallbackCount(key, name);
         }
@@ -68,9 +68,20 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <param name="name">Required name of callbacks, if any</param>
         /// <param name="mainThread">True if the callback was added on the main thread, otherwise false</param>
         /// <returns>Number of callbacks removed</returns>
-        public int RemoveCallbacks(string key, string name=null, bool mainThread=false)
+        public int RemoveCallbacks(string key, string name=null, bool mainThread=true)
         {
             return GetHandler(mainThread).RemoveCallbacks(key, name);
+        }
+        
+        /// <summary>
+        /// Removes callbacks for all valueStorages.
+        /// </summary>
+        /// <param name="name">Name of the callback, if any</param>
+        /// <param name="mainThread">True if the callback was added on the main thread, otherwise false</param>
+        /// <returns>Number of callbacks removed</returns>
+        public int RemoveCallbacks(string name=null, bool mainThread=true)
+        {
+            return GetHandler(mainThread).RemoveCallbacks(name);
         }
 
         /// <summary>
