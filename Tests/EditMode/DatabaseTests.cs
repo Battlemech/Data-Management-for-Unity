@@ -52,20 +52,25 @@ namespace Data_Management_for_Unity.Tests.EditMode
             }
         }
 
-        [Test]
-        public void TestListPersistence()
+        [UnityTest]
+        public IEnumerator TestListPersistence()
         {
-            const string id = nameof(TestListPersistence);
+            return TestListPersistenceAsync().AsIEnumerator();
+        }
+        
+        public async Task TestListPersistenceAsync()
+        {
+            const string id = nameof(TestListPersistenceAsync);
             const int addCount = 100;
             
             //clear old data
             PersistentData.DeleteDatabase(id);
-            
-            //create database
-            Database database = new Database(id, true);
 
             for (int i = 0; i < addCount; i++)
             {
+                //create database
+                Database database = new Database(id, true);
+                
                 //make sure value was loaded correctly
                 for (int j = 0; j < i; j++)
                 {
@@ -73,7 +78,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
                 }
                 
                 //add i to list
-                database.Get<List<int>>(id).Add(i);
+                await database.Get<List<int>>(id).Add(i);
             }
         }
     }

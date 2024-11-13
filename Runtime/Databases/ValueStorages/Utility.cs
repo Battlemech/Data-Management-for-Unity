@@ -115,7 +115,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         public static bool Contains<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue value)
             where TCollection : ICollection<TValue>
         {
-            return valueStorage.BlockingGet((values => values.Contains(value)));
+            return valueStorage.BlockingGet((values => values != null && values.Contains(value)));
         }
         
         /// <summary>

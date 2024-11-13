@@ -51,4 +51,15 @@ namespace Data_Management_for_Unity.Runtime.Threading
         
         public static Task Delegate(Action action) => Delegate(new Task(action));
     }
+    
+    public static class MainThreadRunnerUtility
+    {
+        public static Task ContinueOnMainThread<T>(this Task<T> task, Action<T> action)
+        {
+            return task.ContinueWith((t =>
+            {
+                return MainThreadRunner.Delegate(() => action(t.Result));
+            })).Unwrap();
+        }
+    }
 }
