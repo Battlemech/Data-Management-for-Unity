@@ -49,6 +49,17 @@ namespace Data_Management_for_Unity.Runtime.Threading
             return task;
         }
         
+        public static Task Delegate(Func<Task> func)
+        {
+            if (_instance == null)
+                Debug.LogWarning("No MainThreadRunner component was setup. Make sure one is added to the scene, or delegated actions won't be executed!");
+
+            var task = new Task<Task>(func);
+            task.Start(UnityThreadScheduler);
+
+            return task.Unwrap();
+        }
+        
         public static Task Delegate(Action action) => Delegate(new Task(action));
     }
     
@@ -60,6 +71,22 @@ namespace Data_Management_for_Unity.Runtime.Threading
             {
                 return MainThreadRunner.Delegate(() => action(t.Result));
             })).Unwrap();
+        }
+        
+        public static Task ContinueOnMainThread<T>(this Task<T> task, Func<T, Task> func)
+        {
+            return task.ContinueWith(async t =>
+            {
+                try
+                {
+                    await MainThreadRunner.Delegate(() => func(t.Result));
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                    throw;
+                }
+            }).Unwrap();
         }
     }
 }

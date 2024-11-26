@@ -192,9 +192,7 @@ namespace Data_Management_for_Unity.Tests.EditMode
         /// </summary>
         public static T Copy<T>(T data)
         {
-            if (data == null) return default;
-            Type type = data.GetType();
-            return (T) SerializationPCK.Deserialize(SerializationPCK.Serialize(data, type), type);
+            return (T) SerializationPCK.Deserialize(SerializationPCK.Serialize(data, out var type), type);
         }
     }
 }
