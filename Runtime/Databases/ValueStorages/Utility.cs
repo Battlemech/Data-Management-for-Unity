@@ -109,7 +109,28 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         public static Task Update<TCollection, TKey, TValue>(this ValueStorage<TCollection> valueStorage, TKey key, TValue value, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : IDictionary<TKey, TValue>, new()
         {
-            throw new NotImplementedException();
+            //serialize key and value
+            byte[] updatedKey = SerializationPCK.Serialize(key, out Type updatedKeyType);
+            byte[] updatedValue = SerializationPCK.Serialize(value, out Type updatedType);
+            
+            //serialize entire collection
+            byte[] collectionValue;
+            Type collectionType;
+            
+            lock (valueStorage.Id)
+            {
+                //init collection if necessary
+                valueStorage.Data ??= new TCollection();
+                
+                //update value in collection
+                valueStorage.Data[key] = value;
+
+                //serialize collection
+                collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
+            }
+            
+            //process update internally
+            return valueStorage.Database.OnUpdate<TCollection, TKey, TValue>(valueStorage.Id, collectionValue, collectionType, updatedKey, updatedKeyType, updatedValue, updatedType, safe, onConfirmed);
         }
 
         public static bool Contains<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue value)

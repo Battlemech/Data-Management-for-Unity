@@ -42,6 +42,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
         {
             await OnLocalOperation(collectionValue, collectionType, new SynchronisedKeyRemove<TDictionary, TKey, TValue>(Id, valueId, removedValue, removedType, isSafe, onConfirmed));
         }
+        
+        protected internal async Task OnUpdate<TCollection, TKey, TValue>(string valueId, byte[] collectionValue,
+            Type collectionType, byte[] updatedKeyValue, Type updatedKeyType, byte[] updatedValueValue, Type updatedValueType, bool isSafe, Action<TCollection> onConfirmed)
+            where TCollection : IDictionary<TKey, TValue>, ICollection<KeyValuePair<TKey, TValue>>, new()
+        {
+            await OnLocalOperation(collectionValue, collectionType, new SynchronisedUpdate<TCollection, TKey, TValue>(Id, valueId, updatedKeyValue, updatedKeyType, updatedValueValue, updatedValueType, isSafe, onConfirmed));
+        }
 
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
         {
