@@ -23,9 +23,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public SynchronisedUpdate(string databaseId, string valueId, byte[] updatedKeyValue, Type updatedKeyType, byte[] updatedValueValue, Type updatedValueType, bool isSafe, Action<TCollection> onConfirmed) : base(databaseId, valueId, isSafe, onConfirmed)
         {
             _updatedKeyValue = updatedKeyValue;
-            _updatedKeyTypeString = updatedKeyType.AssemblyQualifiedName;
+            _updatedKeyTypeString = updatedKeyType?.AssemblyQualifiedName;
             _updatedValueValue = updatedValueValue;
-            _updatedValueTypeString = updatedValueType.AssemblyQualifiedName;
+            _updatedValueTypeString = updatedValueType?.AssemblyQualifiedName;
         }
         
         [SerializationConstructor]
@@ -36,14 +36,12 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             _updatedKeyTypeString = updatedKeyTypeString;
             _updatedValueValue = updatedValueValue;
             _updatedValueTypeString = updatedValueTypeString;
-
-            var test = new Dictionary<string, int>();
         }
 
         protected override TCollection PerformAction(TCollection collection)
         {
             //deserialize key
-            Type updatedKeyType = Type.GetType(_updatedKeyTypeString);
+            Type updatedKeyType = GetType(_updatedKeyTypeString);
             object keyDeserialized = SerializationPCK.Deserialize(_updatedKeyValue, updatedKeyType);
             
             //make sure key is of expected type
@@ -51,7 +49,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
                 throw new InvalidCastException($"Expected key of type {typeof(TKey)}, but was {keyDeserialized?.GetType()}");
             
             //deserialize value
-            Type updatedValueType = Type.GetType(_updatedValueTypeString);
+            Type updatedValueType = GetType(_updatedValueTypeString);
             object valueDeserialized = SerializationPCK.Deserialize(_updatedValueValue, updatedValueType);
             
             //make sure value is of expected type

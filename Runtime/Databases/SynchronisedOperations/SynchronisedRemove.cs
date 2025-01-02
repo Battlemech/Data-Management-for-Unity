@@ -18,7 +18,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public SynchronisedRemove(string databaseId, string valueId, byte[] removedValue, Type removedType, bool isSafe, Action<TCollection> onConfirmed) : base(databaseId, valueId, isSafe, onConfirmed)
         {
             _removedValue = removedValue;
-            _removedTypeString = removedType.AssemblyQualifiedName;
+            _removedTypeString = removedType?.AssemblyQualifiedName;
         }
 
         [SerializationConstructor]
@@ -33,7 +33,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         protected override TCollection PerformAction(TCollection collection)
         {
             //deserialize value to remove
-            object deserialized = SerializationPCK.Deserialize(_removedValue, Type.GetType(_removedTypeString, true));
+            object deserialized = SerializationPCK.Deserialize(_removedValue, GetType(_removedTypeString));
             
             //make sure object to add is of expected type
             if (deserialized is not TValue value)

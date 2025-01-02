@@ -29,5 +29,31 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
             
             return savedObjects;
         }
+
+        public static bool TryLoad(string databaseId, string valueId, out PersistentObject po)
+        {   
+            //init return value
+            po = default;
+            
+            //load data
+            var data = Load(databaseId);
+            
+            //data doesn't exist
+            if (data == null || data.Count == 0)
+            {
+                return false;
+            }
+            
+            //find object
+            foreach (var persistentObject in data)
+            {
+                if (persistentObject.ValueId != valueId) continue;
+                
+                po = persistentObject;
+                return true;
+            }
+
+            return false;
+        }
     }
 }

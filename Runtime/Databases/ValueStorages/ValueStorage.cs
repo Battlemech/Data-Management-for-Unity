@@ -80,8 +80,10 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// </summary>
         /// <param name="data">New value</param>
         /// <param name="onConfirmed">Action executed once the new value was confirmed remotely. Executed on a thread</param>
+        /// <param name="mainThread">True if the onConfirmed action is executed on Unity's main thread</param>
+        /// <param name="logException">True if the async task should be checked for exceptions, otherwise false</param>
         /// <returns>Internal task synchronising values and saving data persistently</returns>
-        public Task Set(T data, Action<T> onConfirmed = null)
+        public Task Set(T data, Action<T> onConfirmed = null, bool mainThread=false, bool logException=true)
         {
             byte[] value;
             Type type;
@@ -94,23 +96,15 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 //save its serialized version
                 value = SerializationPCK.Serialize(data, out type);
             }
+            
+            //delegate action on main thread, if necessary
+            var action = mainThread && onConfirmed != null ? (obj) => MainThreadRunner.Delegate(() => onConfirmed.Invoke(obj)) : onConfirmed;
 
             //delegate internal logic to background to increase performance
-            return Database.OnSet(Id, value, type, onConfirmed);
-        }
+            var task = Database.OnSet(Id, value, type, action);
 
-        /// <summary>
-        /// Overwrites the current value and synchronises the result in the network
-        /// </summary>
-        /// <param name="data">New value</param>
-        /// <param name="onConfirmed">Action executed once the new value was confirmed remotely</param>
-        /// <param name="mainThread">True if the onConfirmed action is executed on Unity's main thread</param>
-        /// <returns>Internal task synchronising values and saving data persistently</returns>
-        public Task Set(T data, Action<T> onConfirmed, bool mainThread)
-        {
-            return mainThread
-                ? Set(data, obj => MainThreadRunner.Delegate(() => onConfirmed.Invoke(obj)))
-                : Set(data, onConfirmed);
+            //log exception of async task, if desired
+            return logException ? task.LogOnFailure() : task;
         }
 
         /// <summary>
@@ -124,8 +118,9 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// </param>
         /// <param name="onConfirmed">Action executed once the new value was confirmed remotely. Executed on a thread</param>
         /// <param name="mainThread">True if the onConfirmed action is executed on Unity's main thread</param>
+        /// <param name="logException">True if the async task should be checked for exceptions, otherwise false</param>
         /// <returns>Internal task synchronising values and saving data persistently</returns>
-        public Task Modify(ModifyDelegate<T> modifyDelegate, bool safe=false, Action<T> onConfirmed = null, bool mainThread=false)
+        public Task Modify(ModifyDelegate<T> modifyDelegate, bool safe=false, Action<T> onConfirmed = null, bool mainThread=false, bool logException=true)
         {
             byte[] value;
             Type type;
@@ -139,14 +134,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 value = SerializationPCK.Serialize(Data, out type);
             }
 
+            //delegate action on main thread, if necessary
+            var action = mainThread && onConfirmed != null ? (obj) => MainThreadRunner.Delegate(() => onConfirmed.Invoke(obj)) : onConfirmed;
+            
             //delegate internal logic to background to increase performance
-            return Database.OnModify(Id, value, type, modifyDelegate, safe, 
-                //when main thread delegation was requested
-                onConfirmed != null && mainThread ?
-                    //delegate invocation of action on main thread
-                    obj => MainThreadRunner.Delegate((() => onConfirmed.Invoke(obj)))
-                    //default: execute callback on receiving thread
-                    : onConfirmed);
+            var task = Database.OnModify(Id, value, type, modifyDelegate, safe, action);
+            
+            //log exception of async task, if desired
+            return logException ? task.LogOnFailure() : task;
         }
 
         /// <summary>
@@ -161,31 +156,17 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         /// <returns>Internal task synchronising values and saving data persistently</returns>
         public Task<T> ModifyAsync(ModifyDelegate<T> modifyDelegate, bool safe=false)
         {
-            //store result of modification action
-            T result = default;
-            ManualResetEvent confirmedResult = new ManualResetEvent(false);
-            
-            //modify value
+            var tcs = new TaskCompletionSource<T>();
+
+            // modify value
             Modify(modifyDelegate, safe, r =>
             {
-                //update result
-                result = r;
-                
-                //notify waiting thread that result was confirmed by remote 
-                confirmedResult.Set();
+                // set the result
+                tcs.SetResult(r);
             }, false);
 
-            //start waiting for result to be confirmed
-            Task<T> onConfirmationTask = new Task<T>((() =>
-            {
-                //wait until result is confirmed
-                confirmedResult.WaitOne();
-                
-                return result;
-            }), TaskCreationOptions.LongRunning);
-            onConfirmationTask.Start();
-
-            return onConfirmationTask;
+            // return the task
+            return tcs.Task;
         }
 
         /// <summary>
@@ -232,7 +213,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 Data = data;
             }
         }
-
+        
         public static implicit operator T(ValueStorage<T> valueStorage) => valueStorage.Get();
     }
 }

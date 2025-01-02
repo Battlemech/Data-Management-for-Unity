@@ -28,7 +28,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
 
             //save value to allow setting it on remote
             _value = value;
-            _typeString = type.AssemblyQualifiedName;
+            _typeString = type?.AssemblyQualifiedName;
             
             //save "safe" attribute
             _isSafe = isSafe;
@@ -50,7 +50,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             _value = _modify.InvokeSafe(value, type, out resultType);
             
             //update serialized type
-            _typeString = resultType.AssemblyQualifiedName;
+            _typeString = resultType?.AssemblyQualifiedName;
 
             //return value and type
             return _value;
@@ -59,7 +59,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public override byte[] OnRemote(byte[] value, Type type, out Type resultType)
         {
             //deserialize type
-            resultType = Type.GetType(_typeString, true);
+            resultType = GetType(_typeString);
             return _value;
         }
 

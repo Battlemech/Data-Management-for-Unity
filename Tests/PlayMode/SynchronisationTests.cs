@@ -401,8 +401,42 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             //other values should not be synchronised
             Assert.AreNotEqual(so.Happiness, Copy(so).Happiness, "No values should be copied!");
             Assert.AreNotEqual(so.NoValueStorage, Copy(so).NoValueStorage, "No values should be copied!");
+            
+            //load persistent database reference
+            var name = SynchronisedClient.Instance.GetDatabase(so.Id).Get<string>(nameof(so.Name)).Get();
+            Assert.AreEqual(so.Name.Get(), name);
         }
-        
+
+        [UnityTest]
+        public IEnumerator TestDatabaseReferenceStacking()
+        {
+            yield return TestDatabaseReferenceStackingAsync().AsIEnumerator(); 
+        }
+
+        private async Task TestDatabaseReferenceStackingAsync()
+        {
+            const string id = nameof(TestDatabaseReferenceStacking);
+            Database database = new Database(id, true);
+            
+            //create an object to reference
+            TestDatabaseReference dbRef = new TestDatabaseReference("Hello there!", 1455, 0.3f);
+            await dbRef.SetTask;
+            
+            //set object in database
+            await database.Get<TestDatabaseReference>(id).Set(dbRef);
+            
+            //make sure object was set
+            Assert.AreEqual(dbRef, database.Get<TestDatabaseReference>(id).Get());
+            //make sure the value was set
+            Assert.AreEqual(dbRef.Name.Get(), database.Get<TestDatabaseReference>(id).Get().Name.Get());
+            
+            //make sure the object was saved persistently
+            database = new Database(id, true);
+            //ensure the dbRef is still saved
+            Assert.AreEqual(dbRef, database.Get<TestDatabaseReference>(id).Get());
+            //ensure the value is still saved
+            Assert.AreEqual(dbRef.Name.Get(), database.Get<TestDatabaseReference>(id).Get().Name.Get());
+        }
         
         [UnityTest]
         public IEnumerator TestGameObjectReference()
@@ -417,6 +451,33 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(TestObjectManager.InitialHp, () => manager.Hp.Get(), "Hp set in manager");
             yield return TestUtility.AreEqual(true, () => manager.GetGameObject().GetComponent<TestDMPBehavior>() != null, "monoBehaviour initialized");
             yield return TestUtility.AreEqual(TestObjectManager.InitialHp, () => manager.GetGameObject().GetComponent<TestDMPBehavior>().LocalHpValue, "Hp set in monoBehaviour");
+        }
+
+        [UnityTest]
+        public IEnumerator TestSetNull()
+        {
+            const string id = nameof(TestSetNull);
+            const string value = id + "= 'Some beautiful value!'";
+
+            //update local value in database 0
+            yield return _database0.Get<string>(id).Set(value).AsIEnumerator();
+
+            //make sure value is synchronised in other databases
+            yield return TestUtility.AreEqual(value, () => _database0.Get<string>(id).Get(), "Local set");
+            yield return TestUtility.AreEqual(value, () => _database1.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _database2.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _database3.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _database4.Get<string>(id).Get(), "Remote set");
+            
+            //set null
+            yield return _database0.Get<string>(id).Set(null).AsIEnumerator();
+            
+            //make sure value is synchronised in other databases
+            yield return TestUtility.AreEqual(null, () => _database0.Get<string>(id).Get(), "Local set");
+            yield return TestUtility.AreEqual(null, () => _database1.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(null, () => _database2.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(null, () => _database3.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(null, () => _database4.Get<string>(id).Get(), "Remote set");
         }
         
         /// <summary>
@@ -448,7 +509,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 
                 Debug.Log(items.GetContent());
 
-                return items.AreEqual();
+                return items.AreItemsEqual();
             }, "Values Synchronised", timeout);
         }
 

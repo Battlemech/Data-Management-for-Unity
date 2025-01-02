@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Data_Management_for_Unity.Runtime;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Networking;
 using Data_Management_for_Unity.Runtime.Networking.Messaging;
@@ -103,6 +104,45 @@ namespace Data_Management_for_Unity.Tests.EditMode
             AbstractClass2 abstractClass2 = new AbstractClass2(false, 3);
             
             Assert.AreEqual(abstractClass2, Copy(abstractClass2));
+        }
+
+        [Test]
+        public void TestDictionary()
+        {
+            //default dict
+            Dictionary<string, int> dict1 = new Dictionary<string, int>()
+            {
+                { "1", 1 },
+                { "2", 2 },
+                { "3", 3 },
+                { "4", 4 },
+                { "5", 5 },
+            };
+            
+            Assert.AreEqual(dict1, Copy(dict1));
+            
+            //coordinate dict
+            Dictionary<TestCoordinate, string> dict2 = new Dictionary<TestCoordinate, string>()
+            {
+                { new TestCoordinate(1, 2), "1,2" },
+                { new TestCoordinate(3, 4), "3,4" },
+                { new TestCoordinate(5, 6), "5,6" },
+                { new TestCoordinate(7, 8), "7,8" },
+                { new TestCoordinate(9, 10), "9,10" },
+            };
+            var copy2 = Copy(dict2);
+            
+            //print elements of dicts
+            foreach (var pair in dict2)
+            {
+                Debug.Log("Original: " +pair.Key + " - " + pair.Value);
+            }
+            foreach (var pair in copy2)
+            {
+                Debug.Log("Copy: " + pair.Key + " - " + pair.Value);
+            }
+            
+            Assert.AreEqual(dict2, copy2);
         }
 
         [Test]

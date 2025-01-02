@@ -1,4 +1,5 @@
 ﻿using System;
+using Data_Management_for_Unity.Runtime.Serializer;
 
 namespace Data_Management_for_Unity.Runtime.Persistence3
 {
@@ -17,6 +18,11 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
             Value = value;
             Type = type;
             ModCount = modCount;
+        }
+
+        public object Deserialize()
+        {
+            return SerializationPCK.Deserialize(Value, Type);
         }
     }
 }

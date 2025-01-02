@@ -35,6 +35,12 @@ namespace Data_Management_for_Unity.Runtime.Serializer
             return type == null ? default : MessagePackSerializer.Deserialize(type, bytes);
         }
         
+        public static object Deserialize(ReadOnlyMemory<byte> bytes, string typeString, out Type type)
+        {
+            type = typeString == null ? null : Type.GetType(typeString, true);
+            return Deserialize(bytes, type);
+        }
+        
         /// <summary>
         /// Deserialize bytes into object of type T
         /// </summary>

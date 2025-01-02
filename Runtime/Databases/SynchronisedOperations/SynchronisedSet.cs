@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using Data_Management_for_Unity.Runtime.Serializer;
 using MessagePack;
 using MessagePack.Formatters;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public SynchronisedSet(string databaseId, string valueId, byte[] value, Type type, Action<T> onConfirmed) : base(databaseId, valueId, onConfirmed)
         {
             _value = value;
-            _typeString = type.AssemblyQualifiedName;
+            _typeString = type?.AssemblyQualifiedName;
         }
 
         [SerializationConstructor]
@@ -35,14 +36,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public override byte[] Repeat(byte[] value, Type type, out Type resultType)
         {
             //no action necessary, set overwrites previous value
-            resultType = Type.GetType(_typeString, true);
+            resultType = GetType(_typeString);
             return _value;
         }
 
         public override byte[] OnRemote(byte[] value, Type type, out Type resultType)
         {
             //no action necessary, set overwrites previous value
-            resultType = Type.GetType(_typeString, true);
+            resultType = GetType(_typeString);
             return _value;
         }
 

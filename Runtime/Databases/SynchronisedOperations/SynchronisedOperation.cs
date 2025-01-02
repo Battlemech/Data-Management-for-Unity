@@ -70,6 +70,11 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         /// <param name="value">Confirmed value</param>
         /// <param name="type">Confirmed type</param>
         public abstract void OnConfirmed(byte[] value, Type type);
+        
+        protected Type GetType(string typeString)
+        {
+            return typeString == null ? null : Type.GetType(typeString, true);
+        }
     }
 
     [MessagePackObject]
