@@ -18,7 +18,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
         {
             //create set command
             string commandText = $"insert or replace into '{databaseId}'(id, value, type, modCount) " +
-                                 $"values('{valueId}', @value, '{type.AssemblyQualifiedName}', {modCount})";
+                                 $"values('{valueId}', @value, '{type?.AssemblyQualifiedName}', {modCount})";
             
             SqliteCommand command = Connection.CreateCommand();
             command.CommandText = commandText;

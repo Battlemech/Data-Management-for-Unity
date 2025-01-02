@@ -20,6 +20,12 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
             ModCount = modCount;
         }
 
+        public PersistentObject(string databaseId, string valueId, byte[] value, string typeString, int modCount)
+            : this(databaseId, valueId, value, typeString == null ? null : Type.GetType(typeString, true), modCount)
+        {
+            
+        }
+
         public object Deserialize()
         {
             return SerializationPCK.Deserialize(Value, Type);

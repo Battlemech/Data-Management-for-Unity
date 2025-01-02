@@ -24,7 +24,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
             {
                 //deserialize object
                 savedObjects.Add(new PersistentObject(databaseId, reader.GetString(0), reader[1] as byte[],
-                    System.Type.GetType(reader.GetString(2), true), reader.GetInt32(3)));
+                    reader.GetString(2), reader.GetInt32(3)));
             }
             
             return savedObjects;
