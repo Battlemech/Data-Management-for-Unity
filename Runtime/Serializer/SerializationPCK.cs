@@ -59,5 +59,12 @@ namespace Data_Management_for_Unity.Runtime.Serializer
             return Deserialize<T>(new ReadOnlyMemory<byte>(bytes));
         }
 
+        /// <summary>
+        /// Given an object, tries serializing and deserializing it, returning a copy
+        /// </summary>
+        public static T Copy<T>(T data)
+        {
+            return (T) Deserialize(Serialize(data, out var type), type);
+        }
     }
 }
