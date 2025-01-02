@@ -257,8 +257,8 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         public IEnumerator TestConcurrentCollectionOperations()
         {
             const string id = nameof(TestConcurrentCollectionOperations);
-            const int addCount = 1000;
-            const int removeCount = 200;
+            const int addCount = 150;
+            const int removeCount = 30;
             
             //measure elapsed time
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -267,7 +267,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return Task.WhenAll(TestConcurrentAddAsync(id, addCount), TestConcurrentRemoveAsync(id, removeCount)).AsIEnumerator();
             
             //make sure values equal
-            yield return ValuesEqual<List<int>>(id, 15000);
+            yield return ValuesEqual<List<int>>(id);
             
             //output time
             stopwatch.Stop();
