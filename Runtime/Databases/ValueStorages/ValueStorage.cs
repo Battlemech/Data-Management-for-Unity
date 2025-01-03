@@ -181,6 +181,21 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         
         public Task<T> OnInitialized(bool mainThread=true) => Database.OnInitialized<T>(Id, mainThread);
         
+        /// <summary>
+        /// Tries loading current persistently saved value for a single valueStorage
+        /// </summary>
+        public bool TryPersistentLoad(out T value)
+        {
+            if(Database.TryPersistentLoad(Id, out object obj) && obj is T t)
+            {
+                value = t;
+                return true;
+            }
+            
+            value = default;
+            return false;
+        }
+        
         protected internal override void InternalSet(byte[] bytes, Type type)
         {
             object value = SerializationPCK.Deserialize(bytes, type);

@@ -62,7 +62,12 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 //return new created value storage
                 return valueStorage;
             }
-            
+        }
+
+        public override string ToString()
+        {
+            if(IsSynchronised) return "DB: " + Id + ", CL: " + Client;
+            return "DB: " + Id;
         }
     }
 }

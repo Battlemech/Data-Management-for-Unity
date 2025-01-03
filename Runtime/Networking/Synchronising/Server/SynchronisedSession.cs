@@ -47,7 +47,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             {
                 //extract operation for easier access
                 SynchronisedOperation operation = message.Operation;
-
+                
                 //if delayed set was expected
                 if (DequeueDelayedSet(operation.GetReference(), operation.ModCount))
                 {

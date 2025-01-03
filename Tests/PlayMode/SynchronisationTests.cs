@@ -9,6 +9,7 @@ using Data_Management_for_Unity.Runtime.Databases;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Server;
+using Data_Management_for_Unity.Runtime.Persistence3;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Runtime.Threading;
 using NUnit.Framework;
@@ -31,7 +32,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         private Database _database1;
         private Database _database2;
         private Database _database3;
-        private Database _database4;
+        private Database _persistentDatabase;
         private List<Database> _databases;
 
         [SetUp]
@@ -67,7 +68,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             _database1 = new Database(id);
             _database2 = new Database(id);
             _database3 = new Database(id);
-            _database4 = new Database(id);
+            _persistentDatabase = new Database(id);
             
             //enable synchronisation of databases before client and server are started
             _database0.Client = _client0;
@@ -97,15 +98,19 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             
             //enable synchronisation of databases after client and server connected
             _database3.Client = _client3;
-            _database4.Client = _client4;
+            _persistentDatabase.Client = _client4;
             _database3.IsSynchronised = true;
-            _database4.IsSynchronised = true;
+            _persistentDatabase.IsSynchronised = true;
             
             //init databases list
-            _databases = new List<Database>() { _database0, _database1, _database2, _database3, _database4 };
+            _databases = new List<Database>() { _database0, _database1, _database2, _database3, _persistentDatabase };
             
             //add main thread runner to execute callbacks from the database
             gameObject.AddComponent<MainThreadRunner>();
+            
+            //enable persistence of a single database to test persistence
+            PersistentData.DeleteDatabase(_persistentDatabase.Id); //todo: implement on startup data synchronisation for known/toLoad values
+            _persistentDatabase.IsPersistent = true;
         }
 
         [TearDown]
@@ -158,7 +163,10 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(value, () => _database1.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(value, () => _database2.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(value, () => _database3.Get<string>(id).Get(), "Remote set");
-            yield return TestUtility.AreEqual(value, () => _database4.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _persistentDatabase.Get<string>(id).Get(), "Remote set");
+            
+            //test persistence
+            yield return TestUtility.AreEqual(value, () => _persistentDatabase.Get<string>(id).TryPersistentLoad(out string p) ? p : null, "Persistant value");
         }
         
         [UnityTest]
@@ -191,7 +199,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(1600, () => _database1.Get<int>(id).Get(), "Database 2");
             yield return TestUtility.AreEqual(1600, () => _database2.Get<int>(id).Get(), "Database 3");
             yield return TestUtility.AreEqual(1600, () => _database3.Get<int>(id).Get(), "Database 4");
-            yield return TestUtility.AreEqual(1600, () => _database4.Get<int>(id).Get(), "Database 5");
+            yield return TestUtility.AreEqual(1600, () => _persistentDatabase.Get<int>(id).Get(), "Database 5");
             
             //make sure all values were synchronised
             yield return ValuesEqual<int>(id);
@@ -371,6 +379,9 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             
             //make sure each operation was invoked only once
             Assert.AreEqual(_databases.Count * repetitionCount, invokedOperations);
+            
+            //ensure the value was saved persistently
+            yield return TestUtility.AreEqual(invokedOperations, () => _persistentDatabase.Get<int>(id).TryPersistentLoad(out int value) ? value : -1, "Persistant value");
         }
 
         [UnityTest]
@@ -467,7 +478,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(value, () => _database1.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(value, () => _database2.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(value, () => _database3.Get<string>(id).Get(), "Remote set");
-            yield return TestUtility.AreEqual(value, () => _database4.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(value, () => _persistentDatabase.Get<string>(id).Get(), "Remote set");
             
             //set null
             yield return _database0.Get<string>(id).Set(null).AsIEnumerator();
@@ -477,7 +488,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(null, () => _database1.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(null, () => _database2.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(null, () => _database3.Get<string>(id).Get(), "Remote set");
-            yield return TestUtility.AreEqual(null, () => _database4.Get<string>(id).Get(), "Remote set");
+            yield return TestUtility.AreEqual(null, () => _persistentDatabase.Get<string>(id).Get(), "Remote set");
         }
         
         /// <summary>

@@ -33,6 +33,24 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// Dict of values which could not be loaded to a value storage successfully
         /// </summary>
         private readonly Dictionary<string, PersistentObject> _toLoad = new Dictionary<string, PersistentObject>();
+
+        /// <summary>
+        /// Tries loading current persistently saved value for a single valueStorage
+        /// </summary>
+        /// <param name="valueId"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool TryPersistentLoad(string valueId, out object value)
+        {
+            if (PersistentData.TryLoad(Id, valueId, out PersistentObject po))
+            {
+                value = po.Deserialize();
+                return true;
+            }
+            
+            value = null;
+            return false;
+        }
         
         private void OnPersistenceEnabled()
         {

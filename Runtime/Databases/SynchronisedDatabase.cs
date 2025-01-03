@@ -8,6 +8,7 @@ using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
 using Data_Management_for_Unity.Runtime.Persistence3;
 using Data_Management_for_Unity.Runtime.Serializer;
+using Data_Management_for_Unity.Runtime.Threading;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -79,7 +80,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 if (_confirmed.TryGetValue(operation.ValueId, out ValueRecord record))
                 {
                     //data is already known. No need to process operation
-                    if(record.ModCount >= operation.ModCount) return;
+                    if (record.ModCount >= operation.ModCount) return;
                     
                     value = record.Value;
                     type = record.Type;
@@ -125,6 +126,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     
                     //local operations may have a callback waiting to be executed on confirmation
                     operation.OnConfirmed(value, type);
+                    
+                    //locally executed safe operations need to persistently save data after remote confirmation
+                    if(operation.IsSafeOperation()) PersistentData.Save(Id, id, value, type, modCount) ;
+                }
+                //save remote operations persistently, if necessary
+                else if (IsPersistent)
+                {
+                    PersistentData.Save(Id, id, value, type, modCount);
                 }
 
                 //stop executing operations if no more delayed exist

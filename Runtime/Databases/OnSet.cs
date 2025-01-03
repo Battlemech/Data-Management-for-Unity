@@ -57,6 +57,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 //unsafe operations update local value instantly
                 if (!op.IsSafeOperation())
                 {
+                    //invoke callbacks
                     Invoke(op.ValueId, SerializationPCK.Deserialize(value, type));
                 }
             
@@ -82,13 +83,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
 
             //process successful operation
             if (reply.Success(operation.ModCount))
-                OnSuccessfulOperation(value, type, operation);
+                await OnSuccessfulOperation(value, type, operation);
             else
                 //process failed operation
                 OnFailedOperation(operation, reply.Expected);
         }
 
-        private async void OnSuccessfulOperation(byte[] value, Type type, SynchronisedOperation operation)
+        private async Task OnSuccessfulOperation(byte[] value, Type type, SynchronisedOperation operation)
         {
             //if operation wasn't executed before confirmation from server
             if (operation.IsSafeOperation())
