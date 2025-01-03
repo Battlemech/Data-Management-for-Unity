@@ -1,5 +1,6 @@
 ﻿using System;
 using Data_Management_for_Unity.Runtime.Serializer;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Persistence3
 {
@@ -21,7 +22,7 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
         }
 
         public PersistentObject(string databaseId, string valueId, byte[] value, string typeString, int modCount)
-            : this(databaseId, valueId, value, typeString == null ? null : Type.GetType(typeString, true), modCount)
+            : this(databaseId, valueId, value, GetType(typeString), modCount)
         {
             
         }
@@ -29,6 +30,21 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
         public object Deserialize()
         {
             return SerializationPCK.Deserialize(Value, Type);
+        }
+        
+        private static Type GetType(string typeString)
+        {
+            if (string.IsNullOrEmpty(typeString)) return null;
+            
+            try
+            {
+                return Type.GetType(typeString, true);
+            }
+            catch (Exception)
+            {
+                Debug.LogWarning("Failed to get type from string: " + typeString);
+                throw;
+            }
         }
     }
 }
