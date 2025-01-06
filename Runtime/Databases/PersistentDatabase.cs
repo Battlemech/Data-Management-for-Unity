@@ -88,8 +88,10 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     {
                         _toLoad.Add(savedObject.ValueId, savedObject);   
                     }
+                    
+                    //share current value, but not children, in network to avoid cascading data sharing between games
+                    if(IsSynchronised) ShareInNetwork(false);
                 }
-       
             } 
         }
 

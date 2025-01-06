@@ -51,7 +51,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         }
 
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
-        {
+        { 
             try
             {
                 //unsafe operations update local value instantly
