@@ -12,19 +12,25 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages
         /// </summary>
         [Key(1)]
         public readonly int Expected;
+
+        /// <summary>
+        /// True if the operation was successful, otherwise false
+        /// </summary>
+        [Key(2)]
+        public readonly bool Success;
         
-        public OperationReply(OperationRequest request, int expected) : base(request)
+        public OperationReply(OperationRequest request, int expected, bool success) : base(request)
         {
             Expected = expected;
+            Success = success;
         }
         
         [SerializationConstructor]
-        protected OperationReply(Guid id, int expected) : base(id)
+        protected OperationReply(Guid id, int expected, bool success) : base(id)
         {
             Expected = expected;
+            Success = success;
         }
-
-        public bool Success(int modCount) => modCount == Expected;
 
         public override string ToString()
         {

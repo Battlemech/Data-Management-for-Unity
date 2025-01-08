@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Objects;
+using Data_Management_for_Unity.Runtime.Threading;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
@@ -81,17 +83,18 @@ namespace Data_Management_for_Unity.Runtime.Databases
 
         private void ShareInNetwork(string valueId, byte[] value, Type type, int modCount)
         {
-            //todo: Unsafe set, where data is confirmed like during set process on success, otherwise nothing happens
+            OnLocalOperation(value, type, new SynchronisedInform(Id, valueId, value, type, modCount)).LogOnFailure();
+            
             /*
-             * todo: implement unsafe set, knowing if it succeeded or not by setting success flag to false if Repeat is called
-             * on remote:
-             * - Ignore operation if success = false
-             * - Overwrite value and modCount if success = true (executing delayed requests on lower modCounts should work, must test)
-             *
-             *  => Safe collection operation which is also passed the current modCount in Repeat and OnRemote, which then decides if to update values on current modCount or not.
-             *  ==> What if multiple people have higher modCount = 2222 and join after another: 1st data is overwritten since modCount is not updated
-             *  ==> Solution: Implement readonly access for database if not connected to server: Host can always start server
+             * todo:
+             * Client -> Send request
+             * Server -> Validate request if modCount is higher, else ignore
+             *        -> Server: Update its mod count
+             *        -> Server: Send updated value to all clients
              */
+            
+            //todo: readonly lock for clients
+            
             throw new NotImplementedException();
         }
     }

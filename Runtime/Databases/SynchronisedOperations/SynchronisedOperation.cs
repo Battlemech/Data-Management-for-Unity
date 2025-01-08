@@ -41,22 +41,24 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         }
         
         /// <summary>
-        /// Operation is repeated locally after synchronisation failed initially
+        /// Operation is repeated locally after synchronisation failed initially.
         /// </summary>
         /// <param name="value">Current value</param>
         /// <param name="type">Current type</param>
         /// <param name="resultType">Result type</param>
         /// <returns>Result value</returns>
+        /// <remarks>IsOperationValid() can return invalid data after this operation was called! (See Synchronised Inform for more details)</remarks>
         public abstract byte[] Repeat(byte[] value, Type type, out Type resultType);
 
         /// <summary>
-        /// Operation is processed on remote
+        /// Operation is processed on remote clients.
         /// </summary>
         /// <param name="value">Current value</param>
         /// <param name="type">Current type</param>
         /// <param name="resultType">Result type</param>
         /// <returns>Result value</returns>
-        public abstract byte[] OnRemote(byte[] value, Type type, out Type resultType);
+        /// <remarks>IsOperationValid() can return invalid data after this operation was called! (See Synchronised Inform for more details)</remarks>
+        public abstract byte[] OnRemoteClient(byte[] value, Type type, out Type resultType);
 
         /// <summary>
         /// Checks if the operation is safe, meaning that inconsistent states will be prevented.
@@ -65,11 +67,16 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         public abstract bool IsSafeOperation();
 
         /// <summary>
-        /// Invoked after a value has been confirmed by the remote
+        /// Invoked after a value has been confirmed by the remote.
         /// </summary>
         /// <param name="value">Confirmed value</param>
         /// <param name="type">Confirmed type</param>
         public abstract void OnConfirmed(byte[] value, Type type);
+
+        public virtual bool IsOperationValid(int expectedModCount)
+        {
+            return ModCount == expectedModCount;
+        }
         
         protected Type GetType(string typeString)
         {

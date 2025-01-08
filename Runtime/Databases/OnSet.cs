@@ -82,7 +82,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
             OperationReply reply = await SendOperationRequest(operation);
 
             //process successful operation
-            if (reply.Success(operation.ModCount))
+            if (reply.Success)
                 await OnSuccessfulOperation(value, type, operation);
             else
                 //process failed operation

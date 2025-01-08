@@ -94,10 +94,12 @@ namespace Data_Management_for_Unity.Runtime.Databases
             {
                 //extract basic information about target
                 string id = operation.ValueId;
-                int modCount = operation.ModCount;
 
                 //repeat operation with up to date data
-                value = local ? operation.Repeat(value, type, out type) : operation.OnRemote(value, type, out type);
+                value = local ? operation.Repeat(value, type, out type) : operation.OnRemoteClient(value, type, out type);
+                
+                //allow modCount modification during execution
+                int modCount = operation.ModCount;
 
                 //update value locally
                 lock (_values)
@@ -123,15 +125,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     
                     //local operations may have a callback waiting to be executed on confirmation
                     operation.OnConfirmed(value, type);
-                    
-                    //locally executed safe operations need to persistently save data after remote confirmation
-                    if(operation.IsSafeOperation()) PersistentData.Save(Id, id, value, type, modCount) ;
                 }
+                
                 //save remote operations persistently, if necessary
-                else if (IsPersistent)
-                {
-                    PersistentData.Save(Id, id, value, type, modCount);
-                }
+                //locally executed safe operations need to persistently save data after remote confirmation
+                if(IsPersistent && (!local || operation.IsSafeOperation())) PersistentData.Save(Id, id, value, type, modCount);
 
                 //stop executing operations if no more delayed exist
                 if (!TryDequeueDelayedOperation(id, modCount + 1, out operation)) return;

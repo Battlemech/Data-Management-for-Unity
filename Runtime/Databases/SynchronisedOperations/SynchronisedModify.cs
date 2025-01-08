@@ -56,7 +56,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             return _value;
         }
 
-        public override byte[] OnRemote(byte[] value, Type type, out Type resultType)
+        public override byte[] OnRemoteClient(byte[] value, Type type, out Type resultType)
         {
             //deserialize type
             resultType = GetType(_typeString);

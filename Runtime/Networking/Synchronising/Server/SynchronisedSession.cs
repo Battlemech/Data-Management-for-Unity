@@ -22,12 +22,13 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 
                 //client is planning to change a value
                 int modCount = server.IncrementModCount(reference);
+                bool success = operation.IsOperationValid(modCount);
 
                 //create reply
-                OperationReply reply = new OperationReply(request, modCount);
+                OperationReply reply = new OperationReply(request, modCount, success);
                 
                 //if request was successful             //and client attempted instant value overwrite
-                if (reply.Success(operation.ModCount) && !operation.IsSafeOperation())
+                if (success && !operation.IsSafeOperation())
                 {
                     //inform other clients of new value
                     server.MulticastToOthers(new OperationMessage(operation), this);
