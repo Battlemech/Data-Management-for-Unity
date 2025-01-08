@@ -21,6 +21,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 ValueReference reference = operation.GetReference();
                 
                 //client is planning to change a value
+                //todo: increment ModCount if operation was SyncInform
                 int modCount = server.IncrementModCount(reference);
                 bool success = operation.IsOperationValid(modCount);
 
@@ -54,6 +55,8 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 {
                     //inform others of new value
                     server.MulticastToOthers(message, this);
+                    
+                    //todo: increment ModCount if operation was SyncInform
                 }
                 else
                     //delayed set was unexpected
