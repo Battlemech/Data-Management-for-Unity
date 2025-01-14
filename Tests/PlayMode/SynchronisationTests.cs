@@ -352,7 +352,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         public IEnumerator TestSafeModify()
         {
             const string id = nameof(TestSafeModify);
-            const int repetitionCount = 2; //10
+            const int repetitionCount = 30;
             
             //track amount of invoked operations
             int invokedOperations = 0;

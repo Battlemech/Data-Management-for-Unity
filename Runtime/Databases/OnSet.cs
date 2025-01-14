@@ -134,8 +134,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
         /// <param name="expected">Expected modification count from server</param>
         private void OnFailedOperation(SynchronisedOperation operation, int expected)
         {
-            Debug.Log($"{this}: Operation with modCount {operation.ModCount} failed. Expected: {expected}");
-            
             //update modCount of operation from locally expected to remotely required
             operation.ModCount = expected;
             

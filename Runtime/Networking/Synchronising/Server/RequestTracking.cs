@@ -44,8 +44,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //all delayed sets for value were already processed
                 if (!modCounts.TryPeek(out int expected)) return false;
                 
-                Debug.Log($"{this}: Expected {expected}, queue: {string.Join(", ", modCounts)}");
-                
                 //another modCount is expected to be processed
                 if (expected != modCount) return false;
 

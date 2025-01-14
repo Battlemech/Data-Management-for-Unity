@@ -22,8 +22,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //client is planning to change a value
                 bool success = server.ValidateOperation(operation, out int modCount);
                 
-                Debug.Log($"{this}: Expected: {modCount}, Received: {operation.ModCount}. Success: {success}");
-
                 //create reply
                 OperationReply reply = new OperationReply(request, modCount, success);
                 
@@ -35,8 +33,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 }
                 else if(!operation.DiscardOnFailure())
                 {
-                    Debug.Log($"{this}: Delaying operation with modCount {operation.ModCount} -> {modCount}");
-                    
                     //expect a OperationMessage when client received up to date data
                     TrackDelayedOperation(operation.GetReference(), modCount);
                 }
@@ -54,8 +50,6 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 //if delayed set was expected
                 if (DequeueDelayedOperation(operation.GetReference(), operation.ModCount))
                 {
-                    Debug.Log(this + ": Processing delayed operation: " + operation.ModCount);
-                    
                     //inform others of new value
                     server.MulticastToOthers(message, this);
                 }
