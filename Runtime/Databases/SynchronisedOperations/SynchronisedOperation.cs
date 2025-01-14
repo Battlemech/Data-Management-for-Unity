@@ -73,9 +73,24 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
         /// <param name="type">Confirmed type</param>
         public abstract void OnConfirmed(byte[] value, Type type);
 
-        public virtual bool IsOperationValid(int expectedModCount)
+        protected virtual bool IsOperationValid(int expectedModCount)
         {
             return ModCount == expectedModCount;
+        }
+
+        protected internal virtual bool OnServerValidation(int expectedModCount, out int updatedModCount)
+        {
+            bool isValid = IsOperationValid(expectedModCount);
+
+            //per default, modCount is incremented whenever an operation is expected to be executed, either instantly or later
+            updatedModCount = (!isValid && DiscardOnFailure()) ? expectedModCount : ( expectedModCount + 1 );
+
+            return isValid;
+        }
+        
+        public virtual bool DiscardOnFailure()
+        {
+            return false;
         }
         
         protected Type GetType(string typeString)

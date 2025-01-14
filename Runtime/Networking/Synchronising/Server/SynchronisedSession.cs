@@ -18,12 +18,11 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             {
                 //extract operation for easier reference
                 SynchronisedOperation operation = request.Operation;
-                ValueReference reference = operation.GetReference();
                 
                 //client is planning to change a value
-                //todo: increment ModCount if operation was SyncInform
-                int modCount = server.IncrementModCount(reference);
-                bool success = operation.IsOperationValid(modCount);
+                bool success = server.ValidateOperation(operation, out int modCount);
+                
+                Debug.Log($"{this}: Expected: {modCount}, Received: {operation.ModCount}. Success: {success}");
 
                 //create reply
                 OperationReply reply = new OperationReply(request, modCount, success);
@@ -34,10 +33,12 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                     //inform other clients of new value
                     server.MulticastToOthers(new OperationMessage(operation), this);
                 }
-                else
+                else if(!operation.DiscardOnFailure())
                 {
+                    Debug.Log($"{this}: Delaying operation with modCount {operation.ModCount} -> {modCount}");
+                    
                     //expect a OperationMessage when client received up to date data
-                    TrackFailedSet(reference, modCount);
+                    TrackDelayedOperation(operation.GetReference(), modCount);
                 }
                 
                 //send reply
@@ -51,16 +52,16 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 SynchronisedOperation operation = message.Operation;
                 
                 //if delayed set was expected
-                if (DequeueDelayedSet(operation.GetReference(), operation.ModCount))
+                if (DequeueDelayedOperation(operation.GetReference(), operation.ModCount))
                 {
+                    Debug.Log(this + ": Processing delayed operation: " + operation.ModCount);
+                    
                     //inform others of new value
                     server.MulticastToOthers(message, this);
-                    
-                    //todo: increment ModCount if operation was SyncInform
                 }
                 else
                     //delayed set was unexpected
-                    throw new InvalidOperationException("Received invalid delayed set!");
+                    throw new InvalidOperationException(this + ": Received invalid delayed set! modCount: " + operation.ModCount);
             }));
         }
     }

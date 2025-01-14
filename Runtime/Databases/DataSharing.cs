@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Objects;
 using Data_Management_for_Unity.Runtime.Threading;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Databases
 {
@@ -84,18 +85,6 @@ namespace Data_Management_for_Unity.Runtime.Databases
         private void ShareInNetwork(string valueId, byte[] value, Type type, int modCount)
         {
             OnLocalOperation(value, type, new SynchronisedInform(Id, valueId, value, type, modCount)).LogOnFailure();
-            
-            /*
-             * todo:
-             * Client -> Send request
-             * Server -> Validate request if modCount is higher, else ignore
-             *        -> Server: Update its mod count
-             *        -> Server: Send updated value to all clients
-             */
-            
-            //todo: readonly lock for clients
-            
-            throw new NotImplementedException();
         }
     }
 }

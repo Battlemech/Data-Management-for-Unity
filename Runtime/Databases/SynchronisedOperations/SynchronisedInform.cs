@@ -7,6 +7,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
     /// Informs peers of data found locally and synchronised it if the data is newer.
     /// Otherwise, discards it.
     /// </summary>
+    [MessagePackObject]
     public class SynchronisedInform : SynchronisedOperation
     {
         [Key(3)]
@@ -41,7 +42,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             if (isValid)
             {
                 //update modCount on client. IsOperationValid() checks afterward can fail now!
-                ModCount = _savedModCount;
+                ModCount = _savedModCount + 1;
                 
                 //return value
                 resultType = Type.GetType(_typeString);
@@ -58,10 +59,21 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             return Repeat(value, type, out resultType);
         }
 
-        public override bool IsOperationValid(int expectedModCount)
+        protected override bool IsOperationValid(int expectedModCount)
         {
             //saved modCount is greater: data is newer
             return base.IsOperationValid(expectedModCount) && _savedModCount >= expectedModCount;
+        }
+
+        protected internal override bool OnServerValidation(int expectedModCount, out int updatedModCount)
+        {
+            bool isValid = IsOperationValid(expectedModCount);
+
+            //increment from locally saved modCount if Operation is valid.
+            //Otherwise, ensure the modCount is not incremented, allowing this operation to be discarded on failure
+            updatedModCount = (isValid ? _savedModCount + 1: expectedModCount);
+            
+            return isValid;
         }
 
         public override bool IsSafeOperation()
@@ -69,9 +81,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             return false;
         }
 
+        public override bool DiscardOnFailure()
+        {
+            return true;
+        }
+
         public override void OnConfirmed(byte[] value, Type type)
         {
-            //no action is called once the operation is confirmed
+            //no action is necessary once the operation is confirmed
         }
     }
 }

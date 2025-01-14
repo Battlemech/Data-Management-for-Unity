@@ -20,22 +20,29 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             return new SynchronisedSession(this);
         }
 
-        /// <summary>
-        /// Increments the current modification count by one and returns it
-        /// </summary>
-        protected internal int IncrementModCount(ValueReference id)
-        {
-            lock (_modCount)
-            {
-                return _modCount.TryGetValue(id, out int modCount) ? _modCount[id] = modCount + 1 : _modCount[id] = 1;
-            }
-        }
 
-        private int GetModCount(ValueReference id)
+        /// <summary>
+        /// Enqueues and validates the requested operation, changing the modCount if necessary
+        /// </summary>
+        /// <param name="op">Operation to validate</param>
+        /// <param name="expected">Operation modCount expected by server</param>
+        /// <returns>True if the request was successful, otherwise false</returns>
+        protected internal bool ValidateOperation(SynchronisedOperation op, out int expected)
         {
+            var reference = op.GetReference();
+            
             lock (_modCount)
             {
-                return _modCount.TryGetValue(id, out int modCount) ? modCount : 0;
+                //get expected modCount
+                expected = _modCount.GetValueOrDefault(reference, 1);
+                
+                //validate operation
+                bool success = op.OnServerValidation(expected, out int updatedModCount);
+                
+                //save modCount incremented by operation
+                _modCount[reference] = updatedModCount;
+                
+                return success;
             }
         }
     }

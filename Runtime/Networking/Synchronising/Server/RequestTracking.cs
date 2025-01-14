@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
 {
@@ -13,7 +15,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
         /// <summary>
         /// Expect a delayed set to be received in the near future
         /// </summary>
-        private void TrackFailedSet(ValueReference reference, int expected)
+        private void TrackDelayedOperation(ValueReference reference, int expected)
         {
             lock (_failedSets)
             {
@@ -32,7 +34,7 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
         /// <summary>
         /// Ensure the delayed set was expected
         /// </summary>
-        private bool DequeueDelayedSet(ValueReference reference, int modCount)
+        private bool DequeueDelayedOperation(ValueReference reference, int modCount)
         {
             lock (_failedSets)
             {
@@ -41,8 +43,8 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
 
                 //all delayed sets for value were already processed
                 if (!modCounts.TryPeek(out int expected)) return false;
-
-                //Debug.Log($"Server: Delayed sets: Next: {expected}. Received: {modCount}");
+                
+                Debug.Log($"{this}: Expected {expected}, queue: {string.Join(", ", modCounts)}");
                 
                 //another modCount is expected to be processed
                 if (expected != modCount) return false;
