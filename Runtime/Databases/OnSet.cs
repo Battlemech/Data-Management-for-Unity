@@ -84,15 +84,13 @@ namespace Data_Management_for_Unity.Runtime.Databases
             //process successful operation
             if (reply.Success)
                 await OnSuccessfulOperation(value, type, operation);
-            else
+            else if (!operation.DiscardOnFailure())
                 //process failed operation
                 OnFailedOperation(operation, reply.Expected);
         }
 
         private async Task OnSuccessfulOperation(byte[] value, Type type, SynchronisedOperation operation)
         {
-            Debug.Log($"{this}: Operation with modCount {operation.ModCount} was successful");
-            
             //if operation wasn't executed before confirmation from server
             if (operation.IsSafeOperation())
             {
