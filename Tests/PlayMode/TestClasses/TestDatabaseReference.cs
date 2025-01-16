@@ -5,6 +5,7 @@ using MessagePack;
 
 namespace Data_Management_for_Unity.Tests.PlayMode
 {
+    [MessagePackObject]
     public class TestDatabaseReference : DatabaseReference
     {
         public ValueStorage<string> Name => GetDatabase().Get<string>(nameof(Name));
