@@ -832,5 +832,10 @@ namespace Data_Management_for_Unity.Submodules.NetCoreServer
         {
             return Id.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return $"Session ({Id})";
+        }
     }
 }

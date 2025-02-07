@@ -27,6 +27,8 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         protected internal abstract void InternalSet(byte[] bytes, Type type);
 
         protected internal abstract byte[] Serialize(out Type type);
+
+        protected internal abstract object UnsafeGet();
     }
     
     public partial class ValueStorage<T> : ValueStorage
@@ -218,6 +220,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             lock (Id)
             {
                 return SerializationPCK.Serialize(Data, out type);
+            }
+        }
+
+        protected internal override object UnsafeGet()
+        {
+            lock (Id)
+            {
+                return Data;
             }
         }
 

@@ -18,24 +18,23 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
             {
                 //extract operation for easier reference
                 SynchronisedOperation operation = request.Operation;
-                ValueReference reference = operation.GetReference();
                 
                 //client is planning to change a value
-                int modCount = server.IncrementModCount(reference);
-
+                bool success = server.ValidateOperation(operation, out int modCount);
+                
                 //create reply
-                OperationReply reply = new OperationReply(request, modCount);
+                OperationReply reply = new OperationReply(request, modCount, success);
                 
                 //if request was successful             //and client attempted instant value overwrite
-                if (reply.Success(operation.ModCount) && !operation.IsSafeOperation())
+                if (success && !operation.IsSafeOperation())
                 {
                     //inform other clients of new value
                     server.MulticastToOthers(new OperationMessage(operation), this);
                 }
-                else
+                else if(!operation.DiscardOnFailure())
                 {
                     //expect a OperationMessage when client received up to date data
-                    TrackFailedSet(reference, modCount);
+                    TrackDelayedOperation(operation.GetReference(), modCount);
                 }
                 
                 //send reply
@@ -49,14 +48,14 @@ namespace Data_Management_for_Unity.Runtime.Networking.Synchronising.Server
                 SynchronisedOperation operation = message.Operation;
                 
                 //if delayed set was expected
-                if (DequeueDelayedSet(operation.GetReference(), operation.ModCount))
+                if (DequeueDelayedOperation(operation.GetReference(), operation.ModCount))
                 {
                     //inform others of new value
                     server.MulticastToOthers(message, this);
                 }
                 else
                     //delayed set was unexpected
-                    throw new InvalidOperationException("Received invalid delayed set!");
+                    throw new InvalidOperationException(this + ": Received invalid delayed set! modCount: " + operation.ModCount);
             }));
         }
     }

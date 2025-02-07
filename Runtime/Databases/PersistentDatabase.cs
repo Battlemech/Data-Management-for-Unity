@@ -73,7 +73,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
                 foreach (var savedObject in savedObjects)
                 {
                     //persistently saved data isn't newer than already known one
-                    if(!UpdateConfirmedData(savedObject.ValueId, savedObject.ModCount, savedObject.Value, savedObject.Type)) continue;
+                    if(GetModCount(savedObject.ValueId) >= savedObject.ModCount) continue;
                     
                     //if value storage exists
                     if (_values.TryGetValue(savedObject.ValueId, out ValueStorage valueStorage))
@@ -86,11 +86,14 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     //save loaded object to be deserialized later
                     lock (_toLoad)
                     {
-                        _toLoad.Add(savedObject.ValueId, savedObject);   
+                        //avoid overwriting newer data from remote
+                        _toLoad.TryAdd(savedObject.ValueId, savedObject);   
                     }
                 }
-       
             } 
+            
+            //share current value, but not children, in network to avoid cascading data sharing between games
+            if(IsSynchronised) ShareInNetwork(false);
         }
 
         private void OnPersistenceDisabled()

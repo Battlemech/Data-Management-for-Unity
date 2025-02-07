@@ -8,14 +8,12 @@ namespace Data_Management_for_Unity.Runtime.Threading
         //all async function: call onCompleted and check for error
         public static Task LogOnFailure(this Task task)
         {
-            task.ContinueWith((t =>
+            return task.ContinueWith((t =>
             {
-                if (!t.IsFaulted) return;
+                if (t.Exception == null) return;
 
                 Debug.LogException(t.Exception);
             }));
-
-            return task;
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations
             return SerializationPCK.Serialize(PerformAction(collection));
         }
 
-        public override byte[] OnRemote(byte[] value, Type type, out Type resultType)
+        public override byte[] OnRemoteClient(byte[] value, Type type, out Type resultType)
         {
             //collection operation is the same if repeated locally or if performed on remote
             return Repeat(value, type, out resultType);

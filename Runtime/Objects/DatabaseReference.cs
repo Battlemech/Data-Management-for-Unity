@@ -74,5 +74,14 @@ namespace Data_Management_for_Unity.Runtime.Objects
         {
             return GetDatabase().RemoveCallbacks(name, mainThread);
         }
+        
+        /// <summary>
+        /// Shares the referenced database in the network
+        /// </summary>
+        /// <param name="recursive">Also share all databases referenced in the database itself</param>
+        public void ShareInNetwork(bool recursive)
+        {
+            GetDatabase().ShareInNetwork(recursive);
+        }
     }
 }

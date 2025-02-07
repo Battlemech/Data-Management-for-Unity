@@ -51,7 +51,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         }
 
         private async Task OnLocalOperation(byte[] value, Type type, SynchronisedOperation op)
-        {
+        { 
             try
             {
                 //unsafe operations update local value instantly
@@ -82,9 +82,9 @@ namespace Data_Management_for_Unity.Runtime.Databases
             OperationReply reply = await SendOperationRequest(operation);
 
             //process successful operation
-            if (reply.Success(operation.ModCount))
+            if (reply.Success)
                 await OnSuccessfulOperation(value, type, operation);
-            else
+            else if (!operation.DiscardOnFailure())
                 //process failed operation
                 OnFailedOperation(operation, reply.Expected);
         }

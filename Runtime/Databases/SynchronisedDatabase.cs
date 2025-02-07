@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Databases.Structs;
@@ -6,6 +8,7 @@ using Data_Management_for_Unity.Runtime.Databases.SynchronisedOperations;
 using Data_Management_for_Unity.Runtime.Databases.ValueStorages;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Client;
 using Data_Management_for_Unity.Runtime.Networking.Synchronising.Messages;
+using Data_Management_for_Unity.Runtime.Objects;
 using Data_Management_for_Unity.Runtime.Persistence3;
 using Data_Management_for_Unity.Runtime.Serializer;
 using Data_Management_for_Unity.Runtime.Threading;
@@ -51,17 +54,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
             
             //add database to list of local databases
             Client.AddDatabase(this);
-
-            //synchronise values
-            lock (_values)
-            {
-                foreach (var storage in _values.Values)
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            
+            //share current value, but not children, in network to avoid cascading data sharing between games
+            ShareInNetwork(false);
         }
-
+        
         private void OnSynchronisationDisabled()
         {
             //remove database from list of local databases
@@ -97,10 +94,12 @@ namespace Data_Management_for_Unity.Runtime.Databases
             {
                 //extract basic information about target
                 string id = operation.ValueId;
-                int modCount = operation.ModCount;
 
                 //repeat operation with up to date data
-                value = local ? operation.Repeat(value, type, out type) : operation.OnRemote(value, type, out type);
+                value = local ? operation.Repeat(value, type, out type) : operation.OnRemoteClient(value, type, out type);
+                
+                //allow modCount modification during execution
+                int modCount = operation.ModCount;
 
                 //update value locally
                 lock (_values)
@@ -126,15 +125,11 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     
                     //local operations may have a callback waiting to be executed on confirmation
                     operation.OnConfirmed(value, type);
-                    
-                    //locally executed safe operations need to persistently save data after remote confirmation
-                    if(operation.IsSafeOperation()) PersistentData.Save(Id, id, value, type, modCount) ;
                 }
+                
                 //save remote operations persistently, if necessary
-                else if (IsPersistent)
-                {
-                    PersistentData.Save(Id, id, value, type, modCount);
-                }
+                //locally executed safe operations need to persistently save data after remote confirmation
+                if(IsPersistent && (!local || operation.IsSafeOperation())) PersistentData.Save(Id, id, value, type, modCount);
 
                 //stop executing operations if no more delayed exist
                 if (!TryDequeueDelayedOperation(id, modCount + 1, out operation)) return;

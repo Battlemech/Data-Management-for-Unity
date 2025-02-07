@@ -352,7 +352,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
         public IEnumerator TestSafeModify()
         {
             const string id = nameof(TestSafeModify);
-            const int repetitionCount = 10;
+            const int repetitionCount = 30;
             
             //track amount of invoked operations
             int invokedOperations = 0;
@@ -437,16 +437,16 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             await database.Get<TestDatabaseReference>(id).Set(dbRef);
             
             //make sure object was set
-            Assert.AreEqual(dbRef, database.Get<TestDatabaseReference>(id).Get());
+            Assert.AreEqual(dbRef, database.Get<TestDatabaseReference>(id).Get(), "object was set in memory");
             //make sure the value was set
-            Assert.AreEqual(dbRef.Name.Get(), database.Get<TestDatabaseReference>(id).Get().Name.Get());
+            Assert.AreEqual(dbRef.Name.Get(), database.Get<TestDatabaseReference>(id).Get().Name.Get(), "name was set in memory");
             
             //make sure the object was saved persistently
             database = new Database(id, true);
             //ensure the dbRef is still saved
-            Assert.AreEqual(dbRef, database.Get<TestDatabaseReference>(id).Get());
+            Assert.AreEqual(dbRef, database.Get<TestDatabaseReference>(id).Get(), "object was saved persistently");
             //ensure the value is still saved
-            Assert.AreEqual(dbRef.Name.Get(), database.Get<TestDatabaseReference>(id).Get().Name.Get());
+            Assert.AreEqual(dbRef.Name.Get(), database.Get<TestDatabaseReference>(id).Get().Name.Get(), "name was saved persistently");
         }
         
         [UnityTest]

@@ -20,7 +20,7 @@ namespace Data_Management_for_Unity.Runtime.Databases
         {
             lock (_localModCount)
             {
-                return _localModCount.TryGetValue(id, out int modCount) ? modCount : 0;
+                return _localModCount.GetValueOrDefault(id, -1);
             }
         }
 
