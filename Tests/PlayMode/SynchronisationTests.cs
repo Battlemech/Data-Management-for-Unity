@@ -244,7 +244,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             Debug.Log($"Concurrently added and synchronised {addCount * _databases.Count} elements within {stopwatch.ElapsedMilliseconds} ms!");
         }
 
-        private Task TestConcurrentAddAsync(string id, int addCount)
+        private Task TestConcurrentAddAsync(string id, int addCount, bool isSafe = false)
         {
             //start add processes concurrently
             return Task.WhenAll(_databases.Select(((database, i) =>
@@ -254,7 +254,7 @@ namespace Data_Management_for_Unity.Tests.PlayMode
                 //start adding elements to list
                 for (int j = 0; j < addCount; j++)
                 {
-                    tasks[j] = database.Get<List<int>>(id).Add(i + j);
+                    tasks[j] = database.Get<List<int>>(id).Add(i + j, safe:isSafe);
                 }
 
                 return Task.WhenAll(tasks);
@@ -490,6 +490,27 @@ namespace Data_Management_for_Unity.Tests.PlayMode
             yield return TestUtility.AreEqual(null, () => _database3.Get<string>(id).Get(), "Remote set");
             yield return TestUtility.AreEqual(null, () => _persistentDatabase.Get<string>(id).Get(), "Remote set");
         }
+
+        [UnityTest]
+        public IEnumerator TestSafeAdd()
+        {
+            const string id = nameof(TestConcurrentAdd);
+            const int addCount = 1000; //todo: implement for addCount = 1000
+
+            //measure elapsed time
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            
+            //start add process concurrently
+            yield return TestConcurrentAddAsync(id, addCount, true).AsIEnumerator();
+
+            //make sure values equal
+            yield return ValuesEqual<List<int>>(id, 15000);
+            
+            //output time
+            stopwatch.Stop();
+            Debug.Log($"Concurrently added and synchronised {addCount * _databases.Count} elements within {stopwatch.ElapsedMilliseconds} ms!");
+        }
+
         
         /// <summary>
         /// Given an object, tries serializing and deserializing it, returning a copy

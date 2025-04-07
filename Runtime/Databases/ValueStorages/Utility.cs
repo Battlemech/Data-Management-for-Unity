@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Data_Management_for_Unity.Runtime.Serializer;
+using JetBrains.Annotations;
 
 namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
 {
     public static class Utility
     {
+        //todo: safe collection operations instantly modify the value ...
         public static Task Add<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, TValue toAdd, bool safe=false, Action<TCollection> onConfirmed=null)
             where TCollection : ICollection<TValue>, new()
         {
@@ -19,11 +23,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             
             lock (valueStorage.Id)
             {
-                //init collection if necessary
-                valueStorage.Data ??= new TCollection();
+                if (!safe)
+                {
+                    //init collection if necessary
+                    valueStorage.Data ??= new TCollection();
                 
-                //add value to collection
-                valueStorage.Data.Add(toAdd);
+                    //add value to collection
+                    valueStorage.Data.Add(toAdd);   
+                }
 
                 //serialize collection
                 collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
@@ -45,11 +52,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             
             lock (valueStorage.Id)
             {
-                //init collection if necessary
-                valueStorage.Data ??= new TCollection();
+                if (!safe)
+                {
+                    //init collection if necessary
+                    valueStorage.Data ??= new TCollection();
                 
-                //remove value from collection
-                valueStorage.Data.Remove(toRemove);
+                    //remove value from collection
+                    valueStorage.Data.Remove(toRemove);   
+                }
 
                 //serialize collection
                 collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
@@ -77,11 +87,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             
             lock (valueStorage.Id)
             {
-                //init collection if necessary
-                valueStorage.Data ??= new TCollection();
+                if (!safe)
+                {
+                    //init collection if necessary
+                    valueStorage.Data ??= new TCollection();
                 
-                //remove value from collection
-                valueStorage.Data.Remove(toRemove);
+                    //remove value from collection
+                    valueStorage.Data.Remove(toRemove);   
+                }
 
                 //serialize collection
                 collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
@@ -119,11 +132,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             
             lock (valueStorage.Id)
             {
-                //init collection if necessary
-                valueStorage.Data ??= new TCollection();
+                if (!safe)
+                {
+                    //init collection if necessary
+                    valueStorage.Data ??= new TCollection();
                 
-                //update value in collection
-                valueStorage.Data[key] = value;
+                    //update value in collection
+                    valueStorage.Data[key] = value;   
+                }
 
                 //serialize collection
                 collectionValue = SerializationPCK.Serialize(valueStorage.Data, out collectionType);
@@ -155,5 +171,56 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
                 }
             }));
         }
+
+        public static bool IsNull<TValue>(this ValueStorage<TValue> valueStorage)
+        {
+            return valueStorage.BlockingGet((value => value == null));
+        }
+        
+        public static bool IsNullOrEmpty<TCollection>(this ValueStorage<TCollection> valueStorage)
+            where TCollection : ICollection
+        {
+            return valueStorage.BlockingGet((collection => collection == null || collection.Count == 0));
+        }
+        
+        public static IEnumerable<TResult> Select<T, TResult>(
+            this ValueStorage<List<T>> valueStorage,
+            Func<T, TResult> selector)
+        {
+            return valueStorage.BlockingGet((list => list?.Select(selector))) ?? Enumerable.Empty<TResult>();
+        }
+        
+        public static IEnumerable<T> Where<T>(
+            this ValueStorage<List<T>> valueStorage,
+            Func<T, bool> predicate)
+        {
+            return valueStorage.BlockingGet(list => list?.Where(predicate)) ?? Enumerable.Empty<T>();
+        }
+
+
+        public static IEnumerable<TResult> SelectMany<T, TResult>(
+            this ValueStorage<List<T>> valueStorage,
+            Func<T, IEnumerable<TResult>> selector)
+        {
+            return valueStorage.BlockingGet(list => list?.SelectMany(selector)) ?? Enumerable.Empty<TResult>();
+        }
+        
+        public static IEnumerable<TResult> OfType<T, TResult>(
+            this ValueStorage<List<T>> valueStorage)
+        {
+            return valueStorage.BlockingGet((list => list?.OfType<TResult>())) ?? Enumerable.Empty<TResult>();
+        }
+        
+        public static int Count<TCollection>(this ValueStorage<TCollection> valueStorage)
+            where TCollection : ICollection
+        {
+            return valueStorage.BlockingGet((collection => collection == null ? 0 : collection.Count));
+        }
+        
+        public static List<T> Copy<T>(this ValueStorage<List<T>> valueStorage)
+        {
+            return valueStorage.BlockingGet(collection => collection == null ? null : new List<T>(collection));
+        }
+
     }
 }

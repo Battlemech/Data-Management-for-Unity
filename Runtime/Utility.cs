@@ -19,6 +19,9 @@ namespace Data_Management_for_Unity.Runtime
     {
         public static IEnumerator AsIEnumerator(this Task task)
         {
+            // instantly return if task is null
+            if(task == null) yield break;
+            
             while (!task.IsCompleted)
             {
                 yield return null;
@@ -34,6 +37,9 @@ namespace Data_Management_for_Unity.Runtime
         public static IEnumerator<T> AsIEnumerator<T>(this Task<T> task)
             where T : class
         {
+            // instantly return if task is null
+            if(task == null) yield break;
+            
             while (!task.IsCompleted)
             {
                 yield return null;
@@ -78,7 +84,7 @@ namespace Data_Management_for_Unity.Runtime
         {
             return () => asyncTask.Invoke().ContinueWith(task =>
             {
-                if (task.IsFaulted) Debug.LogError(task.Exception);
+                if (task.IsFaulted) Debug.LogException(task.Exception);
             });
         }
     }
