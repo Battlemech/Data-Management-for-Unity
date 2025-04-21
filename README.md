@@ -4,12 +4,12 @@ A lightweight, high-performance data management framework designed specifically 
 
 ## Features
 - Efficient serialization with [MessagePack‑CSharp](https://github.com/MessagePack-CSharp/MessagePack-CSharp?tab=readme-ov-file#aot-code-generation-support-for-unityxamarin) (AOT code generation support for Unity/Xamarin)  
-- Modular API for defining and handling custom data schemas  
-- Built-in support for versioned data migrations  
+- Built in SQLite backend for persistent data storage.
+- Multithreading
+- Different modes of data synchronisation, allowing a tradeoff between consistency and performance on a per operation-basis.
 
 ## Compatibility
 Tested with Unity 2020.3 LTS and later.  
-Relies on MessagePack‑CSharp’s AOT code generation to ensure fast, reliable serialization in IL2CPP builds.
 
 ## Getting Started
 1. Clone or download this repository.  
