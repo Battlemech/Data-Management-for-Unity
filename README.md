@@ -16,7 +16,7 @@ Tested with Unity 2020.3 LTS and later.
 2. Import the `DataManagement` folder into your Unity project.  
 3. Configure your data models and serializers.
 
-> **Note:** This README is a placeholder and will be fully expanded once the first version of the primary use case—the tabletop simulation—is released.
+> **Note:** This README is a placeholder and will be fully expanded once the first version of the primary use case (my tabletop simulator) is released.
 
 ## Roadmap
 - [ ] Release tabletop sim integration  
