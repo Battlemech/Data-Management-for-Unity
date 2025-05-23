@@ -61,8 +61,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((DatabaseReference)obj);
+            return obj is DatabaseReference other && Equals(other);
         }
 
         public override int GetHashCode()

@@ -60,11 +60,20 @@ namespace Data_Management_for_Unity.Runtime.Databases
                     //invoke callbacks
                     Invoke(op.ValueId, SerializationPCK.Deserialize(value, type));
                 }
-            
+                
                 //synchronise data across multiple clients
-                if (IsSynchronised) await OnLocalSynchronisedOperation(value, type, op);
-                //persistent data is updated after values were confirmed by remote. If not synchronised: Update instantly
-                else if (IsPersistent) await PersistentData.Save(Id, op.ValueId, value, type, op.ModCount);
+                if (IsSynchronised)
+                {
+                    await OnLocalSynchronisedOperation(value, type, op);
+                }
+                else
+                {
+                    // No data to synchronise -> Modification can be confirmed instantly
+                    op.OnConfirmed(value, type);
+
+                    //persistent data is updated after values were confirmed by remote. If not synchronised: Update instantly
+                    if (IsPersistent) await PersistentData.Save(Id, op.ValueId, value, type, op.ModCount);
+                }
             }
             catch (Exception e)
             {

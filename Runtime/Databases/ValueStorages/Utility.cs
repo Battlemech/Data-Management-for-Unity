@@ -155,6 +155,12 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
             return valueStorage.BlockingGet((values => values != null && values.Contains(value)));
         }
         
+        public static bool Any<TCollection, TValue>(this ValueStorage<TCollection> valueStorage, IEnumerable<TValue> values)
+            where TCollection : ICollection<TValue>
+        {
+            return valueStorage.BlockingGet((collection => collection != null && values.Any(collection.Contains)));
+        }
+        
         /// <summary>
         /// Iterate through all elements of the collection
         /// </summary>
@@ -175,6 +181,11 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         public static bool IsNull<TValue>(this ValueStorage<TValue> valueStorage)
         {
             return valueStorage.BlockingGet((value => value == null));
+        }
+
+        public static bool IsNullOrEmpty(this ValueStorage<string> valueStorage)
+        {
+            return valueStorage.BlockingGet((string.IsNullOrEmpty));
         }
         
         public static bool IsNullOrEmpty<TCollection>(this ValueStorage<TCollection> valueStorage)
@@ -220,6 +231,14 @@ namespace Data_Management_for_Unity.Runtime.Databases.ValueStorages
         public static List<T> Copy<T>(this ValueStorage<List<T>> valueStorage)
         {
             return valueStorage.BlockingGet(collection => collection == null ? null : new List<T>(collection));
+        }
+        
+        public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(
+            this ValueStorage<List<TFirst>> first,
+            List<TSecond> second,
+            Func<TFirst, TSecond, TResult> resultSelector)
+        {
+            return first.BlockingGet(list => list?.Zip(second, resultSelector)) ?? Enumerable.Empty<TResult>();
         }
 
     }

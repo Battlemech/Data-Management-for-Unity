@@ -45,6 +45,8 @@ namespace Data_Management_for_Unity.Runtime.Persistence3
                     }
                 }
             }
+            
+            if(tableNames.Count == 0) return;
     
             // Drop each table in a single command to increase performance.
             ExecuteCommand(tableNames.Select((name => $"DROP TABLE IF EXISTS '{name}'; ")).Aggregate((a, b) => a + b));
