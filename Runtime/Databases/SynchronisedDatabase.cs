@@ -42,19 +42,9 @@ namespace Data_Management_for_Unity.Runtime.Databases
             }
         }
         private bool _isSynchronised;
-
+        
         private void OnSynchronisationEnabled()
         {
-            //set a reference to synchronised client, if necessary
-            if (Client == null) Client = SynchronisedClient.Instance;
-
-            //At least one client must be available
-            if (Client == null)
-                throw new Exception("Database must be managed by a local SynchronisedClient to be synchronised!");
-            
-            //add database to list of local databases
-            Client.AddDatabase(this);
-            
             //share current value, but not children, in network to avoid cascading data sharing between games
             ShareInNetwork(false);
         }

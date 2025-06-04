@@ -21,12 +21,25 @@ namespace Data_Management_for_Unity.Runtime.Databases
         {
             Id = id;
             
-            //configure persistence
+            // Configure persistence
             IsPersistent = isPersistent;
             
+            // Assign synchronised client before activating synchronisation
+            TrackDatabase(client);
+            IsSynchronised = isSynchronised;
+        }
+
+        private void TrackDatabase(SynchronisedClient client = null)
+        {
             //assign client (if any) before configuring synchronisation
             Client = client;
-            IsSynchronised = isSynchronised;
+            //set a reference to synchronised client, if necessary. At least one must be available
+            if (Client == null) Client = SynchronisedClient.Instance;
+            if (Client == null)
+                throw new Exception("Database must be managed by a local SynchronisedClient to be synchronised!");
+            
+            //add database to list of local databases
+            Client.AddDatabase(this);
         }
 
         public ValueStorage<T> Get<T>(string id)

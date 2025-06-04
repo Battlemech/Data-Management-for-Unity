@@ -14,6 +14,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
         public readonly bool IsPersistent;
 
         //ignored by serialisation
+        [IgnoreMember]
         private Database _database;
 
         public DatabaseReference(bool isSynchronised = true, bool isPersistent = true)
@@ -22,6 +23,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
             Id = $"{GetType().Name}/{Guid.NewGuid()}";
             IsSynchronised = isSynchronised;
             IsPersistent = isPersistent;
+            _database = null;
         }
         
         [SerializationConstructor]
@@ -30,6 +32,7 @@ namespace Data_Management_for_Unity.Runtime.Objects
             Id = id;
             IsSynchronised = isSynchronised;
             IsPersistent = isPersistent;
+            _database = null;
         }
 
         public Database GetDatabase()
